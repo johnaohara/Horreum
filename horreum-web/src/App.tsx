@@ -1,4 +1,4 @@
-import { Component } from "react"
+import {Component, useState} from "react"
 import "@patternfly/patternfly/patternfly.css" //have to use this import to customize scss-variables.scss
 
 import { Nav, NavItem, NavList, Page, PageHeader, PageHeaderTools } from "@patternfly/react-core"
@@ -9,7 +9,7 @@ import { Provider, useSelector } from "react-redux"
 import { Route, Switch } from "react-router"
 
 import store, { history } from "./store"
-import { isAdminSelector, LoginLogout } from "./auth"
+import {isAdminSelector, isAuthenticatedSelector, LoginLogout, userProfileSelector} from "./auth"
 import { initKeycloak } from "./keycloak"
 import { UserProfileLink, UserSettings } from "./domain/user/UserSettings"
 
@@ -23,7 +23,7 @@ import DatasetComparison from "./domain/runs/DatasetComparison"
 import AllSchema from "./domain/schemas/AllSchema"
 import Schema from "./domain/schemas/Schema"
 
-import Admin from "./domain/admin/Admin"
+import Admin, {AdminLink} from "./domain/admin/Admin"
 import Alerts from "./alerts"
 
 import Changes from "./domain/alerting/Changes"
@@ -35,6 +35,10 @@ import TableReportConfigPage from "./domain/reports/TableReportConfigPage"
 import NotFound from "./404"
 
 import About from "./About"
+import {Sidebar} from "@patternfly/react-core/components";
+import FoldersAccordian from "./components/FoldersAccordian";
+import TeamSelect, {ONLY_MY_OWN, Team} from "./components/TeamSelect";
+import * as selectors from "./domain/tests/selectors";
 
 class App extends Component {
     constructor(props: any) {
@@ -51,8 +55,100 @@ class App extends Component {
     }
 }
 
+
+
 function Main() {
     const isAdmin = useSelector(isAdminSelector)
+    const isAuthenticated = useSelector(isAuthenticatedSelector)
+    const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
+
+    const [activeGroup, setActiveGroup] = useState('');
+    const [activeItem, setActiveItem] = useState('ungrouped_item-1');
+
+    const onSelect = (result: { itemId: number | string; groupId: number | string | null }) => {
+        setActiveGroup(result.groupId as string);
+        setActiveItem(result.itemId as string);
+    };
+
+
+    const profile = useSelector(userProfileSelector)
+    const watchingTests = useSelector(selectors.watching)
+    const navWatching: any[] = []
+    watchingTests.forEach((watching, id) => {
+        const test = selectors.get(id)
+        watching?.forEach((value, index) => {
+            if ( value === profile?.username) {
+                navWatching.push(<NavItem id="test-62">
+                    <NavLink
+                        to="/test/"
+                        style={{color: "var(--pf-c-nav--m-horizontal__link--Color)"}}
+                    >
+                        {test}
+                    </NavLink>
+                </NavItem>)
+            }
+        })
+
+    })
+
+
+    const pageNav = (
+        <Nav aria-label="Nav" >
+            <NavList>
+                <NavExpandable
+                    title="Tests"
+                    groupId="nav-mixed-group-1"
+                    isActive={activeGroup === 'nav-mixed-group-1'}
+                >
+                    <NavItem itemId={0}>
+                        <NavLink
+                            to="/test"
+                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
+                        >
+                            All Tests
+                        </NavLink>
+                    </NavItem>
+
+                    <NavItemSeparator />
+
+                    {/*{navWatching}*/}
+
+                    <NavItem
+                        // preventDefault
+                        id="test-62"
+                    >
+                        <NavLink
+                            to="/test/62"
+                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
+                        >
+                            Kogito
+                        </NavLink>
+                    </NavItem>
+                </NavExpandable>
+                <NavItem itemId={1}>
+                    <NavLink
+                        to="/schema"
+                        style={{  color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
+                    >
+                        Schemas
+                    </NavLink>
+                </NavItem>
+                {isAdmin && (
+                    <NavItem itemId={4}>
+                        <NavLink
+                            to="/settings"
+                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
+                        >
+                            Administration
+                        </NavLink>
+                    </NavItem>
+                )}
+            </NavList>
+        </Nav>
+    );
+
+    const sidebar = <PageSidebar nav={pageNav} />;
+
     return (
         <Provider store={store}>
         <Router history={history}>
@@ -69,66 +165,32 @@ function Main() {
                                         </NavLink>
                                     </NavItem>
                                     {/* TODO: fix links colors properly */}
-                                    <NavItem itemId={0}>
-                                        <NavLink
-                                            to="/test"
-                                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
-                                        >
-                                            Tests
-                                        </NavLink>
-                                    </NavItem>
-                                    <NavItem itemId={1}>
-                                        <NavLink
-                                            to="/schema"
-                                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
-                                        >
-                                            Schema
-                                        </NavLink>
-                                    </NavItem>
-                                    <NavItem itemId={2}>
-                                        <NavLink
-                                            to="/changes"
-                                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
-                                        >
-                                            Changes
-                                        </NavLink>
-                                    </NavItem>
-                                    <NavItem itemId={3}>
-                                        <NavLink
-                                            to="/reports"
-                                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
-                                        >
-                                            Reports
-                                        </NavLink>
-                                    </NavItem>
-                                    {isAdmin && (
-                                        <NavItem itemId={4}>
-                                            <NavLink
-                                                to="/admin"
-                                                style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
-                                            >
-                                                Administration
-                                            </NavLink>
-                                        </NavItem>
-                                    )}
                                 </NavList>
                             </Nav>
                         }
                         headerTools={
                             <PageHeaderTools>
+
                                 <UserProfileLink />
+                                {isAdmin && (
+                                    <AdminLink />
+                                )}
                                 <LoginLogout />
                                 <About />
                             </PageHeaderTools>
                         }
                     />
                 }
+                sidebar={sidebar}
             >
                 <Alerts />
                 <Switch>
                     <Route exact path="/" component={AllTests} />
                     <Route exact path="/test" component={AllTests} />
                     <Route exact path="/test/:testId" component={Test} />
+
+                    <Route exact path="/test/:testId/data" component={Test} />
+
 
                     <Route exact path="/run/list/:testId" component={TestRuns} />
                     <Route exact path="/run/dataset/list/:testId" component={TestDatasets} />
@@ -144,7 +206,7 @@ function Main() {
                     <Route exact path="/reports/table/config/:configId" component={TableReportConfigPage} />
                     <Route exact path="/reports/table/:id" component={TableReportPage} />
 
-                    <Route exact path="/admin" component={Admin} />
+                    <Route exact path="/settings" component={Admin} />
                     <Route exact path="/usersettings" component={UserSettings} />
                     <Route component={NotFound} />
                 </Switch>

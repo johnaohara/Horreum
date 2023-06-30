@@ -36,6 +36,9 @@ import Access from "./Access"
 import Subscriptions from "./Subscriptions"
 import Transformers from "./Transformers"
 import MissingDataNotifications from "./MissingDataNotifications"
+import TestDatasets from "../runs/TestDatasets";
+import Changes from "../alerting/Changes";
+import Reports from "../reports/Reports";
 
 type Params = {
     testId: string
@@ -46,6 +49,7 @@ export default function Test() {
     const [testId, setTestId] = useState(params.testId === "_new" ? 0 : parseInt(params.testId))
     const test = useSelector(selectors.get(testId))
     const [modified, setModified] = useState(false)
+    const dataFuncsRef = useRef<TabFunctions>()
     const generalFuncsRef = useRef<TabFunctions>()
     const accessFuncsRef = useRef<TabFunctions>()
     const viewFuncsRef = useRef<TabFunctions>()
@@ -92,12 +96,6 @@ export default function Test() {
                                 <BreadcrumbItem isActive>{test?.name || "New test"}</BreadcrumbItem>
                             </Breadcrumb>
                         </FlexItem>
-                        <FlexItem>
-                            <ButtonLink to={`/run/dataset/list/${testId}`}>Dataset list</ButtonLink>
-                            <ButtonLink to={`/run/list/${testId}`} variant="secondary">
-                                Run list
-                            </ButtonLink>
-                        </FlexItem>
                     </Flex>
                 </CardHeader>
                 {!loaded && testId !== 0 && (
@@ -116,8 +114,43 @@ export default function Test() {
                             canSave={isTester}
                         >
                             <SavedTab
-                                title="General"
-                                fragment="general"
+                                title="Data"
+                                fragment="data"
+                                isHidden={testId <= 0}
+                                onSave={saveFunc(dataFuncsRef)}
+                                onReset={resetFunc(dataFuncsRef)}
+                                isModified={() => modified}
+                            >
+                                <TestDatasets/>
+                            </SavedTab>
+
+                            <SavedTab
+                                title="Changes"
+                                fragment="changes"
+                                isHidden={testId <= 0}
+                                onSave={saveFunc(dataFuncsRef)}
+                                onReset={resetFunc(dataFuncsRef)}
+                                isModified={() => modified}
+                            >
+
+                                <Changes testID={testId}/>
+
+                            </SavedTab>
+
+                            <SavedTab
+                                title="Reports"
+                                fragment="reports"
+                                isHidden={testId <= 0}
+                                onSave={saveFunc(dataFuncsRef)}
+                                onReset={resetFunc(dataFuncsRef)}
+                                isModified={() => modified}
+                            >
+                                <Reports testId={testId} />
+                            </SavedTab>
+
+                            <SavedTab
+                                title="Settings"
+                                fragment="settings"
                                 onSave={saveFunc(generalFuncsRef)}
                                 onReset={resetFunc(generalFuncsRef)}
                                 isModified={() => modified}
@@ -198,6 +231,7 @@ export default function Test() {
                             <SavedTab
                                 title="Experiments"
                                 fragment="experiments"
+                                isHidden={testId <= 0}
                                 onSave={saveFunc(experimentsFuncsRef)}
                                 onReset={resetFunc(experimentsFuncsRef)}
                                 isModified={() => modified}

@@ -6,7 +6,7 @@ import { NavLink } from "react-router-dom"
 
 import * as actions from "./actions"
 import { alertAction } from "../../alerts"
-import { useTester, teamsSelector, teamToName } from "../../auth"
+import {useTester, teamsSelector, teamToName, isAuthenticatedSelector} from "../../auth"
 import { noop } from "../../utils"
 import Table from "../../components/Table"
 import AccessIcon from "../../components/AccessIcon"
@@ -16,6 +16,8 @@ import { CellProps, Column } from "react-table"
 import { SchemaDispatch } from "./reducers"
 import Api, { Access, SortDirection, SchemaQueryResult, Schema } from "../../api"
 import SchemaImportButton from "./SchemaImportButton"
+import TeamSelect, {ONLY_MY_OWN, Team} from "../../components/TeamSelect";
+import {fetchSummary} from "../tests/actions";
 
 type C = CellProps<Schema>
 
@@ -107,16 +109,33 @@ export default function AllSchema() {
         dispatch(actions.all()).catch(noop)
     }, [dispatch, teams, reloadCounter])
     const isTester = useTester()
+    const isAuthenticated = useSelector(isAuthenticatedSelector)
+    const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
+    useEffect(() => {
+        dispatch(fetchSummary(rolesFilter.key, )).catch(noop)
+    }, [dispatch, teams, rolesFilter, reloadCounter])
     return (
         <PageSection>
             <Card>
                 {isTester && (
                     <CardHeader>
-                        <ButtonLink to="/schema/_new">New Schema</ButtonLink>
+                        <ButtonLink style={{ marginRight: "16px", width: "100pt" }} to="/schema/_new">New Schema</ButtonLink>
                         <SchemaImportButton
                             schemas={schemas?.schemas || []}
                             onImported={() => setReloadCounter(reloadCounter + 1)}
                         />
+                        {isAuthenticated && (
+                            <div style={{ width: "200px", marginLeft:"auto",  marginRight: "16px" }}>
+                                <TeamSelect
+                                    includeGeneral={true}
+                                    selection={rolesFilter}
+                                    onSelect={selection => {
+                                        setRolesFilter(selection)
+                                    }}
+                                />
+                            </div>
+                        )}
+
                     </CardHeader>
                 )}
                 <CardBody style={{ overflowX: "auto" }}>

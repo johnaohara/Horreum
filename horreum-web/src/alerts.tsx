@@ -153,6 +153,7 @@ export function dispatchInfo(
 
 function defaultFormatError(e: any) {
     console.log(e)
+    console.log(typeof e)
     if (!e) {
         return ""
     }
@@ -181,7 +182,7 @@ function Alerts() {
         return <></>
     }
     return (
-        <div style={{ position: "absolute", zIndex: 1000, width: "100%" }}>
+        <div style={{ zIndex: 1000, width: "100%" }}>
             {alerts.map((alert, i) => (
                 <PatternflyAlert
                     key={i}

@@ -10,7 +10,22 @@ import Notifications from "./Notifications"
 import Teams from "./Teams"
 import Administrators from "./Administrators"
 import {useSelector} from "react-redux";
-import {isAdminSelector} from "../../auth";
+import {isAdminSelector, userProfileSelector} from "../../auth";
+import {NavLink} from "react-router-dom";
+import {CogIcon} from "@patternfly/react-icons";
+
+export const AdminLink = () => {
+    const profile = useSelector(userProfileSelector)
+    if (profile?.username) {
+        return (
+            <div style={{ margin: "10px" }}>
+                <NavLink to="/admin">
+                    <CogIcon style={{ fill: "#d2d2d2" }} />
+                </NavLink>
+            </div>
+        )
+    } else return <></>
+}
 
 export default function Admin() {
     const adminFuncsRef = useRef<TabFunctions>()

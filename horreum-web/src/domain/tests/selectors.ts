@@ -17,6 +17,10 @@ export function all(state: State) {
     return list
 }
 
+export function watching(state: State) {
+    return state.tests.watches
+}
+
 export const get = (id: number) => (state: State) => {
     if (!state.tests.byId) {
         return undefined

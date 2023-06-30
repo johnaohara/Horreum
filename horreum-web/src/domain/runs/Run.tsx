@@ -58,7 +58,6 @@ export default function Run() {
                                     <Tr>
                                         <Th>Id</Th>
                                         <Th>Test</Th>
-                                        <Th>Owner</Th>
                                         <Th>Start</Th>
                                         <Th>Stop</Th>
                                         <Th>Description</Th>
@@ -71,16 +70,6 @@ export default function Run() {
                                         <Td>
                                             <NavLink to={`/test/${run.testid}`}>{run.testname || run.testid}</NavLink>
                                         </Td>
-                                        <Td>
-                                            <OwnerAccess
-                                                owner={run.owner}
-                                                access={run.access as Access}
-                                                readOnly={!isTester}
-                                                onUpdate={(owner, access) =>
-                                                    dispatch(actions.updateAccess(run.id, run.testid, owner, access))
-                                                }
-                                            />
-                                        </Td>
                                         <Td>{formatDateTime(run.start)}</Td>
                                         <Td>{formatDateTime(run.stop)}</Td>
                                         <Td>{Description(run.description || "")}</Td>
@@ -89,6 +78,7 @@ export default function Run() {
                                                 <>
                                                     <Button
                                                         isDisabled={recalculating}
+                                                        style={{ marginRight: "16px" }}
                                                         onClick={() => {
                                                             setRecalculating(true)
                                                             dispatch(actions.recalculateDatasets(run.id, run.testid))
@@ -100,6 +90,7 @@ export default function Run() {
                                                     </Button>
                                                     <Button
                                                         variant="secondary"
+                                                        style={{ marginRight: "16px" }}
                                                         onClick={() => setTransformationLogOpen(true)}
                                                     >
                                                         Transformation log

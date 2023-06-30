@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import {useState, useEffect, useMemo, useCallback, ReactElement} from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { ChangesTabs } from "./ChangeTable"
 import { alertAction } from "../../alerts"
-import TestSelect, { SelectedTest } from "../../components/TestSelect"
+import { SelectedTest } from "../../components/TestSelect"
 import LabelsSelect, { convertLabels, SelectedLabels } from "../../components/LabelsSelect"
 import PanelChart from "./PanelChart"
 import { fingerprintToString, formatDate } from "../../utils"
@@ -186,7 +186,12 @@ export const fetchAllAnnotations = (
     )
 }
 
-export default function Changes() {
+
+type ChangesProps = {
+    testID: number
+}
+
+export default function Changes( props: ChangesProps ) {
     const history = useHistory()
     const params = new URLSearchParams(history.location.search)
     // eslint-disable-next-line
@@ -194,7 +199,9 @@ export default function Changes() {
     const paramFingerprint = params.get("fingerprint")
     const dispatch = useDispatch()
     const teams = useSelector(teamsSelector)
-    const [selectedTest, setSelectedTest] = useState<SelectedTest>()
+    const newTest = {} as SelectedTest;
+    newTest.id = props.testID
+    const [selectedTest, setSelectedTest] = useState<SelectedTest>(newTest)
     const [selectedFingerprint, setSelectedFingerprint] = useState<SelectedLabels | undefined>(() => {
         if (!paramFingerprint) {
             return undefined
@@ -273,16 +280,6 @@ export default function Changes() {
     const [selectedChange, setSelectedChange] = useState<number>()
     const [selectedVariable, setSelectedVariable] = useState<number>()
 
-    const onSelectTest = useCallback((selection, _, isInitial) => {
-        if (selection === undefined) {
-            setSelectedTest(undefined)
-        } else if (selectedTest !== selection) {
-            setSelectedTest(selection as SelectedTest)
-        }
-        if (!isInitial) {
-            setSelectedFingerprint(undefined)
-        }
-    }, [])
 
     const [linkCopyOpen, setLinkCopyOpen] = useState(false)
     const fingerprintSource = useCallback(() => {
@@ -306,18 +303,11 @@ export default function Changes() {
             })
     }, [selectedTest])
     return (
-        <PageSection>
             <Card>
                 <CardHeader>
                     {
                         <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
                             <div style={{ display: "flex", flexWrap: "wrap", width: "100%" }}>
-                                <TestSelect
-                                    style={{ width: "fit-content" }}
-                                    initialTestName={paramTest}
-                                    onSelect={onSelectTest}
-                                    selection={selectedTest}
-                                />
                                 {selectedTest && (
                                     <LabelsSelect
                                         style={{ width: "fit-content" }}
@@ -471,6 +461,5 @@ export default function Changes() {
                         ))}
                 </CardBody>
             </Card>
-        </PageSection>
     )
 }

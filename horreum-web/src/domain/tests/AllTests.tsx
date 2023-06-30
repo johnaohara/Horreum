@@ -16,6 +16,7 @@ import {
     Spinner,
     CardFooter,
     Pagination,
+    DropdownSeparator
 } from "@patternfly/react-core"
 import { NavLink } from "react-router-dom"
 import { EyeIcon, EyeSlashIcon, FolderOpenIcon } from "@patternfly/react-icons"
@@ -38,7 +39,7 @@ import ActionMenu, { MenuItem, ActionMenuProps, useChangeAccess } from "../../co
 import ButtonLink from "../../components/ButtonLink"
 import TeamSelect, { Team, ONLY_MY_OWN } from "../../components/TeamSelect"
 import FolderSelect from "../../components/FolderSelect"
-import FoldersTree from "./FoldersTree"
+import FoldersTree from "../../components/FoldersTree"
 import ConfirmTestDeleteModal from "./ConfirmTestDeleteModal"
 import RecalculateDatasetsModal from "./RecalculateDatasetsModal"
 import TestImportButton from "./TestImportButton"
@@ -48,6 +49,7 @@ import { CellProps, Column, UseSortByColumnOptions } from "react-table"
 import { TestStorage, TestDispatch } from "./reducers"
 import { noop } from "../../utils"
 import Api, { SortDirection, TestQueryResult } from "../../api"
+import FoldersDropDown from "../../components/FoldersDropdown";
 
 type WatchDropdownProps = {
     id: number
@@ -327,26 +329,7 @@ export default function AllTests() {
                         data,
                     } = arg
                     return (
-                        <NavLink to={`/run/dataset/list/${data[index].id}`}>
-                            {value === undefined ? "(unknown)" : value}&nbsp;
-                            <FolderOpenIcon />
-                        </NavLink>
-                    )
-                },
-            },
-            {
-                Header: "Runs",
-                accessor: "runs",
-                Cell: (arg: C) => {
-                    const {
-                        cell: {
-                            value,
-                            row: { index },
-                        },
-                        data,
-                    } = arg
-                    return (
-                        <NavLink to={`/run/list/${data[index].id}`}>
+                        <NavLink to={`/test/${data[index].id}#data`}>
                             {value === undefined ? "(unknown)" : value}&nbsp;
                             <FolderOpenIcon />
                         </NavLink>
@@ -357,7 +340,11 @@ export default function AllTests() {
             {
                 Header: "Access",
                 accessor: "access",
-                Cell: (arg: C) => <AccessIcon access={arg.cell.value} />,
+                Cell: (arg: C) =>
+                    <AccessIcon
+                        access={arg.cell.value}
+                        team={teamToName(arg.row.cells[4].value.toString())} //TODO: this is fragile based in index
+                    />,
             },
             {
                 Header: "Actions",
@@ -417,9 +404,16 @@ export default function AllTests() {
         <PageSection>
             <Card>
                 <CardHeader>
+                    <FoldersDropDown
+                        folder={folder || ""}
+                        onChange={f => {
+                            setFolder(f)
+                            history.replace(f ? `/test?folder=${f}` : "/test")
+                        }}
+                    />
                     {isTester && (
                         <>
-                            <ButtonLink to="/test/_new">New Test</ButtonLink>
+                            <ButtonLink style={{ marginRight: "16px", width: "100pt"  }} to="/test/_new#settings">New Test</ButtonLink>
                             <TestImportButton
                                 tests={allTests || []}
                                 onImported={() => setReloadCounter(reloadCounter + 1)}
@@ -427,7 +421,7 @@ export default function AllTests() {
                         </>
                     )}
                     {isAuthenticated && (
-                        <div style={{ width: "200px", marginLeft: "16px" }}>
+                        <div style={{ width: "200px", marginLeft:"auto",  marginRight: "16px" }}>
                             <TeamSelect
                                 includeGeneral={true}
                                 selection={rolesFilter}
@@ -439,13 +433,6 @@ export default function AllTests() {
                     )}
                 </CardHeader>
                 <CardBody style={{ overflowX: "auto" }}>
-                    <FoldersTree
-                        folder={folder || ""}
-                        onChange={f => {
-                            setFolder(f)
-                            history.replace(f ? `/test?folder=${f}` : "/test")
-                        }}
-                    />
                     <Table columns={columns}
                         data={allTests || []}
                         isLoading={loading}
