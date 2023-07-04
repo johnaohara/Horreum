@@ -61,7 +61,7 @@ type DatasetColumn = Column<DatasetSummary> & UseSortByColumnOptions<DatasetSumm
 
 const staticColumns: DatasetColumn[] = [
     {
-        Header: "Run",
+        Header: "Data",
         accessor: "runId",
         Cell: (arg: C) => {
             const {
@@ -75,22 +75,6 @@ const staticColumns: DatasetColumn[] = [
                     </NavLink>
                 </>
             )
-        },
-    },
-    {
-        Header: "Schema(s)",
-        accessor: "schemas",
-        disableSortBy: true,
-        Cell: (arg: C) => {
-            const {
-                cell: { value },
-            } = arg
-            // LEFT JOIN results in schema.id == 0
-            if (!value || (value as string[]).length == 0) {
-                return <NoSchemaInDataset />
-            } else {
-                return <SchemaList schemas={value} validationErrors={arg.row.original.validationErrors || []} />
-            }
         },
     },
     {
@@ -108,11 +92,6 @@ const staticColumns: DatasetColumn[] = [
         id: "(stop - start)",
         accessor: dataset =>
             Duration.fromMillis(toEpochMillis(dataset.stop) - toEpochMillis(dataset.start)).toFormat("hh:mm:ss.SSS"),
-    },
-    {
-        Header: "Owner",
-        accessor: "owner",
-        Cell: (arg: C) => teamToName(arg.cell.value),
     },
     {
         Header: "Access",

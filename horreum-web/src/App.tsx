@@ -1,4 +1,4 @@
-import {Component, useState} from "react"
+import {Component} from "react"
 import "@patternfly/patternfly/patternfly.css" //have to use this import to customize scss-variables.scss
 
 import { Nav, NavItem, NavList, Page, PageHeader, PageHeaderTools } from "@patternfly/react-core"
@@ -35,10 +35,6 @@ import TableReportConfigPage from "./domain/reports/TableReportConfigPage"
 import NotFound from "./404"
 
 import About from "./About"
-import {Sidebar} from "@patternfly/react-core/components";
-import FoldersAccordian from "./components/FoldersAccordian";
-import TeamSelect, {ONLY_MY_OWN, Team} from "./components/TeamSelect";
-import * as selectors from "./domain/tests/selectors";
 
 class App extends Component {
     constructor(props: any) {
@@ -59,72 +55,18 @@ class App extends Component {
 
 function Main() {
     const isAdmin = useSelector(isAdminSelector)
-    const isAuthenticated = useSelector(isAuthenticatedSelector)
-    const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
-
-    const [activeGroup, setActiveGroup] = useState('');
-    const [activeItem, setActiveItem] = useState('ungrouped_item-1');
-
-    const onSelect = (result: { itemId: number | string; groupId: number | string | null }) => {
-        setActiveGroup(result.groupId as string);
-        setActiveItem(result.itemId as string);
-    };
-
-
-    const profile = useSelector(userProfileSelector)
-    const watchingTests = useSelector(selectors.watching)
-    const navWatching: any[] = []
-    watchingTests.forEach((watching, id) => {
-        const test = selectors.get(id)
-        watching?.forEach((value, index) => {
-            if ( value === profile?.username) {
-                navWatching.push(<NavItem id="test-62">
-                    <NavLink
-                        to="/test/"
-                        style={{color: "var(--pf-c-nav--m-horizontal__link--Color)"}}
-                    >
-                        {test}
-                    </NavLink>
-                </NavItem>)
-            }
-        })
-
-    })
-
 
     const pageNav = (
         <Nav aria-label="Nav" >
             <NavList>
-                <NavExpandable
-                    title="Tests"
-                    groupId="nav-mixed-group-1"
-                    isActive={activeGroup === 'nav-mixed-group-1'}
-                >
-                    <NavItem itemId={0}>
-                        <NavLink
-                            to="/test"
-                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
-                        >
-                            All Tests
-                        </NavLink>
-                    </NavItem>
-
-                    <NavItemSeparator />
-
-                    {/*{navWatching}*/}
-
-                    <NavItem
-                        // preventDefault
-                        id="test-62"
+                <NavItem itemId={0}>
+                    <NavLink
+                        to="/test"
+                        style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
                     >
-                        <NavLink
-                            to="/test/62"
-                            style={{ color: "var(--pf-c-nav--m-horizontal__link--Color)" }}
-                        >
-                            Kogito
-                        </NavLink>
-                    </NavItem>
-                </NavExpandable>
+                        Tests
+                    </NavLink>
+                </NavItem>
                 <NavItem itemId={1}>
                     <NavLink
                         to="/schema"
@@ -188,9 +130,9 @@ function Main() {
                     <Route exact path="/" component={AllTests} />
                     <Route exact path="/test" component={AllTests} />
                     <Route exact path="/test/:testId" component={Test} />
+                    <Route exact path="/test/:testId/:tab" component={Test} />
 
                     <Route exact path="/test/:testId/data" component={Test} />
-
 
                     <Route exact path="/run/list/:testId" component={TestRuns} />
                     <Route exact path="/run/dataset/list/:testId" component={TestDatasets} />

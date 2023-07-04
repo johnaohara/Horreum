@@ -42,11 +42,13 @@ import Reports from "../reports/Reports";
 
 type Params = {
     testId: string
+    tab: string
 }
 
 export default function Test() {
     const params = useParams<Params>()
     const [testId, setTestId] = useState(params.testId === "_new" ? 0 : parseInt(params.testId))
+    const [tab, setTab] = useState(params.tab)
     const test = useSelector(selectors.get(testId))
     const [modified, setModified] = useState(false)
     const dataFuncsRef = useRef<TabFunctions>()
@@ -114,23 +116,20 @@ export default function Test() {
                             canSave={isTester}
                         >
                             <SavedTab
-                                title="Data"
+                                title="Datasets"
                                 fragment="data"
                                 isHidden={testId <= 0}
-                                onSave={saveFunc(dataFuncsRef)}
-                                onReset={resetFunc(dataFuncsRef)}
                                 isModified={() => modified}
                             >
                                 <TestDatasets/>
                             </SavedTab>
 
                             <SavedTab
-                                title="Changes"
+                                title="Change Detection"
                                 fragment="changes"
                                 isHidden={testId <= 0}
-                                onSave={saveFunc(dataFuncsRef)}
-                                onReset={resetFunc(dataFuncsRef)}
                                 isModified={() => modified}
+
                             >
 
                                 <Changes testID={testId}/>
@@ -139,11 +138,9 @@ export default function Test() {
 
                             <SavedTab
                                 title="Reports"
-                                fragment="reports"
+                                fragment="reports-tab"
                                 isHidden={testId <= 0}
-                                onSave={saveFunc(dataFuncsRef)}
-                                onReset={resetFunc(dataFuncsRef)}
-                                isModified={() => modified}
+                                    isModified={() => modified}
                             >
                                 <Reports testId={testId} />
                             </SavedTab>
