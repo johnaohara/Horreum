@@ -5,7 +5,7 @@ import { Bullseye, Button, Modal, Spinner } from "@patternfly/react-core"
 type SaveChangesModalProps = {
     isOpen: boolean
     onClose(): void
-    onSave?(): Promise<any> | undefined
+    onSave(): Promise<any>
     onReset(): void
 }
 
@@ -30,7 +30,6 @@ export default function SaveChangesModal({ isOpen, onClose, onSave, onReset }: S
                 onClick={() => {
                     if (onSave) {
                         setSaving(true)
-                        // @ts-ignore - we have already checked that onSave() is not undefined
                         onSave().finally(() => {
                             setSaving(false)
                             onClose()

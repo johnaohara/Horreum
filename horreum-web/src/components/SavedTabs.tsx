@@ -25,8 +25,8 @@ export function modifiedFunc(ref: TabFunctionsRef) {
 }
 
 type SavedTabProps = FragmentTabProps & {
-    onSave?(): Promise<any>
-    onReset?(): void
+    onSave(): Promise<any>
+    onReset(): void
     isModified(): boolean
 }
 

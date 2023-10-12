@@ -4,11 +4,11 @@ import { useDispatch, useSelector } from "react-redux"
 import { TreeView, TreeViewDataItem } from "@patternfly/react-core"
 import { FolderIcon, FolderOpenIcon } from "@patternfly/react-icons"
 
-import { teamsSelector } from "../auth"
-import { noop } from "../utils"
-import { fetchFolders } from "../domain/tests/actions"
-import { TestDispatch } from "../domain/tests/reducers"
-import { allFolders } from "../domain/tests/selectors"
+import { teamsSelector } from "../../auth"
+import { noop } from "../../utils"
+import { fetchFolders } from "../../domain/tests/actions"
+import { TestDispatch } from "../../domain/tests/reducers"
+import { allFolders } from "../../domain/tests/selectors"
 
 type FoldersTreeProps = {
     folder: string

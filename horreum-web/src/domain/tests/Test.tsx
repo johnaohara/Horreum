@@ -120,6 +120,8 @@ export default function Test() {
                                 fragment="data"
                                 isHidden={testId <= 0}
                                 isModified={() => modified}
+                                onSave={() => Promise.resolve()}
+                                onReset={() => Promise.resolve()}
                             >
                                 <TestDatasets/>
                             </SavedTab>
@@ -129,7 +131,8 @@ export default function Test() {
                                 fragment="changes"
                                 isHidden={testId <= 0}
                                 isModified={() => modified}
-
+                                onSave={() => Promise.resolve()}
+                                onReset={() => Promise.resolve()}
                             >
 
                                 <Changes testID={testId}/>
@@ -140,7 +143,9 @@ export default function Test() {
                                 title="Reports"
                                 fragment="reports-tab"
                                 isHidden={testId <= 0}
-                                    isModified={() => modified}
+                                isModified={() => modified}
+                                onSave={() => Promise.resolve()}
+                                onReset={() => Promise.resolve()}
                             >
                                 <Reports testId={testId} />
                             </SavedTab>
