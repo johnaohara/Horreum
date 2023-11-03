@@ -150,5 +150,5 @@ export function fingerprintToString(fingerprint: unknown) {
     if (!fingerprint) {
         return ""
     }
-    return JSON.stringify(fingerprint)
+    return JSON.stringify(fingerprint);
 }
