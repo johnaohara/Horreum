@@ -17,14 +17,13 @@ import {
 import { Link } from "react-router-dom"
 
 import * as actions from "./actions"
-import * as selectors from "./selectors"
-import { TestDispatch } from "./reducers"
+import {TestDispatch} from "./reducers"
 
 import ButtonLink from "../../components/ButtonLink"
 import SavedTabs, { SavedTab, TabFunctions, saveFunc, resetFunc, modifiedFunc } from "../../components/SavedTabs"
 
 import { useTester, teamsSelector } from "../../auth"
-import { dispatchInfo } from "../../alerts"
+import { dispatchError, dispatchInfo} from "../../alerts"
 import { noop } from "../../utils"
 import General from "./General"
 import Views from "./Views"
@@ -36,15 +35,17 @@ import Access from "./Access"
 import Subscriptions from "./Subscriptions"
 import Transformers from "./Transformers"
 import MissingDataNotifications from "./MissingDataNotifications"
+import {Test, testApi} from "../../api";
 
 type Params = {
     testId: string
 }
 
-export default function Test() {
+
+export default function TestView() {
     const params = useParams<Params>()
     const [testId, setTestId] = useState(params.testId === "_new" ? 0 : parseInt(params.testId))
-    const test = useSelector(selectors.get(testId))
+    const [test, setTest] = useState<Test | undefined>()
     const [modified, setModified] = useState(false)
     const generalFuncsRef = useRef<TabFunctions>()
     const accessFuncsRef = useRef<TabFunctions>()
@@ -60,15 +61,22 @@ export default function Test() {
     const dispatch = useDispatch<TestDispatch>()
 
     const teams = useSelector(teamsSelector)
+
     useEffect(() => {
         if (testId !== 0) {
             setLoaded(false)
-            dispatch(actions.fetchTest(testId))
-                .then( () => dispatch(actions.fetchViews(testId)) )
-                .catch(noop)
+            testApi.get(testId)
+                .then( (test) => setTest(test))
+                .then( () => actions.fetchViews(testId) )
+                .catch( (error) => dispatchError(
+                    dispatch,
+                    error,
+                    "FETCH_TEST",
+                    "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it."
+                ))
                 .finally(() => setLoaded(true))
         }
-    }, [dispatch, dispatch, testId, teams])
+    }, [testId, teams])
 
     useEffect(() => {
         document.title = (testId === 0 ? "New test" : test && test.name ? test.name : "Loading test...") + " | Horreum"
