@@ -4,8 +4,6 @@ export type AlertContextType = {
 
     alerts: Alert[];
 
-    addAlert: (alert: Alert) => void;
-
     clearAlert: (alert: Alert) => void;
 
     dispatchError: (error: any,

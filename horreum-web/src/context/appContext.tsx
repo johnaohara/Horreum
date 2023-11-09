@@ -1,8 +1,7 @@
 import * as React from 'react';
-import {Alert} from "../alerts";
+import {Alert, contextAlertAction} from "../alerts";
 import {createBrowserHistory} from "history";
 import {useState} from "react";
-import {contextAlertAction} from "./alertActions";
 import {AlertVariant} from "@patternfly/react-core";
 import {userApi} from "../api";
 import {AlertContextType, AppContextType, AuthContextType} from "./@types/appContextTypes";
@@ -49,7 +48,6 @@ const ContextProvider: React.FC<React.ReactNode> = ({ children }) => {
 
     const alerting : AlertContextType = {
         alerts: alerts,
-        addAlert: newAlert,
         clearAlert: clearAlert,
         dispatchError: contextDispatchError,
         dispatchInfo: contextDispatchInfo

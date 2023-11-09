@@ -1,6 +1,6 @@
-import {useEffect, useState, useRef, useContext} from "react"
+import {useEffect, useState, useRef, useContext, useCallback} from "react"
 import { useParams } from "react-router"
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector } from "react-redux"
 
 import {
     Alert,
@@ -23,9 +23,7 @@ import { ImportIcon } from "@patternfly/react-icons"
 import { Link } from "react-router-dom"
 import jsonpath from "jsonpath"
 
-import * as actions from "./actions"
-import * as selectors from "./selectors"
-import { defaultTeamSelector, teamsSelector, teamToName, useTester } from "../../auth"
+import { defaultTeamSelector,  teamToName, useTester } from "../../auth"
 import { noop } from "../../utils"
 
 import { toString } from "../../components/Editor"
@@ -34,10 +32,9 @@ import AccessIcon from "../../components/AccessIcon"
 import AccessChoice from "../../components/AccessChoice"
 import SavedTabs, { SavedTab, TabFunctions, modifiedFunc, resetFunc, saveFunc } from "../../components/SavedTabs"
 import TeamSelect from "../../components/TeamSelect"
-import { SchemaDispatch } from "./reducers"
 import Transformers from "./Transformers"
 import Labels from "./Labels"
-import { Access, Schema as SchemaDef } from "../../api"
+import {Access, Schema as SchemaDef, schemaApi} from "../../api"
 import SchemaExportImport from "./SchemaExportImport"
 import { Json } from "../../generated"
 import {AppContext} from "../../context/appContext";
@@ -205,24 +202,28 @@ export default function Schema() {
     const { alerting } = useContext(AppContext) as AppContextType;
     const params = useParams<SchemaParams>()
     const [schemaId, setSchemaId] = useState(params.schemaId === "_new" ? -1 : Number.parseInt(params.schemaId))
-    const schema = useSelector(selectors.getById(schemaId))
+    const [schema, setSchema] = useState<SchemaDef | undefined>(undefined)
     const [loading, setLoading] = useState(true)
     const [editorSchema, setEditorSchema] = useState(schema?.schema ? toString(schema?.schema) : undefined)
     const [currentSchema, setCurrentSchema] = useState(schema)
     const [modified, setModified] = useState(false)
 
-    const dispatch = useDispatch<SchemaDispatch>()
-    const teams = useSelector(teamsSelector)
+    // any tester can save to add new labels/transformers
+    const isTester = useTester()
+    const isTesterForSchema = useTester(schema?.owner)
+
     useEffect(() => {
         if (schemaId >= 0) {
             setLoading(true)
-            dispatch(actions.getById(schemaId, alerting))
-                .catch(noop)
-                .finally(() => setLoading(false))
+            schemaApi.getSchema(schemaId)
+                .then(
+                    schema => setSchema(schema),
+                    error => alerting.dispatchError(error, "GET_SCHEMA", "Failed to fetch schema")
+                ).finally(() => setLoading(false))
         } else {
             setLoading(false)
         }
-    }, [dispatch, schemaId, teams])
+    }, [schemaId])
     useEffect(() => {
         document.title = (schemaId < 0 ? "New schema" : schema?.name || "(unknown schema)") + " | Horreum"
         setCurrentSchema(schema)
@@ -242,9 +243,7 @@ export default function Schema() {
         return schemaUri || undefined
     }
 
-    // any tester can save to add new labels/transformers
-    const isTester = useTester()
-    const isTesterForSchema = useTester(schema?.owner)
+
 
     const save = () => {
         if (!modified) {
@@ -255,14 +254,15 @@ export default function Schema() {
             ...currentSchema,
             schema: editorSchema ? JSON.parse(editorSchema) : null,
         } as SchemaDef
-        return dispatch(actions.add(newSchema, alerting))
-            .then(id => {
-                setSchemaId(id)
-            })
-            .catch(noop)
+
+        return schemaApi.add(newSchema)
+            .then(id=>  id,
+                error => alerting.dispatchError(error, "SAVE_SCHEMA", "Failed to save schema")
+            ).then(id => setSchemaId(id))
     }
     const transformersFuncsRef = useRef<TabFunctions>()
     const labelsFuncsRef = useRef<TabFunctions>()
+
     return (
         <PageSection>
             {loading && (

@@ -1,19 +1,15 @@
 import {useMemo, useEffect, useState, useContext} from "react"
-import { useSelector } from "react-redux"
-import { useDispatch } from "react-redux"
 import { Card, CardHeader, CardFooter, CardBody, PageSection, Pagination } from "@patternfly/react-core"
 import { NavLink } from "react-router-dom"
 
-import * as actions from "./actions"
-import { useTester, teamsSelector, teamToName } from "../../auth"
+import { useTester, teamToName } from "../../auth"
 import { noop } from "../../utils"
 import Table from "../../components/Table"
  
 import ActionMenu, { useShareLink, useChangeAccess, useDelete } from "../../components/ActionMenu"
 import ButtonLink from "../../components/ButtonLink"
 import { CellProps, Column } from "react-table"
-import { SchemaDispatch } from "./reducers"
-import {Access, SortDirection, SchemaQueryResult, Schema, schemaApi} from "../../api"
+import {Access, SortDirection, Schema, schemaApi} from "../../api"
 import SchemaImportButton from "./SchemaImportButton"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
@@ -24,26 +20,41 @@ type C = CellProps<Schema>
 export default function AllSchema() {
     document.title = "Schemas | Horreum"
     const { alerting } = useContext(AppContext) as AppContextType;
-    const dispatch = useDispatch<SchemaDispatch>()
 
     const [page, setPage] = useState(1)
     const [perPage, setPerPage] = useState(20)
     const [direction] = useState<SortDirection>('Ascending')
     const pagination = useMemo(() => ({ page, perPage, direction }), [page, perPage, direction])
-    const [schemas, setSchemas] = useState<SchemaQueryResult>()
+    const [schemas, setSchemas] = useState<Schema[]>([])
+    const [schemaCount, setSchemaCount] = useState(0)
     const [loading, setLoading] = useState(false)
+    const [reloadCounter, setReloadCounter] = useState(0)
 
-    useEffect(() => {
+    const isTester = useTester()
+
+    const removeSchema = (id: number) => {
+        if ( schemaCount > 0 ){
+            setSchemas(schemas?.filter(schema => schema.id !== id) || [])
+            const newCount = (schemaCount == 0) ? 0 : schemaCount - 1
+            setSchemaCount(newCount)
+        }
+    }
+
+    const reloadSchemas = () => {
         setLoading(true)
-        schemaApi.list(
-             'Ascending',
-             pagination.perPage,
-             pagination.page - 1
-             )
-            .then(setSchemas)
+        schemaApi
+            .list('Ascending', pagination.perPage, pagination.page - 1)
+            .then((result) => {
+                setSchemas(result.schemas)
+                setSchemaCount(result.count)
+            })
             .catch(error => alerting.dispatchError(error,"FETCH_SCHEMA", "Failed to fetch schemas"))
             .finally(() => setLoading(false))
-    }, [pagination,  dispatch])
+    }
+
+    useEffect(() => {
+        reloadSchemas()
+    }, [pagination])
 
     const columns: Column<Schema>[] = useMemo(
         () => [
@@ -86,15 +97,24 @@ export default function AllSchema() {
                     const shareLink = useShareLink({
                         token: arg.row.original.token || undefined,
                         tokenToLink: (id, token) => "/schema/" + id + "?token=" + token,
-                        onTokenReset: id => dispatch(actions.resetToken(id,  alerting)).catch(noop),
-                        onTokenDrop: id => dispatch(actions.dropToken(id, alerting)).catch(noop),
+                        onTokenReset: id => noop,
+                        onTokenDrop: id => noop,
                     })
                     const changeAccess = useChangeAccess({
-                        onAccessUpdate: (id, owner, access) =>
-                            dispatch(actions.updateAccess(id, owner, access, alerting)).catch(noop),
+                        onAccessUpdate: (id, owner, access) => {
+                            return schemaApi.updateAccess(id, access, owner).then(
+                                () => noop(),
+                                error => alerting.dispatchError(error, "SCHEMA_UPDATE", "Failed to update schema access.")
+                            ).then(() => reloadSchemas)
+                        },
                     })
                     const del = useDelete({
-                        onDelete: id => dispatch(actions.deleteSchema(id, alerting)).catch(noop),
+                        onDelete: id => { return schemaApi._delete(id)
+                            .then(() => id,
+                                error => alerting.dispatchError(error, "SCHEMA_DELETE", "Failed to delete schema " + id)
+                            ).then(id => removeSchema(id))
+                            .catch(noop)
+                        },
                     })
                     return (
                         <ActionMenu
@@ -108,14 +128,9 @@ export default function AllSchema() {
                 },
             },
         ],
-        [dispatch]
+        [ schemas]
     )
-    const [reloadCounter, setReloadCounter] = useState(0)
-    const teams = useSelector(teamsSelector)
-    useEffect(() => {
-        dispatch(actions.all(alerting)).catch(noop)
-    }, [dispatch, teams, reloadCounter])
-    const isTester = useTester()
+
     return (
         <PageSection>
             <Card>
@@ -123,21 +138,21 @@ export default function AllSchema() {
                     <CardHeader>
                         <ButtonLink to="/schema/_new">New Schema</ButtonLink>
                         <SchemaImportButton
-                            schemas={schemas?.schemas || []}
+                            schemas={schemas || []}
                             onImported={() => setReloadCounter(reloadCounter + 1)}
                         />
                     </CardHeader>
                 )}
                 <CardBody style={{ overflowX: "auto" }}>
-                    <Table columns={columns}
-                    data={schemas?.schemas || []}
+                    <Table<Schema> columns={columns}
+                    data={schemas || []}
                     sortBy={[{ id: "name", desc: false }]}
                     isLoading={loading}
                     />
                 </CardBody>
                 <CardFooter style={{ textAlign: "right" }}>
                     <Pagination
-                        itemCount={schemas?.count || 0}
+                        itemCount={schemaCount || 0}
                         perPage={perPage}
                         page={page}
                         onSetPage={(e, p) => setPage(p)}
