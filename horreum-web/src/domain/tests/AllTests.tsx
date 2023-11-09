@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import {useState, useMemo, useEffect, useContext} from "react"
 
 import { useDispatch, useSelector } from "react-redux"
 import { useHistory } from "react-router"
@@ -32,7 +32,7 @@ import {
 import * as selectors from "./selectors"
 
 import Table from "../../components/Table"
-import { alertAction } from "../../alerts"
+import AccessIcon from "../../components/AccessIcon"
 import ActionMenu, { MenuItem, ActionMenuProps, useChangeAccess } from "../../components/ActionMenu"
 import ButtonLink from "../../components/ButtonLink"
 import TeamSelect, { Team, ONLY_MY_OWN } from "../../components/TeamSelect"
@@ -48,6 +48,7 @@ import { TestStorage, TestDispatch } from "./reducers"
 import { noop } from "../../utils"
 import { SortDirection, testApi, TestQueryResult, Access } from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 type WatchDropdownProps = {
     id: number
@@ -55,6 +56,7 @@ type WatchDropdownProps = {
 }
 
 const WatchDropdown = ({ id, watching }: WatchDropdownProps) => {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [open, setOpen] = useState(false)
     const teams = useSelector(teamsSelector)
     const profile = useSelector(userProfileSelector)
@@ -67,26 +69,26 @@ const WatchDropdown = ({ id, watching }: WatchDropdownProps) => {
     const isOptOut = watching.some(u => u.startsWith("!"))
     if (watching.some(u => u === profile?.username)) {
         personalItems.push(
-            <DropdownItem key="__self" onClick={() => dispatch(removeUserOrTeam(id, self)).catch(noop)}>
+            <DropdownItem key="__self" onClick={() => dispatch(removeUserOrTeam(id, self, alerting)).catch(noop)}>
                 Stop watching personally
             </DropdownItem>
         )
     } else {
         personalItems.push(
-            <DropdownItem key="__self" onClick={() => dispatch(addUserOrTeam(id, self)).catch(noop)}>
+            <DropdownItem key="__self" onClick={() => dispatch(addUserOrTeam(id, self, alerting)).catch(noop)}>
                 Watch personally
             </DropdownItem>
         )
     }
     if (isOptOut) {
         personalItems.push(
-            <DropdownItem key="__optout" onClick={() => dispatch(removeUserOrTeam(id, "!" + self)).catch(noop)}>
+            <DropdownItem key="__optout" onClick={() => dispatch(removeUserOrTeam(id, "!" + self, alerting)).catch(noop)}>
                 Resume watching per team settings
             </DropdownItem>
         )
     } else if (watching.some(u => u.endsWith("-team"))) {
         personalItems.push(
-            <DropdownItem key="__optout" onClick={() => dispatch(addUserOrTeam(id, "!" + self)).catch(noop)}>
+            <DropdownItem key="__optout" onClick={() => dispatch(addUserOrTeam(id, "!" + self, alerting)).catch(noop)}>
                 Opt-out of all notifications
             </DropdownItem>
         )
@@ -112,11 +114,11 @@ const WatchDropdown = ({ id, watching }: WatchDropdownProps) => {
             {personalItems}
             {teams.map(team =>
                 watching.some(u => u === team) ? (
-                    <DropdownItem key={team} onClick={() => dispatch(removeUserOrTeam(id, team)).catch(noop)}>
+                    <DropdownItem key={team} onClick={() => dispatch(removeUserOrTeam(id, team, alerting)).catch(noop)}>
                         Stop watching as team {teamToName(team)}
                     </DropdownItem>
                 ) : (
-                    <DropdownItem key={team} onClick={() => dispatch(addUserOrTeam(id, team)).catch(noop)}>
+                    <DropdownItem key={team} onClick={() => dispatch(addUserOrTeam(id, team, alerting)).catch(noop)}>
                         Watch as team {teamToName(team)}
                     </DropdownItem>
                 )
@@ -164,6 +166,7 @@ type DeleteConfig = {
 }
 
 function useDelete(config: DeleteConfig): MenuItem<DeleteConfig> {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false)
     const dispatch = useDispatch<TestDispatch>()
     return [
@@ -187,7 +190,7 @@ function useDelete(config: DeleteConfig): MenuItem<DeleteConfig> {
                         isOpen={confirmDeleteModalOpen}
                         onClose={() => setConfirmDeleteModalOpen(false)}
                         onDelete={() => {
-                            dispatch(deleteTest(props.id)).catch(noop)
+                            dispatch(deleteTest(props.id, alerting)).catch(noop)
                         }}
                         testId={props.id}
                         testName={config.name}
@@ -271,6 +274,7 @@ export function useMoveToFolder(config: MoveToFolderConfig): MenuItem<MoveToFold
 }
 
 export default function AllTests() {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const history = useHistory()
     const params = new URLSearchParams(history.location.search)
     const [folder, setFolder] = useState(params.get("folder"))
@@ -302,7 +306,7 @@ export default function AllTests() {
 
         )
             .then(setTets)
-            .catch(error => dispatch(alertAction("FETCH_Tests", "Failed to fetch Tests", error)))
+            .catch(error => alerting.dispatchError(error, "FETCH_Tests", "Failed to fetch Tests"))
             .finally(() => setLoading(false))
     }, [pagination, dispatch])
 
@@ -376,13 +380,13 @@ export default function AllTests() {
                 Cell: (arg: C) => {
                     const changeAccess = useChangeAccess({
                         onAccessUpdate: (id: number, owner: string, access: Access) => {
-                            dispatch(updateAccess(id, owner, access)).catch(noop)
+                            dispatch(updateAccess(id, owner, access, alerting)).catch(noop)
                         },
                     })
                     const move = useMoveToFolder({
                         name: arg.row.original.name,
                         folder: folder || "",
-                        onMove: (id, newFolder) => dispatch(updateFolder(id, folder || "", newFolder)),
+                        onMove: (id, newFolder) => dispatch(updateFolder(id, folder || "", newFolder, alerting)),
                     })
                     const del = useDelete({
                         name: arg.row.original.name,
@@ -411,11 +415,11 @@ export default function AllTests() {
     const isAuthenticated = useSelector(isAuthenticatedSelector)
     const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
     useEffect(() => {
-        dispatch(fetchSummary(rolesFilter.key, folder || undefined)).catch(noop)
+        dispatch(fetchSummary(alerting, rolesFilter.key, folder || undefined)).catch(noop)
     }, [dispatch, teams, rolesFilter, folder, reloadCounter])
     useEffect(() => {
         if (isAuthenticated) {
-            dispatch(allSubscriptions(folder || undefined)).catch(noop)
+            dispatch(allSubscriptions(alerting, folder || undefined)).catch(noop)
         }
     }, [dispatch, isAuthenticated, rolesFilter, folder, reloadCounter])
     if (isAuthenticated) {

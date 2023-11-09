@@ -2,7 +2,7 @@ import {Action, actionApi} from "../../api"
 import * as actionTypes from "./actionTypes"
 import { LoadedAction, DeleteAction } from "./reducers"
 import { Dispatch } from "redux"
-import { AddAlertAction, dispatchError } from "../../alerts"
+import { AlertContextType } from "../../context/appContext";
 
 const loaded = (action: Action | Action[]): LoadedAction => {
     return {
@@ -15,37 +15,27 @@ const removed = (id: number): DeleteAction => ({
     id,
 })
 
-export function getAction(id: number) {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
-        actionApi.get(id).then(
-            response => dispatch(loaded(response)),
-            error => {
-                dispatch(loaded([]))
-                return dispatchError(dispatch, error, "GET_ACTION", "Failed to get action")
-            }
-        )
-}
 
-export function addAction(action: Action) {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
+export function addAction(action: Action, alerting: AlertContextType ) {
+    return (dispatch: Dispatch<LoadedAction >) =>
         actionApi.add(action).then(
             response => dispatch(loaded(response)),
-            error => dispatchError(dispatch, error, "ADD_ACTION", "Failed to add action")
+            error => alerting.dispatchError(error, "ADD_ACTION", "Failed to add action")
         )
 }
 
-export function allActions() {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
+export function allActions(alerting: AlertContextType) {
+    return (dispatch: Dispatch<LoadedAction >) =>
         actionApi.list().then(
             response => dispatch(loaded(response)),
-            error => dispatchError(dispatch, error, "GET_ACTIONS", "Failed to get actions")
+            error => alerting.dispatchError(error, "GET_ACTIONS", "Failed to get actions")
         )
 }
 
-export function removeAction(id: number) {
-    return (dispatch: Dispatch<DeleteAction | AddAlertAction>) =>
+export function removeAction(id: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<DeleteAction >) =>
         actionApi._delete(id).then(
             _ => dispatch(removed(id)),
-            error => dispatchError(dispatch, error, "REMOVE_ACTION", "Failed to remove action")
+            error => alerting.dispatchError(error, "REMOVE_ACTION", "Failed to remove action")
         )
 }

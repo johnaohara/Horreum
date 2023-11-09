@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import {useState, useMemo, useEffect, useContext} from "react"
 import { useParams } from "react-router"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
@@ -26,7 +26,6 @@ import { toEpochMillis, noop } from "../../utils"
 import { byTest } from "./actions"
 import * as selectors from "./selectors"
 import { teamsSelector, teamToName } from "../../auth"
-import { alertAction } from "../../alerts"
 
 import { fetchTest } from "../tests/actions"
 import { get } from "../tests/selectors"
@@ -46,6 +45,7 @@ import { NoSchemaInRun } from "./NoSchema"
 import { Description, ExecutionTime, Menu } from "./components"
 import SchemaList from "./SchemaList"
 import AccessIconOnly from "../../components/AccessIconOnly"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 type C = CellProps<RunSummary> &
     UseTableOptions<RunSummary> &
@@ -149,6 +149,7 @@ const tableColumns: RunColumn[] = [
 ]
 
 export default function TestRuns() {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const { testId: stringTestId } = useParams<any>()
     const testId = parseInt(stringTestId)
 
@@ -166,10 +167,10 @@ export default function TestRuns() {
     const runCount = useSelector(selectors.count)
     const teams = useSelector(teamsSelector)
     useEffect(() => {
-        dispatch(fetchTest(testId)).catch(noop)
+        dispatch(fetchTest(testId, alerting)).catch(noop)
     }, [dispatch, testId, teams])
     useEffect(() => {
-        dispatch(byTest(testId, pagination, showTrashed)).catch(noop)
+        dispatch(byTest(alerting, testId, pagination, showTrashed)).catch(noop)
     }, [dispatch, showTrashed, page, perPage, sort, direction, pagination, testId])
     useEffect(() => {
         document.title = (test?.name || "Loading...") + " | Horreum"
@@ -193,7 +194,7 @@ export default function TestRuns() {
     const hasError = !!compareError
     useEffect(() => {
         if (compareError) {
-            dispatch(alertAction("COMPARE_FAILURE", "Compare function failed", compareError))
+            alerting.dispatchError(compareError,"COMPARE_FAILURE", "Compare function failed")
         }
     }, [hasError, compareError, dispatch])
 

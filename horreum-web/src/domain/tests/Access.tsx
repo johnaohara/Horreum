@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import {useContext, useEffect, useState} from "react"
 import { useDispatch, useSelector } from "react-redux"
 
 import {
@@ -28,6 +28,7 @@ import { noop } from "../../utils"
 import { addToken, revokeToken, updateAccess } from "./actions"
 import { TestDispatch } from "./reducers"
 import {Test, Access as authAccess } from "../../api"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 type AddTokenModalProps = {
     testId: number
@@ -137,6 +138,7 @@ type AccessProps = {
 }
 
 function Access(props: AccessProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const defaultRole = useSelector(defaultTeamSelector)
     const [access, setAccess] = useState<authAccess>(props.test?.access || authAccess.Public)
     const [owner, setOwner] = useState(props.test?.owner || defaultRole || "")
@@ -154,7 +156,7 @@ function Access(props: AccessProps) {
             if (!props.test) {
                 return Promise.reject()
             }
-            return dispatch(updateAccess(props.test.id, owner, access))
+            return dispatch(updateAccess(props.test.id, owner, access, alerting))
         },
         reset: () => {
             setOwner(props.test?.owner || defaultRole || "")
@@ -229,7 +231,7 @@ function Access(props: AccessProps) {
                                 <Button
                                     onClick={() => {
                                         if (props.test?.id) {
-                                            dispatch(revokeToken(props.test?.id, token.id)).catch(noop)
+                                            dispatch(revokeToken(props.test?.id, token.id, alerting)).catch(noop)
                                         }
                                     }}
                                 >
@@ -248,7 +250,7 @@ function Access(props: AccessProps) {
                     if (!props.test) {
                         return Promise.reject()
                     }
-                    return dispatch(addToken(props.test.id, value, description, permissions))
+                    return dispatch(addToken(props.test.id, value, description, permissions, alerting))
                 }}
             />
         </Form>

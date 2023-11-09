@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import {useContext, useEffect, useState} from "react"
 import { useSelector, useDispatch } from "react-redux"
 
 import { Select, SelectOption } from "@patternfly/react-core"
@@ -9,6 +9,7 @@ import { fetchFolders } from "../domain/tests/actions"
 import { allFolders } from "../domain/tests/selectors"
 import { UPDATE_FOLDERS } from "../domain/tests/actionTypes"
 import { noop } from "../utils"
+import {AppContext, AppContextType} from "../context/appContext";
 
 type FolderSelectProps = {
     folder: string
@@ -18,12 +19,13 @@ type FolderSelectProps = {
 }
 
 export default function FolderSelect({folder, onChange, canCreate, readOnly}: FolderSelectProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [open, setOpen] = useState(false)
     const all = useSelector(allFolders())
     const dispatch = useDispatch<TestDispatch>()
     const teams = useSelector(teamsSelector)
     useEffect(() => {
-        dispatch(fetchFolders()).catch(noop)
+        dispatch(fetchFolders(alerting)).catch(noop)
     }, [dispatch, teams])
     return (
         <Select

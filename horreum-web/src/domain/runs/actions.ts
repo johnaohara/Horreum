@@ -1,11 +1,7 @@
 import { Dispatch } from "redux"
-import { Team } from "../../components/TeamSelect"
 import {
     LoadedAction,
     LoadingAction,
-    LoadSuggestionsAction,
-    SelectRolesAction,
-    SuggestAction,
     TestIdAction,
     UpdateAccessAction,
     UpdateTokenAction,
@@ -16,10 +12,8 @@ import {
 } from "../runs/reducers"
 import * as actionTypes from "./actionTypes"
 import {runApi, RunExtended, RunSummary, SortDirection, Access } from "../../api"
-import { isFetchingSuggestions, suggestQuery } from "./selectors"
-import store from "../../store"
 import { PaginationInfo } from "../../utils"
-import { AddAlertAction, alertAction, dispatchError } from "../../alerts"
+import {AlertContextType} from "../../context/appContext";
 
 const loaded = (run: RunExtended | undefined, total?: number): LoadedAction => ({
     type: actionTypes.LOADED,
@@ -34,20 +28,20 @@ const testId = (id: number, runs: RunSummary[], total: number): TestIdAction => 
     total,
 })
 
-export function get(id: number, token?: string) {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
+export function get(alerting: AlertContextType, id: number, token?: string) {
+    return (dispatch: Dispatch<LoadedAction>) =>
         runApi.getRun(id, token).then(
             response => dispatch(loaded(response)),
             error => {
-                dispatch(alertAction("FETCH_RUN", "Failed to fetch data for run " + id, error))
+                alerting.dispatchError(error,"FETCH_RUN", "Failed to fetch data for run " + id)
                 dispatch(loaded(undefined, 0))
                 return Promise.reject(error)
             }
         )
 }
 
-export function getSummary(id: number, token?: string) {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
+export function getSummary(alerting: AlertContextType, id: number, token?: string) {
+    return (dispatch: Dispatch<LoadedAction>) =>
         runApi.getRunSummary(id, token).then(
             response =>
                 dispatch(
@@ -59,15 +53,15 @@ export function getSummary(id: number, token?: string) {
                     })
                 ),
             error => {
-                dispatch(alertAction("FETCH_RUN_SUMMARY", "Failed to fetch data for run " + id, error))
+                alerting.dispatchError(error,"FETCH_RUN_SUMMARY", "Failed to fetch data for run " + id)
                 dispatch(loaded(undefined, 0))
                 return Promise.reject(error)
             }
         )
 }
 
-export function byTest(id: number, pagination: PaginationInfo, trashed: boolean) {
-    return (dispatch: Dispatch<LoadingAction | TestIdAction | AddAlertAction>) => {
+export function byTest(alerting: AlertContextType, id: number, pagination: PaginationInfo, trashed: boolean) {
+    return (dispatch: Dispatch<LoadingAction | TestIdAction >) => {
         dispatch({ type: actionTypes.LOADING })
         return runApi.listTestRuns(
             id,
@@ -79,7 +73,7 @@ export function byTest(id: number, pagination: PaginationInfo, trashed: boolean)
         ).then(
             response => dispatch(testId(id, response.runs, response.total)),
             error => {
-                dispatch(alertAction("FETCH_RUNS", "Failed to fetch runs for test " + id, error))
+                alerting.dispatchError(error,"FETCH_RUNS", "Failed to fetch runs for test " + id)
                 dispatch(testId(id, [], 0))
                 return Promise.reject(error)
             }
@@ -87,67 +81,9 @@ export function byTest(id: number, pagination: PaginationInfo, trashed: boolean)
     }
 }
 
-export function suggest(query: string, roles: string) {
-    return (dispatch: Dispatch<SuggestAction | LoadSuggestionsAction | AddAlertAction>) => {
-        if (query === "") {
-            dispatch({
-                type: actionTypes.SUGGEST,
-                responseReceived: false,
-                options: [],
-            })
-        } else {
-            const fetching = isFetchingSuggestions(store.getState())
-            dispatch({
-                type: actionTypes.LOAD_SUGGESTIONS,
-                query: query,
-            })
-            if (!fetching) {
-                fetchSuggestions(query, roles, dispatch)
-            }
-        }
-    }
-}
 
-function fetchSuggestions(
-    query: string,
-    roles: string,
-    dispatch: Dispatch<SuggestAction | LoadSuggestionsAction | AddAlertAction>
-) {
-    runApi.autocomplete(query)
-        .then(
-            response => {
-                dispatch({
-                    type: actionTypes.SUGGEST,
-                    responseReceived: true,
-                    options: response,
-                })
-            },
-            error => {
-                dispatch(alertAction("FETCH_SUGGESTIONS", "Failed to fetch suggestions", error))
-                dispatch({
-                    type: actionTypes.SUGGEST,
-                    responseReceived: true,
-                    options: [],
-                })
-            }
-        )
-        .finally(() => {
-            const nextQuery = suggestQuery(store.getState())
-            if (nextQuery != null) {
-                fetchSuggestions(nextQuery, roles, dispatch)
-            }
-        })
-}
-
-export const selectRoles = (selection: Team): SelectRolesAction => {
-    return {
-        type: actionTypes.SELECT_ROLES,
-        selection: selection,
-    }
-}
-
-export function resetToken(id: number, testid: number) {
-    return (dispatch: Dispatch<UpdateTokenAction | AddAlertAction>) => {
+export function resetToken(alerting: AlertContextType, id: number, testid: number) {
+    return (dispatch: Dispatch<UpdateTokenAction >) => {
         return runApi.resetToken(id).then(
             token => {
                 dispatch({
@@ -157,12 +93,12 @@ export function resetToken(id: number, testid: number) {
                     token,
                 })
             },
-            error => dispatchError(dispatch, error, "RESET_RUN_TOKEN", "Failed to reset token for run " + id)
+            error => alerting.dispatchError(error, "RESET_RUN_TOKEN", "Failed to reset token for run " + id)
         )
     }
 }
 
-export const dropToken = (id: number, testid: number) => (dispatch: Dispatch<UpdateTokenAction | AddAlertAction>) => {
+export const dropToken = (alerting: AlertContextType, id: number, testid: number) => (dispatch: Dispatch<UpdateTokenAction >) => {
     return runApi.dropToken(id).then(
         _ => {
             dispatch({
@@ -172,12 +108,12 @@ export const dropToken = (id: number, testid: number) => (dispatch: Dispatch<Upd
                 token: null,
             })
         },
-        error => dispatchError(dispatch, error, "DROP_RUN_TOKEN", "Failed to drop run token")
+        error => alerting.dispatchError(error, "DROP_RUN_TOKEN", "Failed to drop run token")
     )
 }
 
-export function updateAccess(id: number, testid: number, owner: string, access: Access) {
-    return (dispatch: Dispatch<UpdateAccessAction | AddAlertAction>) => {
+export function updateAccess(alerting: AlertContextType, id: number, testid: number, owner: string, access: Access) {
+    return (dispatch: Dispatch<UpdateAccessAction >) => {
         return runApi.updateAccess(id, access, owner).then(
             _ => {
                 dispatch({
@@ -188,13 +124,13 @@ export function updateAccess(id: number, testid: number, owner: string, access: 
                     access,
                 })
             },
-            error => dispatchError(dispatch, error, "UPDATE_RUN_ACCESS", "Failed to update run access")
+            error => alerting.dispatchError(error, "UPDATE_RUN_ACCESS", "Failed to update run access")
         )
     }
 }
 
-export function trash(id: number, testid: number, isTrashed = true) {
-    return (dispatch: Dispatch<TrashAction | AddAlertAction>) =>
+export function trash(alerting: AlertContextType, id: number, testid: number, isTrashed = true) {
+    return (dispatch: Dispatch<TrashAction >) =>
         runApi.trash(id, isTrashed).then(
             _ => {
                 dispatch({
@@ -204,12 +140,12 @@ export function trash(id: number, testid: number, isTrashed = true) {
                     isTrashed,
                 })
             },
-            error => dispatchError(dispatch, error, "RUN_TRASH", "Failed to restore run ID " + id)
+            error => alerting.dispatchError(error, "RUN_TRASH", "Failed to restore run ID " + id)
         )
 }
 
-export function updateDescription(id: number, testid: number, description: string) {
-    return (dispatch: Dispatch<UpdateDescriptionAction | AddAlertAction>) =>
+export function updateDescription(id: number, testid: number, description: string, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateDescriptionAction >) =>
         runApi.updateDescription(id, description).then(
             _ => {
                 dispatch({
@@ -219,12 +155,12 @@ export function updateDescription(id: number, testid: number, description: strin
                     description,
                 })
             },
-            error => dispatchError(dispatch, error, "RUN_UPDATE", "Failed to update description for run ID " + id)
+            error => alerting.dispatchError(error, "RUN_UPDATE", "Failed to update description for run ID " + id)
         )
 }
 
-export function updateSchema(id: number, testid: number, path: string | undefined, schemaUri: string) {
-    return (dispatch: Dispatch<UpdateSchemaAction | AddAlertAction>) =>
+export function updateSchema(alerting: AlertContextType, id: number, testid: number, path: string | undefined, schemaUri: string) {
+    return (dispatch: Dispatch<UpdateSchemaAction >) =>
         runApi.updateSchema(id, schemaUri, path).then(
             schemas =>
                 dispatch({
@@ -235,12 +171,12 @@ export function updateSchema(id: number, testid: number, path: string | undefine
                     schema: schemaUri,
                     schemas,
                 }),
-            error => dispatchError(dispatch, error, "SCHEME_UPDATE_FAILED", "Failed to update run schema")
+            error => alerting.dispatchError(error, "SCHEME_UPDATE_FAILED", "Failed to update run schema")
         )
 }
 
-export function recalculateDatasets(id: number, testid: number) {
-    return (dispatch: Dispatch<UpdateDatasetsAction | AddAlertAction>) =>
+export function recalculateDatasets(id: number, testid: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateDatasetsAction >) =>
         runApi.recalculateDatasets(id).then(
             datasets =>
                 dispatch({
@@ -249,6 +185,6 @@ export function recalculateDatasets(id: number, testid: number) {
                     testid,
                     datasets,
                 }),
-            error => dispatchError(dispatch, error, "RECALCULATE_DATASETS", "Failed to recalculate datasets")
+            error => alerting.dispatchError(error, "RECALCULATE_DATASETS", "Failed to recalculate datasets")
         )
 }

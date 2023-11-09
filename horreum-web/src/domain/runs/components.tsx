@@ -1,4 +1,4 @@
-import { useState } from "react"
+import {useContext, useState} from "react"
 import { Button, DropdownItem, Modal, Spinner, TextInput, Tooltip } from "@patternfly/react-core"
 import { WarningTriangleIcon } from "@patternfly/react-icons"
 import moment from "moment"
@@ -16,6 +16,7 @@ import ActionMenu, {
 import { formatDateTime, toEpochMillis, noop } from "../../utils"
 import { useTester } from "../../auth"
 import { Access, RunSummary } from "../../api"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 export function Description(description: string) {
     const truncated = (
@@ -73,6 +74,7 @@ export const ExecutionTime = (timestamps: StartStop) => (
 )
 
 function useRestore(run: RunSummary): MenuItem<RunSummary> {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const dispatch = useDispatch<RunsDispatch>()
     return [
         (props: ActionMenuProps, isTester: boolean, close: () => void, run: RunSummary) => {
@@ -82,7 +84,7 @@ function useRestore(run: RunSummary): MenuItem<RunSummary> {
                         key="restore"
                         onClick={() => {
                             close()
-                            dispatch(trash(run.id, run.testid, false)).catch(noop)
+                            dispatch(trash(alerting, run.id, run.testid, false)).catch(noop)
                         }}
                     >
                         Restore
@@ -96,6 +98,7 @@ function useRestore(run: RunSummary): MenuItem<RunSummary> {
 }
 
 function useRecalculateDatasets(run: RunSummary): MenuItem<RunSummary> {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const dispatch = useDispatch<RunsDispatch>()
     const [recalculating, setRecalculating] = useState(false)
     return [
@@ -107,7 +110,7 @@ function useRecalculateDatasets(run: RunSummary): MenuItem<RunSummary> {
                         isDisabled={!isTester || recalculating}
                         onClick={() => {
                             setRecalculating(true)
-                            dispatch(recalculateDatasets(props.id, run.testid))
+                            dispatch(recalculateDatasets(props.id, run.testid, alerting))
                                 .catch(noop)
                                 .finally(() => {
                                     setRecalculating(false)
@@ -156,19 +159,20 @@ function useUpdateDescription(run: RunSummary): MenuItem<RunSummary> {
 }
 
 export function Menu(run: RunSummary) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const dispatch = useDispatch<RunsDispatch>()
 
     const shareLink = useShareLink({
         token: run.token || undefined,
         tokenToLink: (id, token) => "/run/" + id + "?token=" + token,
-        onTokenReset: id => dispatch(resetToken(id, run.testid)).catch(noop),
-        onTokenDrop: id => dispatch(dropToken(id, run.testid)).catch(noop),
+        onTokenReset: id => dispatch(resetToken(alerting, id, run.testid)).catch(noop),
+        onTokenDrop: id => dispatch(dropToken(alerting, id, run.testid)).catch(noop),
     })
     const changeAccess = useChangeAccess({
-        onAccessUpdate: (id, owner, access) => dispatch(updateAccess(id, run.testid, owner, access)).catch(noop),
+        onAccessUpdate: (id, owner, access) => dispatch(updateAccess(alerting, id, run.testid, owner, access)).catch(noop),
     })
     const del = useDelete({
-        onDelete: id => dispatch(trash(id, run.testid)).catch(noop),
+        onDelete: id => dispatch(trash(alerting, id, run.testid)).catch(noop),
     })
     const recalculate = useRecalculateDatasets(run)
     const restore = useRestore(run)
@@ -199,6 +203,7 @@ type UpdateDescriptionModalProps = {
 }
 
 export function UpdateDescriptionModal({ isOpen, onClose, run }: UpdateDescriptionModalProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [value, setValue] = useState(run.description)
     const [updating, setUpdating] = useState(false)
     const dispatch = useDispatch<RunsDispatch>()
@@ -217,7 +222,7 @@ export function UpdateDescriptionModal({ isOpen, onClose, run }: UpdateDescripti
                 variant="primary"
                 onClick={() => {
                     setUpdating(true)
-                    dispatch(updateDescription(run.id, run.testid, value || ""))
+                    dispatch(updateDescription(run.id, run.testid, value || "", alerting))
                         .catch(_ => {
                             setValue(run.description)
                         })

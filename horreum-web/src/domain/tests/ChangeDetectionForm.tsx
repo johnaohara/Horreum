@@ -305,6 +305,7 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
             return Promise.all([
                 dispatch(
                     updateChangeDetection(
+                        alerting,
                         test?.id || -1,
                         timelineLabels,
                         timelineFunction,

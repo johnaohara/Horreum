@@ -4,7 +4,6 @@ import { Button } from "@patternfly/react-core"
 
 import { State } from "./store"
 import { UserData } from "./api"
-import { AddAlertAction } from "./alerts"
 import { ThunkDispatch } from "redux-thunk"
 import Keycloak from "keycloak-js";
 
@@ -52,7 +51,7 @@ interface AfterLogoutAction {
 
 type AuthAction = InitAction | UpdateDefaultTeamAction | UpdateRolesAction | StoreProfileAction | AfterLogoutAction
 
-export type AuthDispatch = ThunkDispatch<any, unknown, AuthAction | AddAlertAction>
+export type AuthDispatch = ThunkDispatch<any, unknown, AuthAction >
 
 export function reducer(state = new AuthState(), action: AuthAction) {
     // TODO: is this necessary? It seems that without that the state is not updated at times.

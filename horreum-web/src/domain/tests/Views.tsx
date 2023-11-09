@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import {useContext, useEffect, useState} from "react"
 import { useDispatch } from "react-redux"
 import {
     Button,
@@ -23,6 +23,7 @@ import { View, ViewComponent } from "../../api"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import SplitForm from "../../components/SplitForm"
 import { deleteView, updateView } from "./actions"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 function swap(array: any[], i1: number, i2: number) {
     const temp = array[i1]
@@ -107,6 +108,7 @@ function deepCopy(views: View[]): ViewExtended[] {
 }
 
 export default function Views({ testId, testOwner, funcsRef, onModified, ...props }: ViewsProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const isTester = useTester(testOwner)
     const [views, setViews] = useState<ViewExtended[]>([])
     const [deleted, setDeleted] = useState<number[]>([])
@@ -127,8 +129,8 @@ export default function Views({ testId, testOwner, funcsRef, onModified, ...prop
             Promise.all([
                 ...views
                     .filter(v => v.modified)
-                    .map(view => dispatch(updateView(testId, view)).then(id => (view.id = id))),
-                ...deleted.map(id => dispatch(deleteView(testId, id))),
+                    .map(view => dispatch(updateView(alerting, testId, view)).then(id => (view.id = id))),
+                ...deleted.map(id => dispatch(deleteView(alerting, testId, id))),
             ]).then(() => {
                 setDeleted([])
                 setViews(

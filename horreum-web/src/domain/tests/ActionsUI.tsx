@@ -52,7 +52,7 @@ export default function ActionsUI({ testId, testOwner, funcsRef, onModified }: A
     }, [testId, isTester, dispatch])
 
     funcsRef.current = {
-        save: () => dispatch(updateActions(testId, actions)).catch(noop),
+        save: () => dispatch(updateActions(testId, actions, alerting)).catch(noop),
         reset: () => {
             // Perform a deep copy of the view object to prevent modifying store
             setActions(JSON.parse(JSON.stringify(actions)) as Action[])

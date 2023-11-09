@@ -215,7 +215,7 @@ export default function Schema() {
     useEffect(() => {
         if (schemaId >= 0) {
             setLoading(true)
-            dispatch(actions.getById(schemaId))
+            dispatch(actions.getById(schemaId, alerting))
                 .catch(noop)
                 .finally(() => setLoading(false))
         } else {
@@ -254,7 +254,7 @@ export default function Schema() {
             ...currentSchema,
             schema: editorSchema ? JSON.parse(editorSchema) : null,
         } as SchemaDef
-        return dispatch(actions.add(newSchema))
+        return dispatch(actions.add(newSchema, alerting))
             .then(id => {
                 setSchemaId(id)
             })

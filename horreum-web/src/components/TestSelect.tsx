@@ -1,4 +1,4 @@
-import { CSSProperties, useEffect, useMemo, useState } from "react"
+import {CSSProperties, useContext, useEffect, useMemo, useState} from "react"
 
 import { Select, SelectGroup, SelectOption, SelectOptionObject, Split, SplitItem } from "@patternfly/react-core"
 
@@ -10,6 +10,7 @@ import { all } from "../domain/tests/selectors"
 import { fetchSummary } from "../domain/tests/actions"
 import { teamsSelector } from "../auth"
 import { noop } from "../utils"
+import {AppContext, AppContextType} from "../context/appContext";
 
 export interface SelectedTest extends SelectOptionObject {
     id: number
@@ -47,12 +48,13 @@ function groupByFolder(tests: Test[] | undefined | false) {
 }
 
 export default function TestSelect(props: TestSelectProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     // a new instance of test list is created in every invocation => we need shallowEqual
     const tests = useSelector(all, shallowEqual)
     const dispatch = useDispatch<TestDispatch>()
     const teams = useSelector(teamsSelector)
     useEffect(() => {
-        dispatch(fetchSummary(undefined, "*")).catch(noop)
+        dispatch(fetchSummary(alerting, undefined, "*")).catch(noop)
     }, [dispatch, teams])
     useEffect(() => {
         if (props.initialTestName && tests) {

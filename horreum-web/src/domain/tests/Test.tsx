@@ -69,7 +69,7 @@ export default function TestView() {
             setLoaded(false)
             testApi.get(testId)
                 .then( (test) => setTest(test))
-                .then( () => actions.fetchViews(testId) )
+                .then( () => actions.fetchViews(testId, alerting) )
                 .catch( (error) => alerting.dispatchError(
                     error,
                     "FETCH_TEST",

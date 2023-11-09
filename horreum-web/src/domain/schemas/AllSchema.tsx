@@ -1,11 +1,10 @@
-import { useMemo, useEffect, useState } from "react"
+import {useMemo, useEffect, useState, useContext} from "react"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
 import { Card, CardHeader, CardFooter, CardBody, PageSection, Pagination } from "@patternfly/react-core"
 import { NavLink } from "react-router-dom"
 
 import * as actions from "./actions"
-import { alertAction } from "../../alerts"
 import { useTester, teamsSelector, teamToName } from "../../auth"
 import { noop } from "../../utils"
 import Table from "../../components/Table"
@@ -17,11 +16,13 @@ import { SchemaDispatch } from "./reducers"
 import {Access, SortDirection, SchemaQueryResult, Schema, schemaApi} from "../../api"
 import SchemaImportButton from "./SchemaImportButton"
 import AccessIconOnly from "../../components/AccessIconOnly"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 type C = CellProps<Schema>
 
 export default function AllSchema() {
     document.title = "Schemas | Horreum"
+    const { alerting } = useContext(AppContext) as AppContextType;
     const dispatch = useDispatch<SchemaDispatch>()
 
     const [page, setPage] = useState(1)
@@ -39,7 +40,7 @@ export default function AllSchema() {
              pagination.page - 1
              )
             .then(setSchemas)
-            .catch(error => dispatch(alertAction("FETCH_SCHEMA", "Failed to fetch schemas", error)))
+            .catch(error => alerting.dispatchError(error,"FETCH_SCHEMA", "Failed to fetch schemas"))
             .finally(() => setLoading(false))
     }, [pagination,  dispatch])
 
@@ -84,15 +85,15 @@ export default function AllSchema() {
                     const shareLink = useShareLink({
                         token: arg.row.original.token || undefined,
                         tokenToLink: (id, token) => "/schema/" + id + "?token=" + token,
-                        onTokenReset: id => dispatch(actions.resetToken(id)).catch(noop),
-                        onTokenDrop: id => dispatch(actions.dropToken(id)).catch(noop),
+                        onTokenReset: id => dispatch(actions.resetToken(id,  alerting)).catch(noop),
+                        onTokenDrop: id => dispatch(actions.dropToken(id, alerting)).catch(noop),
                     })
                     const changeAccess = useChangeAccess({
                         onAccessUpdate: (id, owner, access) =>
-                            dispatch(actions.updateAccess(id, owner, access)).catch(noop),
+                            dispatch(actions.updateAccess(id, owner, access, alerting)).catch(noop),
                     })
                     const del = useDelete({
-                        onDelete: id => dispatch(actions.deleteSchema(id)).catch(noop),
+                        onDelete: id => dispatch(actions.deleteSchema(id, alerting)).catch(noop),
                     })
                     return (
                         <ActionMenu
@@ -111,7 +112,7 @@ export default function AllSchema() {
     const [reloadCounter, setReloadCounter] = useState(0)
     const teams = useSelector(teamsSelector)
     useEffect(() => {
-        dispatch(actions.all()).catch(noop)
+        dispatch(actions.all(alerting)).catch(noop)
     }, [dispatch, teams, reloadCounter])
     const isTester = useTester()
     return (

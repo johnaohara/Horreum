@@ -93,7 +93,7 @@ export default function RunData(props: RunDataProps) {
                     paths={getPaths(data)}
                     hasRoot={typeof data === "object" && !Array.isArray(data) && data}
                     update={(path, schemaUri, _) =>
-                        dispatch(actions.updateSchema(props.run.id, props.run.testid, path, schemaUri))
+                        dispatch(actions.updateSchema(alerting, props.run.id, props.run.testid, path, schemaUri))
                             .catch(noop)
                             .then(() => {
                                 props.onUpdate()

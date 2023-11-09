@@ -3,7 +3,6 @@ import { Map } from "immutable"
 import * as utils from "../../utils"
 import { Action } from "redux"
 import { ThunkDispatch } from "redux-thunk"
-import { AddAlertAction } from "../../alerts"
 import { Access, Schema } from "../../api"
 
 export class SchemasState {
@@ -35,7 +34,7 @@ export interface UpdateAccessAction extends Action {
 
 export type SchemaAction = LoadedAction | DeleteAction | UpdateTokenAction | UpdateAccessAction
 
-export type SchemaDispatch = ThunkDispatch<any, unknown, SchemaAction | AddAlertAction>
+export type SchemaDispatch = ThunkDispatch<any, unknown, SchemaAction >
 
 export const reducer = (state = new SchemasState(), action: SchemaAction) => {
     switch (action.type) {

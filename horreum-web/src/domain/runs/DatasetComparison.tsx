@@ -45,7 +45,7 @@ export default function DatasetComparison() {
         testApi.get(testId).then(
             test => {
                 setTest(test)
-                dispatch(fetchViews(testId))
+                dispatch(fetchViews(testId, alerting))
             },
             e => alerting.dispatchError( e, "FETCH_TEST", "Failed to fetch test " + testId)
         )

@@ -3,7 +3,6 @@ import { Map } from "immutable"
 import * as utils from "../../utils"
 import { Team } from "../../components/TeamSelect"
 import { ThunkDispatch } from "redux-thunk"
-import { AddAlertAction } from "../../alerts"
 import { RunExtended, RunSummary, Access } from "../../api"
 
 export interface RunSchemas {
@@ -114,7 +113,7 @@ type RunsAction =
     | UpdateSchemaAction
     | UpdateDatasetsAction
 
-export type RunsDispatch = ThunkDispatch<any, unknown, RunsAction | AddAlertAction>
+export type RunsDispatch = ThunkDispatch<any, unknown, RunsAction >
 
 //Takes events and updates the state accordingly
 export const reducer = (state = new RunsState(), action: RunsAction) => {

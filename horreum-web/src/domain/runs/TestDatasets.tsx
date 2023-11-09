@@ -152,8 +152,8 @@ export default function TestDatasets() {
     const teams = useSelector(teamsSelector)
     const token = useSelector(tokenSelector)
     useEffect(() => {
-        dispatch(fetchTest(testId)).catch(noop)
-            .then( () => dispatch(actions.fetchViews(testId)) )
+        dispatch(fetchTest(testId, alerting)).catch(noop)
+            .then( () => dispatch(actions.fetchViews(testId, alerting)) )
     }, [dispatch, testId, teams, token])
     useEffect(() => {
         setLoading(true)

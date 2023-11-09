@@ -20,7 +20,7 @@ export type AlertContextType = {
     dispatchError: (error: any,
                     type: string,
                     title: string,
-                    ...errorFormatter: ((error: any) => any)[]) => void;
+                    ...errorFormatter: ((error: any) => any)[]) => Promise<any>;
 
     dispatchInfo: (type: string,
                    title: string,

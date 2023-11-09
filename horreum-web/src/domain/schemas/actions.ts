@@ -2,49 +2,49 @@ import * as actionTypes from "./actionTypes"
 import { DeleteAction, LoadedAction, UpdateTokenAction, UpdateAccessAction } from "./reducers"
 import { Dispatch } from "redux"
 import { ThunkDispatch } from "redux-thunk"
-import { AddAlertAction, dispatchError } from "../../alerts"
 import {Schema, schemaApi, Access } from "../../api"
+import {AlertContextType} from "../../context/appContext";
 
 const loaded = (schema: Schema | Schema[]): LoadedAction => ({
     type: actionTypes.LOADED,
     schemas: Array.isArray(schema) ? schema : [schema],
 })
 
-export function getById(id: number) {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
+export function getById(id: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<LoadedAction >) =>
         schemaApi.getSchema(id).then(
             response => dispatch(loaded(response)),
             error => {
                 dispatch(loaded([]))
-                return dispatchError(dispatch, error, "GET_SCHEMA", "Failed to fetch schema")
+                return alerting.dispatchError(error, "GET_SCHEMA", "Failed to fetch schema")
             }
         )
 }
 
-export function add(payload: Schema) {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
+export function add(payload: Schema, alerting: AlertContextType) {
+    return (dispatch: Dispatch<LoadedAction >) =>
         schemaApi.add(payload).then(
             id => {
                 dispatch(loaded({ ...payload, id }))
                 return id
             },
-            error => dispatchError(dispatch, error, "SAVE_SCHEMA", "Failed to save schema")
+            error => alerting.dispatchError(error, "SAVE_SCHEMA", "Failed to save schema")
         ) as Promise<number>
 }
 
-export function all() {
-    return (dispatch: Dispatch<LoadedAction | AddAlertAction>) =>
+export function all(alerting: AlertContextType) {
+    return (dispatch: Dispatch<LoadedAction >) =>
         schemaApi.list().then(
             response => dispatch(loaded(response.schemas)),
             error => {
                 dispatch(loaded([]))
-                return dispatchError(dispatch, error, "LIST_SCHEMAS", "Failed to list schemas")
+                return alerting.dispatchError(error, "LIST_SCHEMAS", "Failed to list schemas")
             }
         )
 }
 
-export function resetToken(id: number) {
-    return (dispatch: Dispatch<UpdateTokenAction | AddAlertAction>) =>
+export function resetToken(id: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTokenAction >) =>
         schemaApi.resetToken(id).then(
             token =>
                 dispatch({
@@ -52,12 +52,12 @@ export function resetToken(id: number) {
                     id: id,
                     token: token,
                 }),
-            error => dispatchError(dispatch, error, "RESET_SCHEMA_TOKEN", "Failed to reset schema token")
+            error => alerting.dispatchError(error, "RESET_SCHEMA_TOKEN", "Failed to reset schema token")
         )
 }
 
-export function dropToken(id: number) {
-    return (dispatch: Dispatch<UpdateTokenAction | AddAlertAction>) =>
+export function dropToken(id: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTokenAction >) =>
         schemaApi.dropToken(id).then(
             () =>
                 dispatch({
@@ -65,19 +65,19 @@ export function dropToken(id: number) {
                     id: id,
                     token: undefined,
                 }),
-            error => dispatchError(dispatch, error, "DROP_SCHEMA_TOKEN", "Failed to drop schema token")
+            error => alerting.dispatchError(error, "DROP_SCHEMA_TOKEN", "Failed to drop schema token")
         )
 }
 
-export function updateAccess(id: number, owner: string, access: Access) {
-    return (dispatch: Dispatch<UpdateAccessAction | AddAlertAction>) =>
+export function updateAccess(id: number, owner: string, access: Access, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateAccessAction >) =>
         schemaApi.updateAccess(id, access, owner).then(
             () => dispatch({ type: actionTypes.UPDATE_ACCESS, id, owner, access }),
-            error => dispatchError(dispatch, error, "SCHEMA_UPDATE", "Failed to update schema access.")
+            error => alerting.dispatchError(error, "SCHEMA_UPDATE", "Failed to update schema access.")
         )
 }
 
-export function deleteSchema(id: number) {
+export function deleteSchema(id: number, alerting: AlertContextType) {
     return (dispatch: ThunkDispatch<any, unknown, DeleteAction>) =>
         schemaApi._delete(id).then(
             () => {
@@ -86,6 +86,6 @@ export function deleteSchema(id: number) {
                     id: id,
                 })
             },
-            error => dispatchError(dispatch, error, "SCHEMA_DELETE", "Failed to delete schema " + id)
+            error => alerting.dispatchError(error, "SCHEMA_DELETE", "Failed to delete schema " + id)
         )
 }

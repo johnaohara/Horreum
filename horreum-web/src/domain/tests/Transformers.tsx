@@ -158,7 +158,8 @@ export default function Transformers(props: TransformersProps) {
                             extractors: [],
                             owner: "",
                             access: Access.Public,
-                        }))
+                        })),
+                    alerting
                 )
             ),
         reset: () => {

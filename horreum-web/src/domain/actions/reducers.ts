@@ -3,7 +3,6 @@ import { ThunkDispatch } from "redux-thunk"
 import * as actionTypes from "./actionTypes"
 import { Map } from "immutable"
 import * as utils from "../../utils"
-import { AddAlertAction } from "../../alerts"
 import { Action } from "../../api"
 
 export const EXPERIMENT_RESULT_NEW = "experiment_result/new"
@@ -122,7 +121,7 @@ export interface DeleteAction {
 }
 
 type ActionsAction = LoadedAction | DeleteAction
-export type ActionsDispatch = ThunkDispatch<any, unknown, ActionsAction | AddAlertAction>
+export type ActionsDispatch = ThunkDispatch<any, unknown, ActionsAction >
 
 export const reducer = (state = new ActionsState(), action: ActionsAction) => {
     switch (action.type) {

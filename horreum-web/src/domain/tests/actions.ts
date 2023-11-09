@@ -33,18 +33,16 @@ import {
 import { Dispatch } from "redux"
 import { Map } from "immutable"
 import {
-    alertAction,
-    AddAlertAction,
     constraintValidationFormatter,
-    dispatchError,
 } from "../../alerts"
+import {AlertContextType} from "../../context/appContext";
 
 function loading(isLoading: boolean): LoadingAction {
     return { type: actionTypes.LOADING, isLoading }
 }
 
-export function fetchSummary(roles?: string, folder?: string) {
-    return (dispatch: Dispatch<LoadingAction | LoadedSummaryAction | AddAlertAction>) => {
+export function fetchSummary(alertingContext: AlertContextType, roles?: string, folder?: string) {
+    return (dispatch: Dispatch<LoadingAction | LoadedSummaryAction >) => {
         dispatch(loading(true))
         return testApi.summary(folder, roles).then(
             listing =>
@@ -54,21 +52,20 @@ export function fetchSummary(roles?: string, folder?: string) {
                 }),
             error => {
                 dispatch(loading(false))
-                return dispatchError(dispatch, error, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.")
+                return alertingContext.dispatchError(error, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.")
             }
         )
     }
 }
 
-export function fetchTest(id: number) {
-    return (dispatch: Dispatch<LoadingAction | LoadedTestAction | AddAlertAction>) => {
+export function fetchTest(id: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<LoadingAction | LoadedTestAction >) => {
         dispatch(loading(true))
         return testApi.get(id).then(
             test => dispatch({ type: actionTypes.LOADED_TEST, test }),
             error => {
                 dispatch(loading(false))
-                return dispatchError(
-                    dispatch,
+                return alerting.dispatchError(
                     error,
                     "FETCH_TEST",
                     "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it."
@@ -78,16 +75,15 @@ export function fetchTest(id: number) {
     }
 }
 
-export function sendTest(test: Test) {
-    return (dispatch: Dispatch<LoadedTestAction | AddAlertAction>) => {
+export function sendTest(test: Test, alerting: AlertContextType) {
+    return (dispatch: Dispatch<LoadedTestAction >) => {
         return testApi.add(test).then(
             response => {
                 dispatch({ type: actionTypes.LOADED_TEST, test: response })
                 return response
             },
             error =>
-                dispatchError(
-                    dispatch,
+                alerting.dispatchError(
                     error,
                     "UPDATE_TEST",
                     "Failed to create/update test " + test.name,
@@ -97,15 +93,14 @@ export function sendTest(test: Test) {
     }
 }
 
-export function fetchViews(testId: number) {
-    return (dispatch: Dispatch<LoadingAction | LoadedViewsAction | AddAlertAction>) => {
+export function fetchViews(testId: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<LoadingAction | LoadedViewsAction >) => {
         dispatch(loading(true))
         return uiApi.getViews(testId).then(
             views => dispatch({ type: actionTypes.LOADED_VIEWS, testId, views }),
             error => {
                 dispatch(loading(false))
-                return dispatchError(
-                    dispatch,
+                return alerting.dispatchError(
                     error,
                     "FETCH_VIEWS",
                     "Failed to fetch test views; the views may not exist or you don't have sufficient permissions to access them."
@@ -115,16 +110,14 @@ export function fetchViews(testId: number) {
     }
 }
 
-export function updateView(testId: number, view: View) {
-    return (dispatch: Dispatch<UpdateViewAction | AddAlertAction>): Promise<number> => {
+export function updateView(alerting: AlertContextType, testId: number, view: View) {
+    return (dispatch: Dispatch<UpdateViewAction >): Promise<number> => {
         for (const c of view.components) {
             if (c.labels.length === 0) {
-                dispatch(
-                    alertAction(
-                        "VIEW_UPDATE",
-                        "Column " + c.headerName + " is invalid; must set at least one label.",
-                        undefined
-                    )
+                alerting.dispatchError(
+                    undefined,
+                    "VIEW_UPDATE",
+                    "Column " + c.headerName + " is invalid; must set at least one label."
                 )
                 return Promise.reject()
             }
@@ -143,13 +136,13 @@ export function updateView(testId: number, view: View) {
                 })
                 return id
             },
-            error => dispatchError(dispatch, error, "VIEW_UPDATE", "View update failed.")
+            error => alerting.dispatchError( error, "VIEW_UPDATE", "View update failed.")
         )
     }
 }
 
-export function deleteView(testId: number, viewId: number) {
-    return (dispatch: Dispatch<DeleteViewAction | AddAlertAction>) => {
+export function deleteView(alerting: AlertContextType, testId: number, viewId: number) {
+    return (dispatch: Dispatch<DeleteViewAction >) => {
         return uiApi.deleteView(testId, viewId).then(
             _ => {
                 dispatch({
@@ -159,13 +152,13 @@ export function deleteView(testId: number, viewId: number) {
                 })
                 return viewId
             },
-            error => dispatchError(dispatch, error, "VIEW_DELETE", "View update failed.")
+            error => alerting.dispatchError(error, "VIEW_DELETE", "View update failed.")
         )
     }
 }
 
-export function updateFolder(testId: number, prevFolder: string, newFolder: string) {
-    return (dispatch: Dispatch<UpdateFolderAction | AddAlertAction>) =>
+export function updateFolder(testId: number, prevFolder: string, newFolder: string, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateFolderAction >) =>
         testApi.updateFolder(testId, newFolder).then(
             _ =>
                 dispatch({
@@ -174,12 +167,12 @@ export function updateFolder(testId: number, prevFolder: string, newFolder: stri
                     prevFolder,
                     newFolder,
                 }),
-            error => dispatchError(dispatch, error, "TEST_FOLDER_UPDATE", "Cannot update test folder")
+            error => alerting.dispatchError(error, "TEST_FOLDER_UPDATE", "Cannot update test folder")
         )
 }
 
-export function updateActions(testId: number, actions: Action[]) {
-    return (dispatch: Dispatch<UpdateActionAction | AddAlertAction>) => {
+export function updateActions(testId: number, actions: Action[], alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateActionAction >) => {
         const promises: any[] = []
         actions.forEach(action => {
             promises.push(
@@ -194,8 +187,7 @@ export function updateActions(testId: number, actions: Action[]) {
                         return response
                     },
                     error =>
-                        dispatchError(
-                            dispatch,
+                        alerting.dispatchError(
                             error,
                             "UPDATE_ACTION",
                             `Failed to update action ${action.id} (${JSON.stringify(action.config)}`
@@ -207,8 +199,8 @@ export function updateActions(testId: number, actions: Action[]) {
     }
 }
 
-export function addToken(testId: number, value: string, description: string, permissions: number) {
-    return (dispatch: Dispatch<UpdateTokensAction | AddAlertAction>) =>
+export function addToken(testId: number, value: string, description: string, permissions: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTokensAction >) =>
         testApi.addToken(testId, { id: -1, value, description, permissions }).then(
             () =>
                 testApi.tokens(testId).then(
@@ -219,14 +211,14 @@ export function addToken(testId: number, value: string, description: string, per
                             tokens,
                         }),
                     error =>
-                        dispatchError(dispatch, error, "FETCH_TOKENS", "Failed to fetch token list for test " + testId)
+                        alerting.dispatchError(error, "FETCH_TOKENS", "Failed to fetch token list for test " + testId)
                 ),
-            error => dispatchError(dispatch, error, "ADD_TOKEN", "Failed to add token for test " + testId)
+            error => alerting.dispatchError(error, "ADD_TOKEN", "Failed to add token for test " + testId)
         )
 }
 
-export function revokeToken(testId: number, tokenId: number) {
-    return (dispatch: Dispatch<RevokeTokenAction | AddAlertAction>) =>
+export function revokeToken(testId: number, tokenId: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<RevokeTokenAction >) =>
         testApi.dropToken(testId, tokenId).then(
             () =>
                 dispatch({
@@ -234,17 +226,16 @@ export function revokeToken(testId: number, tokenId: number) {
                     testId,
                     tokenId,
                 }),
-            error => dispatchError(dispatch, error, "REVOKE_TOKEN", "Failed to revoke token")
+            error => alerting.dispatchError(error, "REVOKE_TOKEN", "Failed to revoke token")
         )
 }
 
-export function updateAccess(id: number, owner: string, access: Access) {
-    return (dispatch: Dispatch<UpdateAccessAction | AddAlertAction>) =>
+export function updateAccess(id: number, owner: string, access: Access, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateAccessAction >) =>
         testApi.updateAccess(id, access, owner).then(
             () => dispatch({ type: actionTypes.UPDATE_ACCESS, id, owner, access }),
             error =>
-                dispatchError(
-                    dispatch,
+                alerting.dispatchError(
                     error,
                     "UPDATE_ACCESS",
                     "Test access update failed",
@@ -253,23 +244,23 @@ export function updateAccess(id: number, owner: string, access: Access) {
         )
 }
 
-export function deleteTest(id: number) {
-    return (dispatch: Dispatch<DeleteAction | AddAlertAction>) =>
+export function deleteTest(id: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<DeleteAction >) =>
         testApi._delete(id).then(
             () => dispatch({ type: actionTypes.DELETE, id }),
-            error => dispatchError(dispatch, error, "DELETE_TEST", "Failed to delete test " + id)
+            error => alerting.dispatchError(error, "DELETE_TEST", "Failed to delete test " + id)
         )
 }
 
-export function allSubscriptions(folder?: string) {
-    return (dispatch: Dispatch<UpdateTestWatchAction | AddAlertAction>) =>
+export function allSubscriptions(alerting:AlertContextType, folder?: string) {
+    return (dispatch: Dispatch<UpdateTestWatchAction >) =>
         subscriptionsApi.all(folder).then(
             response =>
                 dispatch({
                     type: actionTypes.UPDATE_TEST_WATCH,
                     byId: Map(Object.entries(response).map(([key, value]) => [parseInt(key), [...value]])),
                 }),
-            error => dispatchError(dispatch, error, "GET_ALL_SUBSCRIPTIONS", "Failed to fetch test subscriptions")
+            error => alerting.dispatchError(error, "GET_ALL_SUBSCRIPTIONS", "Failed to fetch test subscriptions")
         )
 }
 
@@ -277,8 +268,8 @@ function watchToList(watch: Watch) {
     return [...watch.users, ...watch.teams, ...watch.optout.map((u: string) => `!${u}`)]
 }
 
-export function getSubscription(testId: number) {
-    return (dispatch: Dispatch<UpdateTestWatchAction | AddAlertAction>) =>
+export function getSubscription(testId: number, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTestWatchAction >) =>
         subscriptionsApi.get(testId).then(
             watch => {
                 dispatch({
@@ -287,24 +278,24 @@ export function getSubscription(testId: number) {
                 })
                 return watch
             },
-            error => dispatchError(dispatch, error, "SUBSCRIPTION_LOOKUP", "Subscription lookup failed")
+            error => alerting.dispatchError(error, "SUBSCRIPTION_LOOKUP", "Subscription lookup failed")
         ) as Promise<Watch>
 }
 
-export function updateSubscription(watch: Watch) {
-    return (dispatch: Dispatch<UpdateTestWatchAction | AddAlertAction>) =>
+export function updateSubscription(watch: Watch, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTestWatchAction >) =>
         subscriptionsApi.update(watch.testId, watch).then(
             () =>
                 dispatch({
                     type: actionTypes.UPDATE_TEST_WATCH,
                     byId: Map([[watch.testId, watchToList(watch)]]),
                 }),
-            error => dispatchError(dispatch, error, "SUBSCRIPTION_UPDATE", "Failed to update subscription")
+            error => alerting.dispatchError(error, "SUBSCRIPTION_UPDATE", "Failed to update subscription")
         )
 }
 
-export function addUserOrTeam(id: number, userOrTeam: string) {
-    return (dispatch: Dispatch<UpdateTestWatchAction | AddAlertAction>) => {
+export function addUserOrTeam(id: number, userOrTeam: string, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTestWatchAction >) => {
         dispatch({
             type: actionTypes.UPDATE_TEST_WATCH,
             byId: Map([[id, undefined]]),
@@ -315,13 +306,13 @@ export function addUserOrTeam(id: number, userOrTeam: string) {
                     type: actionTypes.UPDATE_TEST_WATCH,
                     byId: Map([[id, response as string[]]]),
                 }),
-            error => dispatchError(dispatch, error, "ADD_SUBSCRIPTION", "Failed to add test subscriptions")
+            error => alerting.dispatchError(error, "ADD_SUBSCRIPTION", "Failed to add test subscriptions")
         )
     }
 }
 
-export function removeUserOrTeam(id: number, userOrTeam: string) {
-    return (dispatch: Dispatch<UpdateTestWatchAction | AddAlertAction>) => {
+export function removeUserOrTeam(id: number, userOrTeam: string, alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTestWatchAction >) => {
         dispatch({
             type: actionTypes.UPDATE_TEST_WATCH,
             byId: Map([[id, undefined]]),
@@ -332,34 +323,33 @@ export function removeUserOrTeam(id: number, userOrTeam: string) {
                     type: actionTypes.UPDATE_TEST_WATCH,
                     byId: Map([[id, response as string[]]]),
                 }),
-            error => dispatchError(dispatch, error, "REMOVE_SUBSCRIPTION", "Failed to remove test subscriptions")
+            error => alerting.dispatchError(error, "REMOVE_SUBSCRIPTION", "Failed to remove test subscriptions")
         )
     }
 }
 
-export function fetchFolders() {
-    return (dispatch: Dispatch<UpdateFoldersAction | AddAlertAction>) => {
+export function fetchFolders(alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateFoldersAction >) => {
         return testApi.folders().then(
             response =>
                 dispatch({
                     type: actionTypes.UPDATE_FOLDERS,
                     folders: response,
                 }),
-            error => dispatchError(dispatch, error, "UPDATE_FOLDERS", "Failed to retrieve a list of existing folders")
+            error => alerting.dispatchError(error, "UPDATE_FOLDERS", "Failed to retrieve a list of existing folders")
         )
     }
 }
 
-export function updateTransformers(testId: number, transformers: Transformer[]) {
-    return (dispatch: Dispatch<UpdateTransformersAction | AddAlertAction>) => {
+export function updateTransformers(testId: number, transformers: Transformer[], alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTransformersAction >) => {
         return testApi.updateTransformers(
             testId,
             transformers.map(t => t.id)
         ).then(
             () => dispatch({ type: actionTypes.UPDATE_TRANSFORMERS, testId, transformers }),
             error =>
-                dispatchError(
-                    dispatch,
+                alerting.dispatchError(
                     error,
                     "UPDATE_TRANSFORMERS",
                     "Failed to update transformers for test " + testId
@@ -369,13 +359,14 @@ export function updateTransformers(testId: number, transformers: Transformer[]) 
 }
 
 export function updateChangeDetection(
+    alerting: AlertContextType,
     testId: number,
     timelineLabels: string[] | undefined,
     timelineFunction: string | undefined,
     fingerprintLabels: string[],
     fingerprintFilter: string | undefined
 ) {
-    return (dispatch: Dispatch<UpdateChangeDetectionAction | AddAlertAction>) => {
+    return (dispatch: Dispatch<UpdateChangeDetectionAction >) => {
         const update = {
             timelineLabels,
             timelineFunction,
@@ -390,7 +381,7 @@ export function updateChangeDetection(
                     ...update,
                 }),
             error =>
-                dispatchError(dispatch, error, "UPDATE_FINGERPRINT", "Failed to update fingerprint for test " + testId)
+                alerting.dispatchError(error, "UPDATE_FINGERPRINT", "Failed to update fingerprint for test " + testId)
         )
     }
 }

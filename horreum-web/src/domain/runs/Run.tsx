@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import {useContext, useEffect, useState} from "react"
 import { useParams } from "react-router"
 import { useSelector, useDispatch } from "react-redux"
 
@@ -19,8 +19,10 @@ import MetaData from "./MetaData"
 import RunData from "./RunData"
 import TransformationLogModal from "../tests/TransformationLogModal"
 import { Access } from "../../api"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 export default function Run() {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const { id: stringId } = useParams<any>()
     const id = parseInt(stringId)
     document.title = `Run ${id} | Horreum`
@@ -37,7 +39,7 @@ export default function Run() {
         const urlParams = new URLSearchParams(window.location.search)
         const token = urlParams.get("token")
         setLoading(true)
-        dispatch(actions.getSummary(id, token || undefined))
+        dispatch(actions.getSummary(alerting, id, token || undefined))
             .catch(noop)
             .finally(() => setLoading(false))
     }, [dispatch, id, teams, updateCounter])
@@ -77,7 +79,7 @@ export default function Run() {
                                                 access={run.access as Access}
                                                 readOnly={!isTester}
                                                 onUpdate={(owner, access) =>
-                                                    dispatch(actions.updateAccess(run.id, run.testid, owner, access))
+                                                    dispatch(actions.updateAccess(alerting, run.id, run.testid, owner, access))
                                                 }
                                             />
                                         </Td>
@@ -91,7 +93,7 @@ export default function Run() {
                                                         isDisabled={recalculating}
                                                         onClick={() => {
                                                             setRecalculating(true)
-                                                            dispatch(actions.recalculateDatasets(run.id, run.testid))
+                                                            dispatch(actions.recalculateDatasets(run.id, run.testid, alerting))
                                                                 .catch(noop)
                                                                 .finally(() => setRecalculating(false))
                                                         }}

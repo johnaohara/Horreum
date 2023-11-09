@@ -1,7 +1,6 @@
 import * as actionTypes from "./actionTypes"
 import { Map } from "immutable"
 import { ThunkDispatch } from "redux-thunk"
-import { AddAlertAction } from "../../alerts"
 import {
     Access,
     Action,
@@ -157,7 +156,7 @@ export type TestAction =
     | UpdateChangeDetectionAction
     | UpdateRunsAndDatasetsAction
 
-export type TestDispatch = ThunkDispatch<any, unknown, TestAction | AddAlertAction>
+export type TestDispatch = ThunkDispatch<any, unknown, TestAction >
 
 export const reducer = (state = new TestsState(), action: TestAction) => {
     switch (action.type) {
