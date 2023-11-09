@@ -5,43 +5,10 @@ import {useState} from "react";
 import {contextAlertAction} from "./alertActions";
 import {AlertVariant} from "@patternfly/react-core";
 import {userApi} from "../api";
+import {AlertContextType, AppContextType, AuthContextType} from "./@types/appContextTypes";
 
 export const AppContext = React.createContext<AppContextType | null>(null);
 export const history = createBrowserHistory()
-
-export type AlertContextType = {
-
-    alerts: Alert[];
-
-    addAlert: (alert: Alert) => void;
-
-    clearAlert: (alert: Alert) => void;
-
-    dispatchError: (error: any,
-                    type: string,
-                    title: string,
-                    ...errorFormatter: ((error: any) => any)[]) => Promise<any>;
-
-    dispatchInfo: (type: string,
-                   title: string,
-                   message: string,
-                   timeout: number) => void;
-
-}
-
-export type AuthContextType = {
-    updateDefaultTeam: (team: string,
-                        onSuccess: () => void,
-                        onFailure: (error: any) => void) => Promise<any>;
-}
-
-
-export type AppContextType = {
-    alerting: AlertContextType;
-    auth: AuthContextType;
-};
-
-
 
 const ContextProvider: React.FC<React.ReactNode> = ({ children }) => {
     const [alerts, setAlerts] = useState<Alert[]>([]);

@@ -16,7 +16,8 @@ import ActionMenu, {
 import { formatDateTime, toEpochMillis, noop } from "../../utils"
 import { useTester } from "../../auth"
 import { Access, RunSummary } from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 export function Description(description: string) {
     const truncated = (

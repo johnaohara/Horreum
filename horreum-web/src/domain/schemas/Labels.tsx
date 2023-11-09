@@ -16,7 +16,8 @@ import SplitForm from "../../components/SplitForm"
 import TestLabelModal from "./TestLabelModal"
 
 import { Label, schemaApi, Access } from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 const LABEL_FUNCTION_HELP = (

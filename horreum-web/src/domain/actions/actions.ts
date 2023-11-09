@@ -2,7 +2,7 @@ import {Action, actionApi} from "../../api"
 import * as actionTypes from "./actionTypes"
 import { LoadedAction, DeleteAction } from "./reducers"
 import { Dispatch } from "redux"
-import { AlertContextType } from "../../context/appContext";
+import { AlertContextType } from "../../context/@types/appContextTypes";
 
 const loaded = (action: Action | Action[]): LoadedAction => {
     return {

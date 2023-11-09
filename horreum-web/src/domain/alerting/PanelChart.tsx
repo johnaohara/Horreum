@@ -16,7 +16,8 @@ import { DateTime } from "luxon"
 import {alertingApi, AnnotationDefinition, FingerprintValue, TimeseriesTarget} from "../../api"
 import { fingerprintToString } from "../../utils"
 import { fetchDatapoints, fetchAllAnnotations } from "./Changes"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 function tsToDate(timestamp: number) {
     return DateTime.fromMillis(timestamp).toFormat("yyyy-LL-dd")

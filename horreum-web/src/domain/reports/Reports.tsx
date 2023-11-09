@@ -27,7 +27,8 @@ import ButtonLink from "../../components/ButtonLink"
 import { useTester, teamsSelector } from "../../auth"
 
 import ListReportsModal from "./ListReportsModal"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type C = CellProps<TableReportSummary>
 

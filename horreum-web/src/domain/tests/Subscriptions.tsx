@@ -8,7 +8,8 @@ import {userApi, UserData} from "../../api"
 import { teamToName, useTester } from "../../auth"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import UserSearch from "../../components/UserSearch"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type SubscriptionsProps = {
     testId: number

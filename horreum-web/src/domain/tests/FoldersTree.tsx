@@ -9,7 +9,8 @@ import { noop } from "../../utils"
 import { fetchFolders } from "./actions"
 import { TestDispatch } from "./reducers"
 import { allFolders } from "./selectors"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type FoldersTreeProps = {
     folder: string

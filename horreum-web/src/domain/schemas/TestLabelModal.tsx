@@ -7,7 +7,8 @@ import { Table, TableBody, TableHeader } from "@patternfly/react-table"
 import Editor from "../../components/Editor/monaco/Editor"
 import { toString } from "../../components/Editor"
 import {datasetApi, DatasetSummary, Label, SortDirection} from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type TestLabelModalProps = {
     isOpen: boolean

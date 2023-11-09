@@ -28,7 +28,8 @@ import { noop } from "../../utils"
 import { addToken, revokeToken, updateAccess } from "./actions"
 import { TestDispatch } from "./reducers"
 import {Test, Access as authAccess } from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type AddTokenModalProps = {
     testId: number

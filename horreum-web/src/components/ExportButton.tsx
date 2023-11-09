@@ -1,7 +1,8 @@
 import {useContext, useState} from "react"
 import { Button, Spinner } from "@patternfly/react-core"
 
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 type ExportButtonProps = {
     name: string
     export(): Promise<any>

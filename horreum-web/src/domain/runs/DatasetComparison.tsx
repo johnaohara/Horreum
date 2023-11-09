@@ -24,7 +24,9 @@ import FragmentTabs, { FragmentTab } from "../../components/FragmentTabs"
 import { renderValue } from "./components"
 import { fetchViews } from "../tests/actions"
 import { viewsSelector } from "./selectors"
-import {AlertContextType, AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AlertContextType, AppContextType} from "../../context/@types/appContextTypes";
+
 
 type Ds = {
     id: number

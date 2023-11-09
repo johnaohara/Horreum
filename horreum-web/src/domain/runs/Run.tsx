@@ -19,7 +19,8 @@ import MetaData from "./MetaData"
 import RunData from "./RunData"
 import TransformationLogModal from "../tests/TransformationLogModal"
 import { Access } from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 export default function Run() {
     const { alerting } = useContext(AppContext) as AppContextType;

@@ -16,7 +16,8 @@ import { SchemaDispatch } from "./reducers"
 import {Access, SortDirection, SchemaQueryResult, Schema, schemaApi} from "../../api"
 import SchemaImportButton from "./SchemaImportButton"
 import AccessIconOnly from "../../components/AccessIconOnly"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type C = CellProps<Schema>
 

@@ -1,7 +1,8 @@
 import {useContext, useState} from "react"
 
 import { Bullseye, Button, FileUpload, Modal, Spinner } from "@patternfly/react-core"
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 
 type ImportProps = {
     label?: string

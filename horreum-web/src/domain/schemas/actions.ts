@@ -3,7 +3,7 @@ import { DeleteAction, LoadedAction, UpdateTokenAction, UpdateAccessAction } fro
 import { Dispatch } from "redux"
 import { ThunkDispatch } from "redux-thunk"
 import {Schema, schemaApi, Access } from "../../api"
-import {AlertContextType} from "../../context/appContext";
+import {AlertContextType} from "../../context/@types/appContextTypes";
 
 const loaded = (schema: Schema | Schema[]): LoadedAction => ({
     type: actionTypes.LOADED,

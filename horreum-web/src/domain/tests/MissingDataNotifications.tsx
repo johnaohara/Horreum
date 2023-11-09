@@ -13,7 +13,8 @@ import { TabFunctionsRef } from "../../components/SavedTabs"
 
 import {alertingApi, MissingDataRule, Test} from "../../api"
 import { useTester } from "../../auth"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type MissingDataRuleExtended = MissingDataRule & {

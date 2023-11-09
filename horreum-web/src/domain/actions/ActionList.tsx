@@ -16,7 +16,8 @@ import { Column } from "react-table"
 import {ActionsDispatch} from "./reducers"
 import {Action} from "../../api"
 import ActionLogModal from "../tests/ActionLogModal"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 export default function ActionList() {
     const { alerting } = useContext(AppContext) as AppContextType;

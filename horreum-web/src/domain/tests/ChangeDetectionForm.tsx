@@ -43,7 +43,8 @@ import { updateChangeDetection } from "./actions"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import { Test } from "../../api"
 import VariableForm from "./VariableForm"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type TestSelectModalProps = {

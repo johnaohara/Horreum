@@ -52,7 +52,8 @@ import ViewSelect from "../../components/ViewSelect"
 import {viewsSelector} from "./selectors";
 import * as actions from "../tests/actions";
 import AccessIconOnly from "../../components/AccessIconOnly"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type C = CellProps<DatasetSummary> &
     UseTableOptions<DatasetSummary> &

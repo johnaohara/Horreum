@@ -45,7 +45,8 @@ import { NoSchemaInRun } from "./NoSchema"
 import { Description, ExecutionTime, Menu } from "./components"
 import SchemaList from "./SchemaList"
 import AccessIconOnly from "../../components/AccessIconOnly"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type C = CellProps<RunSummary> &
     UseTableOptions<RunSummary> &

@@ -23,7 +23,8 @@ import { View, ViewComponent } from "../../api"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import SplitForm from "../../components/SplitForm"
 import { deleteView, updateView } from "./actions"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 function swap(array: any[], i1: number, i2: number) {
     const temp = array[i1]

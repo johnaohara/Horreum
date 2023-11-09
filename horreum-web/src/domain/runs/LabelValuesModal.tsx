@@ -6,7 +6,8 @@ import { Table, TableBody, TableHeader } from "@patternfly/react-table"
 
 import "../../components/LogModal.css"
 import {datasetApi, LabelValue} from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type LabelValuesModalProps = {

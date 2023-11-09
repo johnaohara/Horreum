@@ -16,12 +16,13 @@ import {
 } from "@patternfly/react-core"
 import { CheckIcon } from "@patternfly/react-icons"
 import { NavLink } from "react-router-dom"
-import {alertingApi, Change, Variable} from "../../api"
+import {alertingApi, Change, FingerprintValue, Variable} from "../../api"
 import { fingerprintToString, formatDateTime } from "../../utils"
 import { Column, UseSortByColumnOptions } from "react-table"
 import Table from "../../components/Table"
 import { useTester } from "../../auth"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type ChangeMenuProps = {
     change: Change

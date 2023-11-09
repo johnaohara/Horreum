@@ -12,7 +12,8 @@ import { NoSchemaInDataset } from "./NoSchema"
 import LabelValuesModal from "./LabelValuesModal"
 import ExperimentModal from "./ExperimentModal"
 import SchemaValidations from "./SchemaValidations"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type DatasetDataProps = {

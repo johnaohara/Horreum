@@ -1,7 +1,8 @@
 import {useState, useEffect, useContext} from "react"
 import { runApi, RunCount } from "../../api"
 import { Bullseye, Button, ButtonVariant, Modal, TextInput, Spinner } from "@patternfly/react-core"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type ConfirmTestDeleteModalProps = {
     isOpen: boolean

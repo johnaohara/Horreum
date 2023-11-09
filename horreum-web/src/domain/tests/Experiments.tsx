@@ -28,7 +28,8 @@ import { ExperimentProfile } from "../../generated/models/ExperimentProfile"
 import OptionalFunction from "../../components/OptionalFunction"
 import ConditionComponent from "../../components/ConditionComponent"
 import EnumSelect from "../../components/EnumSelect"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type ExperimentsProps = {

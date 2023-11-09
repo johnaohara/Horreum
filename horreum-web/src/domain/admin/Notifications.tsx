@@ -3,7 +3,8 @@ import {useContext, useState} from "react"
 import { ActionGroup, Button, Form, FormGroup, TextInput } from "@patternfly/react-core"
 import NotificationMethodSelect from "../../components/NotificationMethodSelect"
 import { notificationsApi } from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 export default function Notifications() {

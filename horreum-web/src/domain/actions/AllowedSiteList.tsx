@@ -9,7 +9,8 @@ import {actionApi, AllowedSite} from "../../api"
 import Table from "../../components/Table"
 import AddAllowedSiteModal from "./AddAllowedSiteModal"
 import { Column } from "react-table"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type C = Column<AllowedSite> & UseSortByColumnOptions<AllowedSite>
 

@@ -32,7 +32,6 @@ import {
 import * as selectors from "./selectors"
 
 import Table from "../../components/Table"
-import AccessIcon from "../../components/AccessIcon"
 import ActionMenu, { MenuItem, ActionMenuProps, useChangeAccess } from "../../components/ActionMenu"
 import ButtonLink from "../../components/ButtonLink"
 import TeamSelect, { Team, ONLY_MY_OWN } from "../../components/TeamSelect"
@@ -48,7 +47,8 @@ import { TestStorage, TestDispatch } from "./reducers"
 import { noop } from "../../utils"
 import { SortDirection, testApi, TestQueryResult, Access } from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type WatchDropdownProps = {
     id: number

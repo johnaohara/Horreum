@@ -23,7 +23,8 @@ import TableReportView from "./TableReportView"
 import ButtonLink from "../../components/ButtonLink"
 import PrintButton from "../../components/PrintButton"
 import ReportLogModal from "./ReportLogModal"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 export default function TableReportPage() {
     const { alerting } = useContext(AppContext) as AppContextType;

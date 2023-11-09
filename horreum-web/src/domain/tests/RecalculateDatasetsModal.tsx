@@ -4,7 +4,8 @@ import { updateRunsAndDatasetsAction } from "./actions"
 import { get } from "./selectors"
 import { Bullseye, Button, Modal, Progress, Spinner } from "@patternfly/react-core"
 import {RecalculationStatus, testApi} from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type RecalculateDatasetsModalProps = {

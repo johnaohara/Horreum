@@ -8,7 +8,8 @@ import NewUserModal from "../user/NewUserModal"
 import { isAdminSelector } from "../../auth"
 import {userApi} from "../../api"
 import { noop } from "../../utils"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type Team = {

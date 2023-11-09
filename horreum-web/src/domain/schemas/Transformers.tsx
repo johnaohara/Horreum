@@ -13,7 +13,8 @@ import { TabFunctionsRef } from "../../components/SavedTabs"
 import SplitForm from "../../components/SplitForm"
 import { schemaApi, Transformer, Access } from "../../api"
 import JsonExtractor from "./JsonExtractor"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 const TARGET_SCHEMA_HELP = (

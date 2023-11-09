@@ -3,7 +3,8 @@ import {useContext, useState} from "react"
 import { Button, FileUpload, Flex, FlexItem, Form, FormGroup, Spinner } from "@patternfly/react-core"
 
 import ExportButton from "./ExportButton"
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 
 type ExportImportProps = {
     name: string

@@ -40,7 +40,8 @@ import Labels from "./Labels"
 import { Access, Schema as SchemaDef } from "../../api"
 import SchemaExportImport from "./SchemaExportImport"
 import { Json } from "../../generated"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type SchemaParams = {
     schemaId: string

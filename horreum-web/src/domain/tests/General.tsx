@@ -12,7 +12,8 @@ import { TabFunctionsRef } from "../../components/SavedTabs"
 import { TestDispatch } from "./reducers"
 import {Test, Access } from "../../api"
 import { useTester, defaultTeamSelector } from "../../auth"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type GeneralProps = {
     test?: Test

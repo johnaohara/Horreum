@@ -7,7 +7,8 @@ import {userApi, UserData} from "../../api"
 import UserSearch from "../../components/UserSearch"
 import { isAdminSelector, userName } from "../../auth"
 import { noop } from "../../utils"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 function userElement(u: UserData) {

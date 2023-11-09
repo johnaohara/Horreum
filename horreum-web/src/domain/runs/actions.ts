@@ -13,7 +13,7 @@ import {
 import * as actionTypes from "./actionTypes"
 import {runApi, RunExtended, RunSummary, SortDirection, Access } from "../../api"
 import { PaginationInfo } from "../../utils"
-import {AlertContextType} from "../../context/appContext";
+import {AlertContextType} from "../../context/@types/appContextTypes";
 
 const loaded = (run: RunExtended | undefined, total?: number): LoadedAction => ({
     type: actionTypes.LOADED,

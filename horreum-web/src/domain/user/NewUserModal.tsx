@@ -3,7 +3,8 @@ import { Button, Checkbox, Form, FormGroup, List, ListItem, Modal, Spinner, Text
 
 import {userApi, UserData} from "../../api"
 import { getRoles } from "./TeamMembers"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type NewUserModalProps = {

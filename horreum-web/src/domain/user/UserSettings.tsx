@@ -31,7 +31,8 @@ import TeamSelect, { createTeam, Team } from "../../components/TeamSelect"
 import { NotificationSettingsList } from "./NotificationSettings"
 import Profile from "./Profile"
 import ManagedTeams from "./ManagedTeams"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 export const UserProfileLink = () => {

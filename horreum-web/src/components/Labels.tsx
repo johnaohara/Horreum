@@ -1,5 +1,4 @@
 import React, {ReactNode, RefObject, useContext, useEffect, useMemo, useRef, useState} from "react"
-import { useDispatch } from "react-redux"
 
 import { NavLink } from "react-router-dom"
 
@@ -10,7 +9,8 @@ import {LabelInfo, schemaApi} from "../api"
 
 import EnumSelect from "./EnumSelect"
 import NameUri from "./NameUri"
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 
 type LabelsProps = {
     labels: string[]
@@ -33,7 +33,6 @@ export default function Labels({ labels, onChange, isReadOnly, error, defaultMet
     })
     const [metrics, setMetrics] = useState(defaultMetrics === undefined || defaultMetrics)
     const [filtering, setFiltering] = useState(defaultFiltering === undefined || defaultFiltering)
-    const dispatch = useDispatch()
     useEffect(() => {
         schemaApi.allLabels().then(
             labels => {

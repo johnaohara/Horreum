@@ -7,7 +7,8 @@ import { NavLink } from "react-router-dom"
 import JsonPathDocsLink from "../../components/JsonPathDocsLink"
 import Editor from "../../components/Editor/monaco/Editor"
 import {datasetApi, DatasetSummary, QueryResult, runApi, RunSummary, SortDirection, sqlApi} from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 export type JsonPathTarget = "run" | "dataset"
 

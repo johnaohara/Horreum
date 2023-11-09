@@ -35,7 +35,7 @@ import { Map } from "immutable"
 import {
     constraintValidationFormatter,
 } from "../../alerts"
-import {AlertContextType} from "../../context/appContext";
+import {AlertContextType} from "../../context/@types/appContextTypes";
 
 function loading(isLoading: boolean): LoadingAction {
     return { type: actionTypes.LOADING, isLoading }

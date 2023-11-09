@@ -15,7 +15,8 @@ import {
 import Editor from "../../components/Editor/monaco/Editor"
 import { isAdminSelector } from "../../auth"
 import {bannerApi} from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 function setBanner(severity: string, title: string, message: string) {
     return bannerApi.set({ severity, title, message, active: true })

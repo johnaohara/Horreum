@@ -1,7 +1,8 @@
 import {useContext, useEffect, useRef, useState} from "react"
 import { Dropdown, DropdownItem, DropdownToggle, FormGroup, InputGroup, TextInput } from "@patternfly/react-core"
 import {actionApi, AllowedSite} from "../api"
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 
 function isValidUrl(url: string) {
     try {

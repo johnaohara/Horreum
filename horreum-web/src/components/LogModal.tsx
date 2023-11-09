@@ -23,7 +23,8 @@ import TimeRangeSelect, { TimeRange } from "./TimeRangeSelect"
 import ConfirmDeleteModal from "./ConfirmDeleteModal"
 import "./LogModal.css"
 import EnumSelect from "./EnumSelect"
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 
 export type CommonLogModalProps = {
     title: string

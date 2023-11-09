@@ -23,7 +23,8 @@ import { testEventTypes } from "../actions/reducers"
 import ActionComponentForm from "../actions/ActionComponentForm"
 import ActionLogModal from "./ActionLogModal"
 import { Redirect } from "react-router-dom"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type ActionsProps = {

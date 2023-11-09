@@ -18,7 +18,8 @@ import { HelpIcon } from "@patternfly/react-icons"
 import { toString } from "../../components/Editor"
 import Autosuggest, { InputProps, ChangeEvent, SuggestionsFetchRequestedParams } from "react-autosuggest"
 import { QueryResult } from "../../api"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type ToolbarProps = {
     originalData: any

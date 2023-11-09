@@ -9,7 +9,8 @@ import { fetchFolders } from "../domain/tests/actions"
 import { allFolders } from "../domain/tests/selectors"
 import { UPDATE_FOLDERS } from "../domain/tests/actionTypes"
 import { noop } from "../utils"
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 
 type FolderSelectProps = {
     folder: string

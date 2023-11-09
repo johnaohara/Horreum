@@ -14,7 +14,8 @@ import ChangeSchemaModal from "./ChangeSchemaModal"
 import JsonPathSearchToolbar from "./JsonPathSearchToolbar"
 import { NoSchemaInRun } from "./NoSchema"
 import SchemaValidations from "./SchemaValidations"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 function findFirstValue(o: any) {

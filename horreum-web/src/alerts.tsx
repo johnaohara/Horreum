@@ -1,7 +1,8 @@
 import { Alert as PatternflyAlert, AlertActionCloseButton, AlertVariant } from "@patternfly/react-core"
 
-import {AppContext, AppContextType} from "./context/appContext";
+import {AppContext} from "./context/appContext";
 import React, {useContext} from "react";
+import {AppContextType} from "./context/@types/appContextTypes";
 
 export const ADD_ALERT = "alert/ADD"
 export const CLEAR_ALERT = "alert/CLEAR"

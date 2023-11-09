@@ -25,7 +25,8 @@ import {
 } from "../../api"
 import ButtonLink from "../../components/ButtonLink"
 import NameUri from "../../components/NameUri"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 function usageToCells(u: LabelLocation) {

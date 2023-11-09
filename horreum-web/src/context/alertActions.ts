@@ -6,7 +6,6 @@ export const contextAlertAction = (
     e: any,
     ...errorFormatter: ((error: any) => any)[]
 ): Alert => {
-    // const { alerting } = useContext(AppContext) as AppContextType;
     let formatted = undefined
     for (const f of errorFormatter) {
         formatted = f.call(null, e)
@@ -20,7 +19,6 @@ export const contextAlertAction = (
         title,
         content: formatted,
     }
-    // console.log(newAlert)
     return newAlert;
 }
 

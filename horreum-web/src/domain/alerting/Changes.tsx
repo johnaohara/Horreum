@@ -40,7 +40,8 @@ import {
     Title,
 } from "@patternfly/react-core"
 import { NavLink, useHistory } from "react-router-dom"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type TimespanSelectProps = {
     onChange(span: number): void

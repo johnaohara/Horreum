@@ -10,7 +10,8 @@ import { all } from "../domain/tests/selectors"
 import { fetchSummary } from "../domain/tests/actions"
 import { teamsSelector } from "../auth"
 import { noop } from "../utils"
-import {AppContext, AppContextType} from "../context/appContext";
+import {AppContext} from "../context/appContext";
+import {AppContextType} from "../context/@types/appContextTypes";
 
 export interface SelectedTest extends SelectOptionObject {
     id: number

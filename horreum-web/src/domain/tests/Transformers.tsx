@@ -23,7 +23,8 @@ import { TestDispatch } from "./reducers"
 import { updateTransformers } from "./actions"
 import TransformationLogModal from "./TransformationLogModal"
 import RecalculateDatasetsModal from "./RecalculateDatasetsModal"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 type TransformersProps = {

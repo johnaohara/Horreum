@@ -3,7 +3,8 @@ import { useDispatch } from "react-redux"
 import { schemaApi } from "../../api"
 import IndirectLink from "../../components/IndirectLink"
 import {useContext} from "react";
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type SchemaLinkProps = {
     uri: string

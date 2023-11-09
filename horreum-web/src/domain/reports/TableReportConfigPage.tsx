@@ -38,7 +38,8 @@ import OptionalFunction from "../../components/OptionalFunction"
 import TestSelect, { SelectedTest } from "../../components/TestSelect"
 
 import { useTester } from "../../auth"
-import {AppContext, AppContextType} from "../../context/appContext";
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type ReportConfigComponentProps = {
     component: ReportComponent
