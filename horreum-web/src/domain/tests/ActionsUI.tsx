@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import {useContext, useEffect, useState} from "react"
 import { useDispatch } from "react-redux"
 import {
     Alert,
@@ -14,7 +14,6 @@ import {
 } from "@patternfly/react-core"
 
 import { useTester } from "../../auth"
-import { alertAction } from "../../alerts"
 import { noop } from "../../utils"
 import { TestDispatch } from "./reducers"
 import { Action, actionApi} from "../../api"
@@ -24,6 +23,8 @@ import { testEventTypes } from "../actions/reducers"
 import ActionComponentForm from "../actions/ActionComponentForm"
 import ActionLogModal from "./ActionLogModal"
 import { Redirect } from "react-router-dom"
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 type ActionsProps = {
     testId: number
@@ -33,6 +34,7 @@ type ActionsProps = {
 }
 
 export default function ActionsUI({ testId, testOwner, funcsRef, onModified }: ActionsProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [actions, setActions] = useState<Action[]>([])
     const [logModalOpen, setLogModalOpen] = useState(false)
     const isTester = useTester(testOwner)
@@ -45,7 +47,7 @@ export default function ActionsUI({ testId, testOwner, funcsRef, onModified }: A
         }
         actionApi.getTestActions(testId).then(
             response => setActions(response),
-            error => dispatch(alertAction("ACTION_FETCH", "Failed to fetch actions", error))
+            error => alerting.dispatchError(error, "ACTION_FETCH", "Failed to fetch actions")
         )
     }, [testId, isTester, dispatch])
 
@@ -120,12 +122,6 @@ export default function ActionsUI({ testId, testOwner, funcsRef, onModified }: A
                                     dataListCells={[
                                         <DataListCell key="content">
                                             <ActionComponentForm
-                                                style={{
-                                                    gridGap: "2px",
-                                                    width: "100%",
-                                                    float: "left",
-                                                    marginBottom: "25px",
-                                                }}
                                                 action={action}
                                                 onUpdate={a => {
                                                     setActions(actions.map(a2 => (action === a2 ? a : a2)))

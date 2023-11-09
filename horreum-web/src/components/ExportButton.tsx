@@ -1,8 +1,7 @@
-import { useState } from "react"
-import { useDispatch } from "react-redux"
+import {useContext, useState} from "react"
 import { Button, Spinner } from "@patternfly/react-core"
 
-import { dispatchError } from "../alerts"
+import {AppContext, AppContextType} from "../context/appContext";
 type ExportButtonProps = {
     name: string
     export(): Promise<any>
@@ -10,7 +9,8 @@ type ExportButtonProps = {
 
 export default function ExportButton(props: ExportButtonProps) {
     const [downloading, setDownloading] = useState(false)
-    const dispatch = useDispatch()
+    const { alerting } = useContext(AppContext) as AppContextType;
+
     return (
         <Button
             id="export"
@@ -31,7 +31,7 @@ export default function ExportButton(props: ExportButtonProps) {
                                 link.parentNode.removeChild(link)
                             }
                         },
-                        error => dispatchError(dispatch, error, "EXPORT", "Cannot export configuration")
+                        error => alerting.dispatchError(error, "EXPORT", "Cannot export configuration")
                     )
                     .finally(() => setDownloading(false))
             }}

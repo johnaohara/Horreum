@@ -15,7 +15,6 @@ import { SchemasState, reducer as schemaReducer } from "./domain/schemas/reducer
 import { AuthState, reducer as authReducer } from "./auth"
 import { Alert, reducer as alertReducer } from "./alerts"
 
-export const history = createBrowserHistory()
 
 export interface State {
     auth: AuthState

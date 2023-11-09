@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import {useCallback, useContext, useEffect, useMemo, useState} from "react"
 import { useParams } from "react-router"
 import { useSelector } from "react-redux"
 import { useDispatch } from "react-redux"
@@ -27,7 +27,6 @@ import { Link, NavLink } from "react-router-dom"
 import { Duration } from "luxon"
 import { toEpochMillis, noop, fingerprintToString } from "../../utils"
 
-import { dispatchError } from "../../alerts"
 import { teamsSelector, teamToName, tokenSelector } from "../../auth"
 
 import { fetchTest } from "../tests/actions"
@@ -53,6 +52,7 @@ import ViewSelect from "../../components/ViewSelect"
 import {viewsSelector} from "./selectors";
 import * as actions from "../tests/actions";
 import AccessIconOnly from "../../components/AccessIconOnly"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 type C = CellProps<DatasetSummary> &
     UseTableOptions<DatasetSummary> &
@@ -129,6 +129,7 @@ const staticColumns: DatasetColumn[] = [
 ]
 
 export default function TestDatasets() {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const { testId: stringTestId } = useParams<any>()
     const testId = parseInt(stringTestId)
 
@@ -166,9 +167,7 @@ export default function TestDatasets() {
             viewId
         )
             .then(setDatasets, error =>
-                dispatchError(dispatch, error, "FETCH_DATASETS", "Failed to fetch datasets in test " + testId).catch(
-                    noop
-                )
+                alerting.dispatchError( error, "FETCH_DATASETS", "Failed to fetch datasets in test " + testId)
             )
             .finally(() => setLoading(false))
     }, [dispatch, testId, filter, pagination, teams, viewId])

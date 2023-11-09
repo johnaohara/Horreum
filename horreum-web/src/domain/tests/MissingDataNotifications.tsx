@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
+import {useContext, useEffect, useState} from "react"
 import { useHistory } from "react-router"
 
 import { Bullseye, FormGroup, Popover, Spinner, TextInput } from "@patternfly/react-core"
@@ -14,7 +13,8 @@ import { TabFunctionsRef } from "../../components/SavedTabs"
 
 import {alertingApi, MissingDataRule, Test} from "../../api"
 import { useTester } from "../../auth"
-import { dispatchError } from "../../alerts"
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 type MissingDataRuleExtended = MissingDataRule & {
     // temporary
@@ -38,12 +38,12 @@ function asWarning(text: string) {
 }
 
 export default function MissingDataNotifications(props: MissingDataNotificationsProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [rules, setRules] = useState<MissingDataRuleExtended[]>()
     const [deleted, setDeleted] = useState<MissingDataRuleExtended[]>([])
     const [selectedRule, setSelectedRule] = useState<MissingDataRuleExtended>()
     const [resetCounter, setResetCounter] = useState(0)
 
-    const dispatch = useDispatch()
     const history = useHistory()
     useEffect(() => {
         if (!props.test) {
@@ -67,13 +67,10 @@ export default function MissingDataNotifications(props: MissingDataNotifications
                         setSelectedRule(rules[index])
                     }
                 } else {
-                    dispatchError(dispatch, "", "FETCH_MISSING_DATA_RULES", "Unexpected value returned from server")
+                    alerting.dispatchError( "", "FETCH_MISSING_DATA_RULES", "Unexpected value returned from server")
                 }
             },
-            error =>
-                dispatchError(dispatch, error, "FETCH_MISSING_DATA_RULES", "Failed to fetch missing data rules.").catch(
-                    noop
-                )
+            error => alerting.dispatchError( error, "FETCH_MISSING_DATA_RULES", "Failed to fetch missing data rules.")
         )
     }, [props.test, resetCounter])
 
@@ -100,8 +97,7 @@ export default function MissingDataNotifications(props: MissingDataNotifications
             Promise.all([
                 ...deleted.map(rule =>
                     alertingApi.deleteMissingDataRule(rule.id).catch(e => {
-                        dispatchError(
-                            dispatch,
+                        alerting.dispatchError(
                             e,
                             "DELETE_MISSING_DATA_RULE",
                             "Failed to delete missing data rule " + rule.name
@@ -117,8 +113,7 @@ export default function MissingDataNotifications(props: MissingDataNotifications
                                 rule.modified = false
                             },
                             e => {
-                                dispatchError(
-                                    dispatch,
+                                alerting.dispatchError(
                                     e,
                                     "UPDATE_MISSING_DATA_RULE",
                                     "Failed to update missing data rule " + rule.name

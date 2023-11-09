@@ -49,7 +49,6 @@ const ViewComponentForm = ({ c, onChange, isTester }: ViewComponentFormProps) =>
         <Form
             id={`viewcomponent-${c.id}`}
             isHorizontal={true}
-            style={{ gridGap: "2px", width: "100%", float: "left", marginBottom: "25px" }}
         >
             <FormGroup label="Header" fieldId="header">
                 <TextInput

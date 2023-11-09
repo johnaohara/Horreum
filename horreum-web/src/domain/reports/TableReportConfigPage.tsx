@@ -240,7 +240,7 @@ export default function TableReportConfigPage() {
                     </Flex>
                 </CardHeader>
                 <CardBody>
-                    <Form isHorizontal={true} style={{ gridGap: "2px", width: "100%", paddingRight: "8px" }}>
+                    <Form isHorizontal={true}>
                         <FormGroup
                             label="Title"
                             isRequired={true}

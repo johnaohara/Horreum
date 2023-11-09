@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react"
+import {useState, useEffect, useRef, useContext} from "react"
 import { useParams } from "react-router"
+
+//TODO: remove
 import { useSelector } from "react-redux"
-import { useDispatch } from "react-redux"
+
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -17,13 +19,11 @@ import {
 import { Link } from "react-router-dom"
 
 import * as actions from "./actions"
-import {TestDispatch} from "./reducers"
 
 import ButtonLink from "../../components/ButtonLink"
 import SavedTabs, { SavedTab, TabFunctions, saveFunc, resetFunc, modifiedFunc } from "../../components/SavedTabs"
 
 import { useTester, teamsSelector } from "../../auth"
-import { dispatchError, dispatchInfo} from "../../alerts"
 import { noop } from "../../utils"
 import General from "./General"
 import Views from "./Views"
@@ -36,6 +36,8 @@ import Subscriptions from "./Subscriptions"
 import Transformers from "./Transformers"
 import MissingDataNotifications from "./MissingDataNotifications"
 import {Test, testApi} from "../../api";
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 type Params = {
     testId: string
@@ -58,18 +60,17 @@ export default function TestView() {
     const transformersFuncsRef = useRef<TabFunctions>()
     const [loaded, setLoaded] = useState(false)
 
-    const dispatch = useDispatch<TestDispatch>()
-
+    //replace redux
     const teams = useSelector(teamsSelector)
 
+    const { alerting } = useContext(AppContext) as AppContextType;
     useEffect(() => {
         if (testId !== 0) {
             setLoaded(false)
             testApi.get(testId)
                 .then( (test) => setTest(test))
                 .then( () => actions.fetchViews(testId) )
-                .catch( (error) => dispatchError(
-                    dispatch,
+                .catch( (error) => alerting.dispatchError(
                     error,
                     "FETCH_TEST",
                     "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it."
@@ -81,6 +82,8 @@ export default function TestView() {
     useEffect(() => {
         document.title = (testId === 0 ? "New test" : test && test.name ? test.name : "Loading test...") + " | Horreum"
     }, [test, testId])
+
+    //TODO:: replace redux
     const isTester = useTester(test ? test.owner : undefined)
 
     return (
@@ -118,7 +121,7 @@ export default function TestView() {
                         <SavedTabs
                             afterSave={() => {
                                 setModified(false)
-                                dispatchInfo(dispatch, "SAVE", "Saved!", "Test was succesfully updated!", 3000)
+                                alerting.dispatchInfo("SAVE", "Saved!", "Test was successfully updated!", 3000)
                             }}
                             afterReset={() => setModified(false)}
                             canSave={isTester}
@@ -156,7 +159,7 @@ export default function TestView() {
                             >
                                 <Views
                                     testId={testId}
-                                    views={ test?.views || [] }
+                                    views={ [] }
                                     testOwner={test ? test.owner : undefined}
                                     onModified={setModified}
                                     funcsRef={viewFuncsRef}

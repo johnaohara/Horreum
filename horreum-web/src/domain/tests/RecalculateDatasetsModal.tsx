@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState, useRef } from "react"
+import {useCallback, useEffect, useState, useRef, useContext} from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { updateRunsAndDatasetsAction } from "./actions"
 import { get } from "./selectors"
-import { dispatchError } from "../../alerts"
 import { Bullseye, Button, Modal, Progress, Spinner } from "@patternfly/react-core"
 import {RecalculationStatus, testApi} from "../../api"
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 type RecalculateDatasetsModalProps = {
     testId: number
@@ -13,6 +14,7 @@ type RecalculateDatasetsModalProps = {
 }
 
 export default function RecalculateDatasetsModal(props: RecalculateDatasetsModalProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const test = useSelector(get(props.testId))
     const [progress, setProgress] = useState(-1)
     const [status, setStatus] = useState<RecalculationStatus>()
@@ -71,8 +73,7 @@ export default function RecalculateDatasetsModal(props: RecalculateDatasetsModal
                                                       }
                                                   })
                                                   .catch(error => {
-                                                      dispatchError(
-                                                          dispatch,
+                                                      alerting.dispatchError(
                                                           error,
                                                           "RECALC_DATASETS",
                                                           "Failed to get recalculation status"
@@ -82,8 +83,7 @@ export default function RecalculateDatasetsModal(props: RecalculateDatasetsModal
                                           }, 1000)
                                       })
                                       .catch(error => {
-                                          dispatchError(
-                                              dispatch,
+                                          alerting.dispatchError(
                                               error,
                                               "RECALC_DATASETS",
                                               "Failed to start recalculation"

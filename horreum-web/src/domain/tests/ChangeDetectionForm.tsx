@@ -1,9 +1,8 @@
-import { useMemo, useState, useEffect } from "react"
+import {useMemo, useState, useEffect, useContext} from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useHistory } from "react-router"
 
 import { useTester } from "../../auth"
-import { alertAction } from "../../alerts"
 import { ChangeDetection, ConditionConfig, Variable, alertingApi} from "../../api"
 import { NavLink } from "react-router-dom"
 
@@ -37,7 +36,6 @@ import OptionalFunction from "../../components/OptionalFunction"
 import RecalculateModal from "../alerting/RecalculateModal"
 import TestSelect, { SelectedTest } from "../../components/TestSelect"
 
-import { dispatchError } from "../../alerts"
 
 import DatasetLogModal from "./DatasetLogModal"
 import { subscriptions as subscriptionsSelector } from "./selectors"
@@ -45,6 +43,8 @@ import { updateChangeDetection } from "./actions"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import { Test } from "../../api"
 import VariableForm from "./VariableForm"
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 type TestSelectModalProps = {
     isOpen: boolean
@@ -53,6 +53,7 @@ type TestSelectModalProps = {
 }
 
 const CopyVarsModal = ({ isOpen, onClose, onConfirm }: TestSelectModalProps) => {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [test, setTest] = useState<SelectedTest>()
     const [working, setWorking] = useState(false)
     const [selectGroupOpen, setSelectGroupOpen] = useState(false)
@@ -65,7 +66,6 @@ const CopyVarsModal = ({ isOpen, onClose, onConfirm }: TestSelectModalProps) => 
         setGroup(undefined)
         onClose()
     }
-    const dispatch = useDispatch()
     return (
         <Modal
             variant="small"
@@ -101,7 +101,7 @@ const CopyVarsModal = ({ isOpen, onClose, onConfirm }: TestSelectModalProps) => 
                             }
                             alertingApi.variables(t.id).then(
                                 response => setGroups(groupNames(response)),
-                                error => dispatchError(dispatch, error, "FETCH_VARIABLES", "Failed to fetch variables")
+                                error => alerting.dispatchError( error, "FETCH_VARIABLES", "Failed to fetch variables")
                             )
                         }}
                     />
@@ -243,6 +243,7 @@ function groupNames(vars: Variable[]) {
 }
 
 export default function ChangeDetectionForm({ test, onModified, funcsRef }: ChangeDetectionFormProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [timelineLabels, setTimelineLabels] = useState(test.timelineLabels || [])
     const [timelineFunction, setTimelineFunction] = useState(test.timelineFunction)
     const [fingerprintLabels, setFingerprintLabels] = useState(test.fingerprintLabels || [])
@@ -270,33 +271,33 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
                 }
                 setGroups(groupNames(response))
             },
-            error => dispatch(alertAction("VARIABLE_FETCH", "Failed to fetch change detection variables", error))
+            error =>  alerting.dispatchError(error, "VARIABLE_FETCH", "Failed to fetch change detection variables")
         )
-    }, [test.id, reload, dispatch])
+    }, [test.id, reload])
     useEffect(() => {
         alertingApi.changeDetectionModels().then(setChangeDetectionModels, error =>
-            dispatch(alertAction("FETCH_MODELS", "Failed to fetch available change detection models.", error))
+            alerting.dispatchError(error, "FETCH_MODELS", "Failed to fetch available change detection models.")
         )
         alertingApi.defaultChangeDetectionConfigs().then(setDefaultChangeDetectionConfigs, error =>
-            dispatch(alertAction("FETCH_MODELS", "Failed to fetch available change detection models.", error))
+            alerting.dispatchError(error, "FETCH_MODELS", "Failed to fetch available change detection models.")
         )
     }, [])
     const isTester = useTester(test?.owner || "__no_owner__")
     funcsRef.current = {
         save: () => {
-            let error = undefined
+            let errMsg = undefined
             variables.forEach(v => {
                 v.name = v.name.trim()
                 if (v.calculation === "") {
                     v.calculation = undefined
                 }
                 if (variables.some(v2 => v2.name.trim() === v.name && v2.id != v.id)) {
-                    error = "There are two variables called " + v.name + ": please use unique names."
+                    errMsg = "There are two variables called " + v.name + ": please use unique names."
                 }
             })
-            if (error) {
-                dispatch(alertAction("VARIABLE_CHECK", error, undefined))
-                return Promise.reject(error)
+            if (errMsg) {
+                alerting.dispatchError(undefined, "VARIABLE_CHECK", errMsg)
+                return Promise.reject(errMsg)
             }
             if (!test) {
                 return Promise.reject("No test!")
@@ -313,8 +314,7 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
                 ),
                 alertingApi.updateVariables(test.id, variables)
                     .catch(error =>
-                        dispatchError(
-                            dispatch,
+                        alerting.dispatchError(
                             error,
                             "VARIABLE_UPDATE",
                             "Failed to update change detection variables",
@@ -622,7 +622,7 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
                             ])
                         },
                         error =>
-                            dispatch(alertAction("VARIABLE_FETCH", "Failed to fetch change detection variables", error))
+                            alerting.dispatchError(error,"VARIABLE_FETCH", "Failed to fetch change detection variables", )
                     )
                 }}
             />

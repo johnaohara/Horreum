@@ -1,10 +1,9 @@
-import { useState } from "react"
-import { useDispatch } from "react-redux"
+import {useContext, useState} from "react"
 
 import { Button, FileUpload, Flex, FlexItem, Form, FormGroup, Spinner } from "@patternfly/react-core"
 
-import { dispatchError, dispatchInfo } from "../alerts"
 import ExportButton from "./ExportButton"
+import {AppContext, AppContextType} from "../context/appContext";
 
 type ExportImportProps = {
     name: string
@@ -19,7 +18,8 @@ export default function ExportImport(props: ExportImportProps) {
     const [uploadContent, setUploadContent] = useState<string>()
     const [uploading, setUploading] = useState(false)
     const [parseError, setParseError] = useState<any>(undefined)
-    const dispatch = useDispatch()
+    const { alerting } = useContext(AppContext) as AppContextType;
+
     return (
         <Form isHorizontal>
             <FormGroup label="Export" fieldId="export">
@@ -53,7 +53,7 @@ export default function ExportImport(props: ExportImportProps) {
                                             }
                                         },
                                         error => {
-                                            dispatchError(dispatch, error, "LOAD_FILE", "Cannot load file for import")
+                                            alerting.dispatchError( error, "LOAD_FILE", "Cannot load file for import")
                                             setUploadContent(undefined)
                                         }
                                     )
@@ -79,7 +79,7 @@ export default function ExportImport(props: ExportImportProps) {
                                             props
                                                 .import(uploadContent)
                                                 .then(() =>
-                                                    dispatchInfo(dispatch, "IMPORT", "Import succeeded", "", 3000)
+                                                    alerting.dispatchInfo("IMPORT", "Import succeeded", "", 3000)
                                                 )
                                                 .finally(() => setUploading(false))
                                         } else {
@@ -88,8 +88,7 @@ export default function ExportImport(props: ExportImportProps) {
                                         }
                                     },
                                     error =>
-                                        dispatchError(
-                                            dispatch,
+                                        alerting.dispatchError(
                                             error,
                                             "VALIDATE_FILE",
                                             "Cannot validate file for import"

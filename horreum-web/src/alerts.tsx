@@ -1,9 +1,11 @@
 import { AnyAction, Dispatch } from "redux"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 
 import { Alert as PatternflyAlert, AlertActionCloseButton, AlertVariant } from "@patternfly/react-core"
 
 import { State } from "./store"
+import {AppContext, AppContextType} from "./context/appContext";
+import React, {useContext} from "react";
 
 export const ADD_ALERT = "alert/ADD"
 export const CLEAR_ALERT = "alert/CLEAR"
@@ -113,45 +115,7 @@ export function dispatchError(
     return Promise.reject(error)
 }
 
-export function infoActions(
-    type: string,
-    title: string,
-    message: string
-): { action: AddAlertAction; clear: ClearAlertAction } {
-    return {
-        action: {
-            type: ADD_ALERT,
-            alert: {
-                type,
-                title,
-                content: message,
-                variant: AlertVariant.info,
-            },
-        },
-        clear: {
-            type: CLEAR_ALERT,
-            alert: {
-                type,
-                title,
-                content: undefined,
-            },
-        },
-    }
-}
-
-export function dispatchInfo(
-    dispatch: Dispatch<AlertActions>,
-    type: string,
-    title: string,
-    message: string,
-    timeout: number
-) {
-    const info = infoActions(type, title, message)
-    dispatch(info.action)
-    window.setTimeout(() => dispatch(info.clear), timeout)
-}
-
-function defaultFormatError(e: any) {
+export function defaultFormatError(e: any) {
     console.log(e)
     if (!e) {
         return ""
@@ -175,23 +139,22 @@ function defaultFormatError(e: any) {
 const alertsSelector = (state: State) => state.alerts
 
 function Alerts() {
-    const alerts = useSelector(alertsSelector)
+    const { alerting } = useContext(AppContext) as AppContextType;
+    // const alerts = useSelector(alertsSelector)
     const dispatch = useDispatch()
-    if (alerts.length === 0) {
+    if (alerting.alerts.length === 0) {
         return <></>
     }
     return (
         <div style={{ position: "absolute", zIndex: 1000, width: "100%" }}>
-            {alerts.map((alert, i) => (
+            {alerting.alerts.map((alert, i) => (
                 <PatternflyAlert
                     key={i}
                     variant={alert.variant || "warning"}
                     title={alert.title || "Title is missing"}
                     actionClose={
                         <AlertActionCloseButton
-                            onClose={() => {
-                                dispatch({ type: CLEAR_ALERT, alert: { type: alert.type } })
-                            }}
+                            onClose={() => { alerting.clearAlert (alert)}}
                         />
                     }
                 >

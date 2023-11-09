@@ -163,7 +163,7 @@ function Access(props: AccessProps) {
     }
 
     return (
-        <Form isHorizontal={true} style={{ gridGap: "2px", width: "100%", paddingRight: "8px" }}>
+        <Form isHorizontal={true} >
             <h2>Permissions</h2>
             <FormGroup label="Owner" fieldId="testOwner">
                 {isTester ? (

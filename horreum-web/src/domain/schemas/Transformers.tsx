@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import {useContext, useEffect, useState} from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useHistory } from "react-router-dom"
 
@@ -6,8 +6,6 @@ import { Button, FormGroup, FormSection, Popover, TextArea, TextInput } from "@p
 import { HelpIcon } from "@patternfly/react-icons"
 
 import { defaultTeamSelector, useTester } from "../../auth"
-import { dispatchError } from "../../alerts"
-import { noop } from "../../utils"
 import OwnerAccess from "../../components/OwnerAccess"
 import FunctionFormItem from "../../components/FunctionFormItem"
 import SchemaSelect from "../../components/SchemaSelect"
@@ -15,6 +13,8 @@ import { TabFunctionsRef } from "../../components/SavedTabs"
 import SplitForm from "../../components/SplitForm"
 import { schemaApi, Transformer, Access } from "../../api"
 import JsonExtractor from "./JsonExtractor"
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 const TARGET_SCHEMA_HELP = (
     <>
@@ -61,6 +61,7 @@ type TransformerEx = {
 } & Transformer
 
 export default function Transformers(props: TransformersProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [loading, setLoading] = useState(false)
     const [transformers, setTransformers] = useState<TransformerEx[]>([])
     const [selected, setSelected] = useState<TransformerEx>()
@@ -96,7 +97,7 @@ export default function Transformers(props: TransformersProps) {
                 ),
             ])
                 .catch(error => {
-                    dispatchError(dispatch, error, "TRANSFORMER_UPDATE", "Failed to update one or more transformers")
+                    alerting.dispatchError( error, "TRANSFORMER_UPDATE", "Failed to update one or more transformers")
                     return Promise.reject(error)
                 })
                 .finally(() => setDeleted([])),
@@ -134,12 +135,11 @@ export default function Transformers(props: TransformersProps) {
                     }
                 },
                 error =>
-                    dispatchError(
-                        dispatch,
+                    alerting.dispatchError(
                         error,
                         "LIST_TRANSFORMERS",
                         "Failed to fetch transformers for schema " + props.schemaUri
-                    ).catch(noop)
+                    )
             )
             .finally(() => setLoading(false))
     }, [props.schemaId, resetCounter])

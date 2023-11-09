@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from "react"
+import {useContext, useEffect, useMemo, useState} from "react"
 import { useSelector, useDispatch } from "react-redux"
 
 import * as actions from "./actions"
 import { RunsDispatch } from "./reducers"
 import { noop } from "../../utils"
 import { useTester, teamsSelector } from "../../auth"
-import { dispatchError } from "../../alerts"
 
 import Editor from "../../components/Editor/monaco/Editor"
 
@@ -15,6 +14,8 @@ import ChangeSchemaModal from "./ChangeSchemaModal"
 import JsonPathSearchToolbar from "./JsonPathSearchToolbar"
 import { NoSchemaInRun } from "./NoSchema"
 import SchemaValidations from "./SchemaValidations"
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 function findFirstValue(o: any) {
     if (!o || Object.keys(o).length !== 1) {
@@ -40,6 +41,7 @@ type RunDataProps = {
 }
 
 export default function RunData(props: RunDataProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [data, setData] = useState()
     const [editorData, setEditorData] = useState<string>()
     const [updateCounter, setUpdateCounter] = useState(0)
@@ -56,7 +58,7 @@ export default function RunData(props: RunDataProps) {
                     setData(data as any)
                     setEditorData(toString(data))
                 },
-                error => dispatchError(dispatch, error, "FETCH_RUN_DATA", "Failed to fetch run data").catch(noop)
+                error => alerting.dispatchError( error, "FETCH_RUN_DATA", "Failed to fetch run data")
             )
     }, [dispatch, props.run.id, teams, updateCounter])
 

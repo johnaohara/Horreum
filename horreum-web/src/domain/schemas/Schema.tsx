@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react"
+import {useEffect, useState, useRef, useContext} from "react"
 import { useParams } from "react-router"
 import { useSelector, useDispatch } from "react-redux"
 
@@ -26,7 +26,6 @@ import jsonpath from "jsonpath"
 import * as actions from "./actions"
 import * as selectors from "./selectors"
 import { defaultTeamSelector, teamsSelector, teamToName, useTester } from "../../auth"
-import { dispatchInfo } from "../../alerts"
 import { noop } from "../../utils"
 
 import { toString } from "../../components/Editor"
@@ -41,6 +40,7 @@ import Labels from "./Labels"
 import { Access, Schema as SchemaDef } from "../../api"
 import SchemaExportImport from "./SchemaExportImport"
 import { Json } from "../../generated"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 type SchemaParams = {
     schemaId: string
@@ -77,7 +77,7 @@ function General(props: GeneralProps) {
 
     const otherUri = props.getUri ? props.getUri() : ""
     return (
-        <Form isHorizontal={true} style={{ gridGap: "2px", width: "100%", paddingRight: "8px" }}>
+        <Form isHorizontal={true} >
             <FormGroup
                 label="Name"
                 isRequired={true}
@@ -201,6 +201,7 @@ function General(props: GeneralProps) {
 }
 
 export default function Schema() {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const params = useParams<SchemaParams>()
     const [schemaId, setSchemaId] = useState(params.schemaId === "_new" ? -1 : Number.parseInt(params.schemaId))
     const schema = useSelector(selectors.getById(schemaId))
@@ -220,7 +221,7 @@ export default function Schema() {
         } else {
             setLoading(false)
         }
-    }, [dispatch, dispatch, schemaId, teams])
+    }, [dispatch, schemaId, teams])
     useEffect(() => {
         document.title = (schemaId < 0 ? "New schema" : schema?.name || "(unknown schema)") + " | Horreum"
         setCurrentSchema(schema)
@@ -282,7 +283,7 @@ export default function Schema() {
                         <SavedTabs
                             afterSave={() => {
                                 setModified(false)
-                                dispatchInfo(dispatch, "SAVE_SCHEMA", "Saved!", "Schema was successfully saved", 3000)
+                                alerting.dispatchInfo("SAVE_SCHEMA", "Saved!", "Schema was successfully saved", 3000)
                             }}
                             afterReset={() => {
                                 setModified(false)

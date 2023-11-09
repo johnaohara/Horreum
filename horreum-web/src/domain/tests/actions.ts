@@ -32,7 +32,12 @@ import {
 } from "../../api"
 import { Dispatch } from "redux"
 import { Map } from "immutable"
-import { alertAction, AddAlertAction, constraintValidationFormatter, dispatchError } from "../../alerts"
+import {
+    alertAction,
+    AddAlertAction,
+    constraintValidationFormatter,
+    dispatchError,
+} from "../../alerts"
 
 function loading(isLoading: boolean): LoadingAction {
     return { type: actionTypes.LOADING, isLoading }

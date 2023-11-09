@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
-import { useDispatch } from "react-redux"
+import React, {useContext, useEffect, useMemo, useState} from "react"
 import {
     CartesianGrid,
     Legend,
@@ -17,7 +16,7 @@ import { DateTime } from "luxon"
 import {alertingApi, AnnotationDefinition, FingerprintValue, TimeseriesTarget} from "../../api"
 import { fingerprintToString } from "../../utils"
 import { fetchDatapoints, fetchAllAnnotations } from "./Changes"
-import { alertAction, dispatchInfo } from "../../alerts"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 function tsToDate(timestamp: number) {
     return DateTime.fromMillis(timestamp).toFormat("yyyy-LL-dd")
@@ -97,6 +96,7 @@ export default function PanelChart({
     lineType,
     onChangeSelected: propOnChangeSelected,
 }: PanelProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [legend, setLegend] = useState<any[]>() // Payload is not exported
     const [lines, setLines] = useState<any[]>()
     const [datapoints, setDatapoints] = useState<TimeseriesTarget[]>()
@@ -182,7 +182,6 @@ export default function PanelChart({
         [annotations, datapoints, onChangeSelected]
     )
 
-    const dispatch = useDispatch()
     return (
         <>
             <h2 style={{ width: "100%", textAlign: "center" }}>{title}</h2>
@@ -221,8 +220,7 @@ export default function PanelChart({
                                                         Math.max(...response.map(({ timestamp }) => timestamp)) + 1
                                                     )
                                                 } else {
-                                                    dispatchInfo(
-                                                        dispatch,
+                                                    alerting.dispatchInfo(
                                                         "NO_DATAPOINT",
                                                         "No datapoints have been found",
                                                         "We could not find any datapoints in the history. Try to recalculate them?",
@@ -231,12 +229,10 @@ export default function PanelChart({
                                                 }
                                             },
                                             error =>
-                                                dispatch(
-                                                    alertAction(
-                                                        "LAST_DATAPOINTS",
-                                                        "Failed to fetch last datapoint timestamps.",
-                                                        error
-                                                    )
+                                                alerting.dispatchError(
+                                                    error,
+                                                    "LAST_DATAPOINTS",
+                                                    "Failed to fetch last datapoint timestamps."
                                                 )
                                         )
                                         .finally(() => setGettingLast(false))

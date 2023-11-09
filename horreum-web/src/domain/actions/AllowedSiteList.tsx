@@ -1,28 +1,27 @@
-import { useEffect, useState } from "react"
+import {useContext, useEffect, useState} from "react"
 
-import { useDispatch } from "react-redux"
 import { UseSortByColumnOptions } from "react-table"
 import { Bullseye, Button, Spinner, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core"
 
 import {actionApi, AllowedSite} from "../../api"
 
-import { alertAction } from "../../alerts"
 
 import Table from "../../components/Table"
 import AddAllowedSiteModal from "./AddAllowedSiteModal"
 import { Column } from "react-table"
+import {AppContext, AppContextType} from "../../context/appContext";
 
 type C = Column<AllowedSite> & UseSortByColumnOptions<AllowedSite>
 
 function AllowedSiteList() {
-    const dispatch = useDispatch()
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [prefixes, setPrefixes] = useState<AllowedSite[]>()
     useEffect(() => {
         setPrefixes(undefined)
         actionApi.allowedSites().then(setPrefixes, e =>
-            dispatch(alertAction("FETCH_ALLOWED_SITES", "Failed to fetch allowed sites", e))
+            alerting.dispatchError(e,"FETCH_ALLOWED_SITES", "Failed to fetch allowed sites")
         )
-    }, [dispatch])
+    }, [])
     const columns: C[] = [
         {
             Header: "Site prefix",
@@ -51,7 +50,7 @@ function AllowedSiteList() {
                                     setPrefixes(prefixes.filter(p => p.id !== value))
                                 }
                                 actionApi.deleteSite(value).catch(e =>
-                                    dispatch(alertAction("REMOVE_ALLOWED_SITE", "Failed to remove allowed site", e))
+                                    alerting.dispatchError(e,"REMOVE_ALLOWED_SITE", "Failed to remove allowed site")
                                 )
                             }}
                         >
@@ -72,7 +71,7 @@ function AllowedSiteList() {
                 onSubmit={prefix =>
                     actionApi.addSite(prefix).then(
                         p => setPrefixes([...(prefixes || []), p]),
-                        e => dispatch(alertAction("ADD_ALLOWED_SITE", "Failed to add allowed site.", e))
+                        e => alerting.dispatchError(e,"ADD_ALLOWED_SITE", "Failed to add allowed site.")
                     )
                 }
             />

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react"
+import React, {useState, useEffect, useContext} from "react"
 
 import { Bullseye, Modal, Spinner, Tab, Tabs } from "@patternfly/react-core"
 import { TableComposable, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table"
 
-import { useDispatch } from "react-redux"
 import { NavLink } from "react-router-dom"
-import { dispatchError } from "../../alerts"
 import {experimentApi, ExperimentResult} from "../../api"
 import { LogLevelIcon } from "../../components/LogModal"
 import { interleave } from "../../utils"
+import {AppContext, AppContextType} from "../../context/appContext";
+
 
 type ExperimentModalProps = {
     isOpen: boolean
@@ -17,10 +17,10 @@ type ExperimentModalProps = {
 }
 
 export default function ExperimentModal(props: ExperimentModalProps) {
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [results, setResults] = useState<ExperimentResult[]>()
     const [activeTab, setActiveTab] = useState<string | number>()
     const [activeSecondaryTab, setActiveSecondaryTab] = useState<string | number>("results")
-    const dispatch = useDispatch()
     useEffect(() => {
         if (props.isOpen && !results) {
             experimentApi.runExperiments(props.datasetId).then(
@@ -31,7 +31,7 @@ export default function ExperimentModal(props: ExperimentModalProps) {
                     }
                 },
                 error => {
-                    dispatchError(dispatch, error, "FETCH_EXPERIMENT_EVAL", "Cannot evaluate experiment")
+                    alerting.dispatchError( error, "FETCH_EXPERIMENT_EVAL", "Cannot evaluate experiment")
                     props.onClose() // otherwise the error would be hidden
                 }
             )

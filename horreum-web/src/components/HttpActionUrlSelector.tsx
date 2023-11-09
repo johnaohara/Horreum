@@ -1,11 +1,7 @@
-import { useEffect, useRef, useState } from "react"
-import { useDispatch } from "react-redux"
-
+import {useContext, useEffect, useRef, useState} from "react"
 import { Dropdown, DropdownItem, DropdownToggle, FormGroup, InputGroup, TextInput } from "@patternfly/react-core"
-
 import {actionApi, AllowedSite} from "../api"
-
-import { alertAction } from "../alerts"
+import {AppContext, AppContextType} from "../context/appContext";
 
 function isValidUrl(url: string) {
     try {
@@ -27,15 +23,15 @@ type HttpActionUrlSelectorProps = {
 }
 
 export default function HttpActionUrlSelector(props: HttpActionUrlSelectorProps) {
-    const dispatch = useDispatch()
+    const { alerting } = useContext(AppContext) as AppContextType;
     const [prefixes, setPrefixes] = useState<AllowedSite[]>([{ id: -1, prefix: "" }])
     useEffect(() => {
         if (props.active) {
             actionApi.allowedSites().then(setPrefixes, e =>
-                dispatch(alertAction("FETCH_ALLOWED_SITES", "Failed to fetch allowed sites", e))
+                alerting.dispatchError(e, "FETCH_ALLOWED_SITES", "Failed to fetch allowed sites")
             )
         }
-    }, [dispatch, props.active])
+    }, [props.active])
 
     const isUrlValid = isValidUrl(props.value)
     const isUrlAllowed = prefixes.some(p => props.value.startsWith(p.prefix))

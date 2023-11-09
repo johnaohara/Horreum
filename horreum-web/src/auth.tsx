@@ -3,9 +3,8 @@ import { useDispatch, useSelector } from "react-redux"
 import { Button } from "@patternfly/react-core"
 
 import { State } from "./store"
-import { userApi, UserData } from "./api"
-import { AddAlertAction, dispatchError } from "./alerts"
-import { Dispatch } from "redux"
+import { UserData } from "./api"
+import { AddAlertAction } from "./alerts"
 import { ThunkDispatch } from "redux-thunk"
 import Keycloak from "keycloak-js";
 
@@ -31,7 +30,7 @@ interface InitAction {
     initPromise?: Promise<boolean>
 }
 
-interface UpdateDefaultTeamAction {
+export interface UpdateDefaultTeamAction {
     type: typeof UPDATE_DEFAULT_TEAM
     team: string
 }
@@ -144,14 +143,6 @@ export const defaultTeamSelector = (state: State) => {
     }
     const teamRoles = teamsSelector(state)
     return teamRoles.length > 0 ? teamRoles[0] : undefined
-}
-
-export function updateDefaultTeam(team: string) {
-    return (dispatch: Dispatch<UpdateDefaultTeamAction | AddAlertAction>) =>
-        userApi.setDefaultTeam(team).then(
-            _ => dispatch({ type: UPDATE_DEFAULT_TEAM, team }),
-            error => dispatchError(dispatch, error, "SET_DEFAULT_TEAM", "Failed to update default team.")
-        )
 }
 
 export const TryLoginAgain = () => {

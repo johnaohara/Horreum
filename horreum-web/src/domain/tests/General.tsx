@@ -68,7 +68,7 @@ export default function General({ test, onTestIdChange, onModified, funcsRef }: 
     const isTester = useTester(test?.owner)
     return (
         <>
-            <Form isHorizontal={true} style={{ gridGap: "2px", width: "100%", paddingRight: "8px" }}>
+            <Form isHorizontal={true} >
                 <FormGroup
                     label="Name"
                     isRequired={true}
