@@ -4,8 +4,6 @@ import {
     UpdateTokenAction,
     TrashAction,
     UpdateDescriptionAction,
-    UpdateSchemaAction,
-    UpdateDatasetsAction,
 } from "../runs/reducers"
 import * as actionTypes from "./actionTypes"
 import {runApi, Access} from "../../api"
@@ -89,32 +87,9 @@ export function updateDescription(id: number, testid: number, description: strin
         )
 }
 
-export function updateSchema(alerting: AlertContextType, id: number, testid: number, path: string | undefined, schemaUri: string) {
-    return (dispatch: Dispatch<UpdateSchemaAction >) =>
-        runApi.updateSchema(id, schemaUri, path).then(
-            schemas =>
-                dispatch({
-                    type: actionTypes.UPDATE_SCHEMA,
-                    id,
-                    testid,
-                    path,
-                    schema: schemaUri,
-                    schemas,
-                }),
-            error => alerting.dispatchError(error, "SCHEME_UPDATE_FAILED", "Failed to update run schema")
-        )
-}
-
-export function recalculateDatasets(id: number, testid: number, alerting: AlertContextType) {
-    return (dispatch: Dispatch<UpdateDatasetsAction >) =>
-        runApi.recalculateDatasets(id).then(
-            datasets =>
-                dispatch({
-                    type: actionTypes.UPDATE_DATASETS,
-                    id,
-                    testid,
-                    datasets,
-                }),
+export function recalculateDatasets(id: number, testid: number, alerting: AlertContextType) : Promise<number[]> {
+        return runApi.recalculateDatasets(id).then(
+            datasets => datasets,
             error => alerting.dispatchError(error, "RECALCULATE_DATASETS", "Failed to recalculate datasets")
         )
 }

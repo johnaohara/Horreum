@@ -1,14 +1,9 @@
 import * as actionTypes from "./actionTypes"
 import { Map } from "immutable"
-import * as utils from "../../utils"
 import { Team } from "../../components/TeamSelect"
 import { ThunkDispatch } from "redux-thunk"
 import { RunExtended, RunSummary, Access } from "../../api"
 
-export interface RunSchemas {
-    // schemaid -> uri
-    [key: string]: string
-}
 
 export class RunsState {
     byId?: Map<number, RunExtended> = undefined
@@ -18,39 +13,6 @@ export class RunsState {
     selectedRoles?: Team = undefined
     suggestQuery: string[] = []
     suggestions: string[] = []
-}
-
-export interface LoadingAction {
-    type: typeof actionTypes.LOADING
-}
-
-export interface LoadedAction {
-    type: typeof actionTypes.LOADED
-    run?: RunExtended
-    total?: number
-}
-
-export interface TestIdAction {
-    type: typeof actionTypes.TESTID
-    id: number
-    runs: RunSummary[]
-    total: number
-}
-
-export interface LoadSuggestionsAction {
-    type: typeof actionTypes.LOAD_SUGGESTIONS
-    query: string
-}
-
-export interface SuggestAction {
-    type: typeof actionTypes.SUGGEST
-    responseReceived: boolean
-    options: string[]
-}
-
-export interface SelectRolesAction {
-    type: typeof actionTypes.SELECT_ROLES
-    selection: Team
 }
 
 export interface UpdateTokenAction {
@@ -82,96 +44,17 @@ export interface UpdateDescriptionAction {
     description: string
 }
 
-export interface UpdateSchemaAction {
-    type: typeof actionTypes.UPDATE_SCHEMA
-    id: number
-    testid: number
-    path: string | undefined
-    schema: string
-    schemas: RunSchemas
-}
-
-export interface UpdateDatasetsAction {
-    type: typeof actionTypes.UPDATE_DATASETS
-    id: number
-    testid: number
-    datasets: number[]
-}
-
 type RunsAction =
-    | LoadingAction
-    | LoadedAction
-    | TestIdAction
-    | LoadSuggestionsAction
-    | SuggestAction
-    | SelectRolesAction
     | UpdateTokenAction
     | UpdateAccessAction
     | TrashAction
     | UpdateDescriptionAction
-    | UpdateSchemaAction
-    | UpdateDatasetsAction
 
 export type RunsDispatch = ThunkDispatch<any, unknown, RunsAction >
 
 //Takes events and updates the state accordingly
 export const reducer = (state = new RunsState(), action: RunsAction) => {
     switch (action.type) {
-        case actionTypes.LOADED: {
-            if (!state.byId) {
-                state.byId = Map<number, RunExtended>()
-            }
-            if (action.run !== undefined) {
-                const byId = state.byId as Map<number, RunExtended>
-                state.byId = byId.set(action.run.id, {
-                    ...(byId.get(action.run.id) || {}),
-                    ...action.run,
-                })
-            }
-            if (action.total) {
-                state.currentTotal = action.total
-            }
-            break
-        }
-        case actionTypes.TESTID: {
-            const byTest = state.byTest || Map<number, Map<number, RunExtended>>()
-            let testMap: Map<number, RunExtended> = byTest.get(action.id, Map<number, RunExtended>())
-            if (!utils.isEmpty(action.runs)) {
-                action.runs.forEach(run => {
-                    if (run !== undefined) {
-                        testMap = testMap.set(run.id, {
-                            ...testMap.get(run.id),
-                            data: "",
-                            schemas: [],
-                            ...run,
-                        })
-                    }
-                })
-            }
-            state.byTest = byTest.set(action.id, testMap)
-            state.currentPage = action.runs.map(run => run.id)
-            state.currentTotal = action.total
-            break
-        }
-        case actionTypes.LOAD_SUGGESTIONS: {
-            if (state.suggestQuery.length === 0) {
-                state.suggestQuery = [action.query]
-            } else {
-                state.suggestQuery = [state.suggestQuery[0], action.query]
-            }
-            break
-        }
-        case actionTypes.SUGGEST: {
-            state.suggestions = action.options
-            if (action.responseReceived) {
-                state.suggestQuery.shift()
-            }
-            break
-        }
-        case actionTypes.SELECT_ROLES: {
-            state.selectedRoles = action.selection
-            break
-        }
         case actionTypes.UPDATE_TOKEN: {
             state = updateRun(state, action.id, action.testid, { token: action.token })
             break
@@ -186,18 +69,6 @@ export const reducer = (state = new RunsState(), action: RunsAction) => {
         }
         case actionTypes.UPDATE_DESCRIPTION: {
             state = updateRun(state, action.id, action.testid, { description: action.description })
-            break
-        }
-        case actionTypes.UPDATE_SCHEMA: {
-            state = updateRun(state, action.id, action.testid, run => {
-                const copy = { ...run, schema: action.schemas }
-                copy.schema = action.schemas
-                return copy
-            })
-            break
-        }
-        case actionTypes.UPDATE_DATASETS: {
-            state = updateRun(state, action.id, action.testid, { datasets: action.datasets })
             break
         }
         default:

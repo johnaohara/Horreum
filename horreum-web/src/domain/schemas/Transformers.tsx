@@ -1,5 +1,5 @@
 import {useContext, useEffect, useState} from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 import { useHistory } from "react-router-dom"
 
 import { Button, FormGroup, FormSection, Popover, TextArea, TextInput } from "@patternfly/react-core"
@@ -109,7 +109,6 @@ export default function Transformers(props: TransformersProps) {
         },
         modified: () => transformers.some(t => t.modified) || deleted.length > 0,
     }
-    const dispatch = useDispatch()
     const history = useHistory()
     useEffect(() => {
         if (typeof props.schemaId !== "number") {

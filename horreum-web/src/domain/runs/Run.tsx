@@ -1,10 +1,8 @@
 import {useContext, useEffect, useState} from "react"
 import { useParams } from "react-router"
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector } from "react-redux"
 
 import * as actions from "./actions"
-import * as selectors from "./selectors"
-import {RunsDispatch, UpdateAccessAction} from "./reducers"
 import { formatDateTime, noop } from "../../utils"
 import { teamsSelector, useTester } from "../../auth"
 
@@ -20,9 +18,7 @@ import RunData from "./RunData"
 import TransformationLogModal from "../tests/TransformationLogModal"
 import {Access, runApi, RunExtended} from "../../api"
 import {AppContext} from "../../context/appContext";
-import {AlertContextType, AppContextType} from "../../context/@types/appContextTypes";
-import {Dispatch} from "redux";
-import * as actionTypes from "./actionTypes";
+import { AppContextType} from "../../context/@types/appContextTypes";
 
 export default function Run() {
     const { alerting } = useContext(AppContext) as AppContextType;
@@ -36,7 +32,6 @@ export default function Run() {
     const [transformationLogOpen, setTransformationLogOpen] = useState(false)
     const [updateCounter, setUpdateCounter] = useState(0)
 
-    const dispatch = useDispatch<RunsDispatch>()
     const teams = useSelector(teamsSelector)
     const isTester = useTester(run?.owner)
 
@@ -45,7 +40,7 @@ export default function Run() {
         const urlParams = new URLSearchParams(window.location.search)
         const token = urlParams.get("token")
         setLoading(true)
-        runApi.getRunSummary(id, token).then(
+        runApi.getRunSummary(id, token === null ? undefined : token).then(
             response =>
                     setRun({
                         data: "",
@@ -112,8 +107,11 @@ export default function Run() {
                                                         isDisabled={recalculating}
                                                         onClick={() => {
                                                             setRecalculating(true)
-                                                            dispatch(actions.recalculateDatasets(run.id, run.testid, alerting))
-                                                                .catch(noop)
+                                                            actions.recalculateDatasets(run.id, run.testid, alerting)
+                                                                .then(recalcDataSets => {
+                                                                    setRun({...run,
+                                                                    datasets: recalcDataSets})
+                                                                })
                                                                 .finally(() => setRecalculating(false))
                                                         }}
                                                     >
@@ -149,7 +147,7 @@ export default function Run() {
                                         </FragmentTab>
                                     )),
                                     <FragmentTab title="Original run data" fragment="run" key="original">
-                                        <RunData run={run} onUpdate={() => setUpdateCounter(updateCounter + 1)} />
+                                        <RunData run={run} updateCounter={updateCounter} onUpdate={() => setUpdateCounter(updateCounter + 1)} />
                                     </FragmentTab>,
                                     <FragmentTab
                                         title="Metadata"

@@ -100,7 +100,6 @@ function useRestore(run: RunSummary): MenuItem<RunSummary> {
 
 function useRecalculateDatasets(run: RunSummary): MenuItem<RunSummary> {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const dispatch = useDispatch<RunsDispatch>()
     const [recalculating, setRecalculating] = useState(false)
     return [
         (props: ActionMenuProps, isTester: boolean, close: () => void) => {
@@ -111,8 +110,8 @@ function useRecalculateDatasets(run: RunSummary): MenuItem<RunSummary> {
                         isDisabled={!isTester || recalculating}
                         onClick={() => {
                             setRecalculating(true)
-                            dispatch(recalculateDatasets(props.id, run.testid, alerting))
-                                .catch(noop)
+                            recalculateDatasets(props.id, run.testid, alerting)
+                                .then(noop) //do not do anything with the result
                                 .finally(() => {
                                     setRecalculating(false)
                                     close()

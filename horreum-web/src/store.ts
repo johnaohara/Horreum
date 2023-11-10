@@ -7,7 +7,6 @@ const { routerMiddleware, routerReducer } = createReduxHistoryContext({
     history: createBrowserHistory(),
 })
 
-import { RunsState, reducer as runReducer } from "./domain/runs/reducers"
 import { TestsState, reducer as testReducer } from "./domain/tests/reducers"
 import { ActionsState, reducer as actionReducer } from "./domain/actions/reducers"
 import { AuthState, reducer as authReducer } from "./auth"
@@ -16,13 +15,11 @@ import { AuthState, reducer as authReducer } from "./auth"
 export interface State {
     auth: AuthState
     actions: ActionsState
-    runs: RunsState
     tests: TestsState
 }
 
 const appReducers = combineReducers({
     router: routerReducer,
-    runs: runReducer,
     tests: testReducer,
     actions: actionReducer,
     auth: authReducer,

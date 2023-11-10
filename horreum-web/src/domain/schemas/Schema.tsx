@@ -1,4 +1,4 @@
-import {useEffect, useState, useRef, useContext, useCallback} from "react"
+import {useEffect, useState, useRef, useContext} from "react"
 import { useParams } from "react-router"
 import { useSelector } from "react-redux"
 
@@ -36,7 +36,6 @@ import Transformers from "./Transformers"
 import Labels from "./Labels"
 import {Access, Schema as SchemaDef, schemaApi} from "../../api"
 import SchemaExportImport from "./SchemaExportImport"
-import { Json } from "../../generated"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
 

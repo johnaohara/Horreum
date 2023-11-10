@@ -3,7 +3,7 @@ import { useHistory } from "react-router"
 
 import { Bullseye, FormGroup, Popover, Spinner, TextInput } from "@patternfly/react-core"
 
-import { durationToMillis, millisToDuration, noop } from "../../utils"
+import { durationToMillis, millisToDuration } from "../../utils"
 
 import HelpButton from "../../components/HelpButton"
 import Labels from "../../components/Labels"

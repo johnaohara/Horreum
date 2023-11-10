@@ -25,7 +25,7 @@ import { ArrowRightIcon } from "@patternfly/react-icons"
 import { Link, NavLink } from "react-router-dom"
 
 import { Duration } from "luxon"
-import { toEpochMillis, noop, fingerprintToString } from "../../utils"
+import { toEpochMillis, fingerprintToString } from "../../utils"
 
 import { teamsSelector, teamToName, tokenSelector } from "../../auth"
 
