@@ -1,8 +1,5 @@
 import { Dispatch } from "redux"
 import {
-    LoadedAction,
-    LoadingAction,
-    TestIdAction,
     UpdateAccessAction,
     UpdateTokenAction,
     TrashAction,
@@ -11,75 +8,8 @@ import {
     UpdateDatasetsAction,
 } from "../runs/reducers"
 import * as actionTypes from "./actionTypes"
-import {runApi, RunExtended, RunSummary, SortDirection, Access } from "../../api"
-import { PaginationInfo } from "../../utils"
+import {runApi, Access} from "../../api"
 import {AlertContextType} from "../../context/@types/appContextTypes";
-
-const loaded = (run: RunExtended | undefined, total?: number): LoadedAction => ({
-    type: actionTypes.LOADED,
-    run,
-    total,
-})
-
-const testId = (id: number, runs: RunSummary[], total: number): TestIdAction => ({
-    type: actionTypes.TESTID,
-    id,
-    runs,
-    total,
-})
-
-export function get(alerting: AlertContextType, id: number, token?: string) {
-    return (dispatch: Dispatch<LoadedAction>) =>
-        runApi.getRun(id, token).then(
-            response => dispatch(loaded(response)),
-            error => {
-                alerting.dispatchError(error,"FETCH_RUN", "Failed to fetch data for run " + id)
-                dispatch(loaded(undefined, 0))
-                return Promise.reject(error)
-            }
-        )
-}
-
-export function getSummary(alerting: AlertContextType, id: number, token?: string) {
-    return (dispatch: Dispatch<LoadedAction>) =>
-        runApi.getRunSummary(id, token).then(
-            response =>
-                dispatch(
-                    loaded({
-                        data: "",
-                        schemas: [],
-                        metadata: response.hasMetadata ? "" : undefined,
-                        ...response,
-                    })
-                ),
-            error => {
-                alerting.dispatchError(error,"FETCH_RUN_SUMMARY", "Failed to fetch data for run " + id)
-                dispatch(loaded(undefined, 0))
-                return Promise.reject(error)
-            }
-        )
-}
-
-export function byTest(alerting: AlertContextType, id: number, pagination: PaginationInfo, trashed: boolean) {
-    return (dispatch: Dispatch<LoadingAction | TestIdAction >) => {
-        dispatch({ type: actionTypes.LOADING })
-        return runApi.listTestRuns(
-            id,
-            pagination.direction === "Descending" ? SortDirection.Descending : SortDirection.Ascending,
-            pagination.perPage,
-            pagination.page,
-            pagination.sort,
-            trashed
-        ).then(
-            response => dispatch(testId(id, response.runs, response.total)),
-            error => {
-                alerting.dispatchError(error,"FETCH_RUNS", "Failed to fetch runs for test " + id)
-                dispatch(testId(id, [], 0))
-                return Promise.reject(error)
-            }
-        )
-    }
-}
 
 
 export function resetToken(alerting: AlertContextType, id: number, testid: number) {

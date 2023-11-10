@@ -11,7 +11,6 @@ export interface RunSchemas {
 }
 
 export class RunsState {
-    loading = false
     byId?: Map<number, RunExtended> = undefined
     byTest?: Map<number, Map<number, RunExtended>> = undefined
     currentPage: number[] = []
@@ -118,11 +117,7 @@ export type RunsDispatch = ThunkDispatch<any, unknown, RunsAction >
 //Takes events and updates the state accordingly
 export const reducer = (state = new RunsState(), action: RunsAction) => {
     switch (action.type) {
-        case actionTypes.LOADING:
-            state.loading = true
-            break
         case actionTypes.LOADED: {
-            state.loading = false
             if (!state.byId) {
                 state.byId = Map<number, RunExtended>()
             }
@@ -139,7 +134,6 @@ export const reducer = (state = new RunsState(), action: RunsAction) => {
             break
         }
         case actionTypes.TESTID: {
-            state.loading = false
             const byTest = state.byTest || Map<number, Map<number, RunExtended>>()
             let testMap: Map<number, RunExtended> = byTest.get(action.id, Map<number, RunExtended>())
             if (!utils.isEmpty(action.runs)) {

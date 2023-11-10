@@ -17,7 +17,7 @@ import {AppContextType} from "../../context/@types/appContextTypes";
 
 type C = CellProps<Schema>
 
-export default function AllSchema() {
+export default function SchemaList() {
     document.title = "Schemas | Horreum"
     const { alerting } = useContext(AppContext) as AppContextType;
 

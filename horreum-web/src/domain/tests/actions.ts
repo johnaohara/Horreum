@@ -58,21 +58,14 @@ export function fetchSummary(alertingContext: AlertContextType, roles?: string, 
     }
 }
 
-export function fetchTest(id: number, alerting: AlertContextType) {
-    return (dispatch: Dispatch<LoadingAction | LoadedTestAction >) => {
-        dispatch(loading(true))
-        return testApi.get(id).then(
-            test => dispatch({ type: actionTypes.LOADED_TEST, test }),
-            error => {
-                dispatch(loading(false))
-                return alerting.dispatchError(
-                    error,
-                    "FETCH_TEST",
-                    "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it."
-                )
-            }
-        )
-    }
+export function fetchTest(id: number, alerting: AlertContextType) : Promise<Test> {
+    return testApi.get(id).then(
+        test => test,
+        error => alerting.dispatchError(
+                error,
+                "FETCH_TEST",
+                "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it."
+        ))
 }
 
 export function sendTest(test: Test, alerting: AlertContextType) {

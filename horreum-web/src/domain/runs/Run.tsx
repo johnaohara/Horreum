@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux"
 
 import * as actions from "./actions"
 import * as selectors from "./selectors"
-import { RunsDispatch } from "./reducers"
+import {RunsDispatch, UpdateAccessAction} from "./reducers"
 import { formatDateTime, noop } from "../../utils"
 import { teamsSelector, useTester } from "../../auth"
 
@@ -18,9 +18,11 @@ import DatasetData from "./DatasetData"
 import MetaData from "./MetaData"
 import RunData from "./RunData"
 import TransformationLogModal from "../tests/TransformationLogModal"
-import { Access } from "../../api"
+import {Access, runApi, RunExtended} from "../../api"
 import {AppContext} from "../../context/appContext";
-import {AppContextType} from "../../context/@types/appContextTypes";
+import {AlertContextType, AppContextType} from "../../context/@types/appContextTypes";
+import {Dispatch} from "redux";
+import * as actionTypes from "./actionTypes";
 
 export default function Run() {
     const { alerting } = useContext(AppContext) as AppContextType;
@@ -28,7 +30,7 @@ export default function Run() {
     const id = parseInt(stringId)
     document.title = `Run ${id} | Horreum`
 
-    const run = useSelector(selectors.get(id))
+    const [run, setRun] = useState<RunExtended | undefined>(undefined)
     const [loading, setLoading] = useState(false)
     const [recalculating, setRecalculating] = useState(false)
     const [transformationLogOpen, setTransformationLogOpen] = useState(false)
@@ -36,15 +38,32 @@ export default function Run() {
 
     const dispatch = useDispatch<RunsDispatch>()
     const teams = useSelector(teamsSelector)
+    const isTester = useTester(run?.owner)
+
+
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search)
         const token = urlParams.get("token")
         setLoading(true)
-        dispatch(actions.getSummary(alerting, id, token || undefined))
-            .catch(noop)
-            .finally(() => setLoading(false))
-    }, [dispatch, id, teams, updateCounter])
-    const isTester = useTester(run?.owner)
+        runApi.getRunSummary(id, token).then(
+            response =>
+                    setRun({
+                        data: "",
+                        schemas: [],
+                        metadata: response.hasMetadata ? "" : undefined,
+                        ...response,
+                    }),
+            error => alerting.dispatchError(error,"FETCH_RUN_SUMMARY", "Failed to fetch data for run " + id)
+        ).finally(() => setLoading(false))
+    }, [id, teams, updateCounter])
+
+    const updateAccess = (id: number, testid: number, owner: string, access: Access) : Promise<void> => {
+        return runApi.updateAccess(id, access, owner).then(
+            () => noop(),
+            error => alerting.dispatchError(error, "UPDATE_RUN_ACCESS", "Failed to update run access")
+        ) //TODO:: refresh view
+    }
+
     return (
         <PageSection>
             {loading && (
@@ -79,8 +98,7 @@ export default function Run() {
                                                 owner={run.owner}
                                                 access={run.access as Access}
                                                 readOnly={!isTester}
-                                                onUpdate={(owner, access) =>
-                                                    dispatch(actions.updateAccess(alerting, run.id, run.testid, owner, access))
+                                                onUpdate={(owner, access) => updateAccess(run.id, run.testid, owner, access)
                                                 }
                                             />
                                         </Td>

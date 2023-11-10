@@ -50,7 +50,6 @@ import ButtonLink from "../../components/ButtonLink"
 import LabelsSelect, { SelectedLabels } from "../../components/LabelsSelect"
 import ViewSelect from "../../components/ViewSelect"
 import {viewsSelector} from "./selectors";
-import * as actions from "../tests/actions";
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
@@ -153,8 +152,9 @@ export default function TestDatasets() {
     const teams = useSelector(teamsSelector)
     const token = useSelector(tokenSelector)
     useEffect(() => {
-        dispatch(fetchTest(testId, alerting)).catch(noop)
-            .then( () => dispatch(actions.fetchViews(testId, alerting)) )
+        fetchTest(testId, alerting)
+    // ).catch(noop)
+    //         .then( () => dispatch(actions.fetchViews(testId, alerting)) )
     }, [dispatch, testId, teams, token])
     useEffect(() => {
         setLoading(true)

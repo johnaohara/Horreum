@@ -5,7 +5,7 @@ import { Button } from "@patternfly/react-core"
 import { State } from "./store"
 import { UserData } from "./api"
 import { ThunkDispatch } from "redux-thunk"
-import Keycloak from "keycloak-js";
+import Keycloak, {KeycloakProfile} from "keycloak-js";
 
 export const INIT = "auth/INIT"
 export const UPDATE_DEFAULT_TEAM = "auth/UPDATE_DEFAULT_TEAM"
@@ -19,7 +19,7 @@ export class AuthState {
     roles: string[] = []
     teams: string[] = []
     defaultTeam?: string = undefined
-    userProfile?: Keycloak.KeycloakProfile
+    userProfile?: KeycloakProfile
     initPromise?: Promise<boolean> = undefined
 }
 
@@ -42,7 +42,7 @@ interface UpdateRolesAction {
 
 interface StoreProfileAction {
     type: typeof STORE_PROFILE
-    profile: Keycloak.KeycloakProfile
+    profile: KeycloakProfile
 }
 
 interface AfterLogoutAction {
@@ -168,7 +168,7 @@ export const LoginLogout = () => {
         return (
             <Button
                 onClick={() => {
-                    keycloak.logout({ redirectUri: window.location.origin })
+                    keycloak?.logout({ redirectUri: window.location.origin })
                     dispatch({ type: AFTER_LOGOUT })
                 }}
             >
@@ -176,7 +176,7 @@ export const LoginLogout = () => {
             </Button>
         )
     } else {
-        return <Button onClick={() => keycloak.login()}>Log in</Button>
+        return <Button onClick={() => keycloak?.login()}>Log in</Button>
     }
 }
 

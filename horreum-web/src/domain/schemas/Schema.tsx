@@ -45,7 +45,7 @@ type SchemaParams = {
 }
 
 type GeneralProps = {
-    schema: SchemaDef | Json
+    schema: SchemaDef | undefined
     onChange(partialSchema: SchemaDef): void
     getUri?(): string
 }
@@ -59,12 +59,10 @@ function General(props: GeneralProps) {
 
     const schema: SchemaDef = props.schema || {
         id: -1,
-        name: "",
-        description: "",
         uri: "",
-        schema: {},
+        name: "",
         owner: defaultTeam || "",
-        access: 2,
+        access: Access.Public,
     }
     const onChange = (override: Partial<SchemaDef>) => {
         props.onChange({
@@ -205,7 +203,7 @@ export default function Schema() {
     const [schema, setSchema] = useState<SchemaDef | undefined>(undefined)
     const [loading, setLoading] = useState(true)
     const [editorSchema, setEditorSchema] = useState(schema?.schema ? toString(schema?.schema) : undefined)
-    const [currentSchema, setCurrentSchema] = useState(schema)
+    const [modifiedSchema, setModifiedSchema] = useState(schema)
     const [modified, setModified] = useState(false)
 
     // any tester can save to add new labels/transformers
@@ -226,7 +224,7 @@ export default function Schema() {
     }, [schemaId])
     useEffect(() => {
         document.title = (schemaId < 0 ? "New schema" : schema?.name || "(unknown schema)") + " | Horreum"
-        setCurrentSchema(schema)
+        setModifiedSchema(schema)
         setEditorSchema(schema?.schema ? toString(schema?.schema) : undefined)
     }, [schema, schemaId])
     // TODO: use this in reaction to editor change
@@ -251,7 +249,7 @@ export default function Schema() {
         }
         const newSchema = {
             id: schemaId,
-            ...currentSchema,
+            ...modifiedSchema,
             schema: editorSchema ? JSON.parse(editorSchema) : null,
         } as SchemaDef
 
@@ -296,15 +294,15 @@ export default function Schema() {
                                 fragment="general"
                                 onSave={save}
                                 onReset={() => {
-                                    setCurrentSchema(schema)
+                                    setModifiedSchema(schema)
                                 }}
                                 isModified={() => modified}
                             >
                                 <General
-                                    schema={currentSchema}
+                                    schema={modifiedSchema}
                                     getUri={editorSchema ? () => getUri(editorSchema) : undefined}
                                     onChange={schema => {
-                                        setCurrentSchema(schema)
+                                        setModifiedSchema(schema)
                                         setModified(true)
                                     }}
                                 />
@@ -314,7 +312,7 @@ export default function Schema() {
                                 fragment="json-schema"
                                 onSave={save}
                                 onReset={() => {
-                                    setCurrentSchema(schema)
+                                    setModifiedSchema(schema)
                                     setEditorSchema(schema?.schema ? toString(schema?.schema) : undefined)
                                 }}
                                 isModified={() => modified}
@@ -344,7 +342,7 @@ export default function Schema() {
                                                     setEditorSchema(
                                                         JSON.stringify(
                                                             {
-                                                                $id: currentSchema?.uri,
+                                                                $id: modifiedSchema?.uri,
                                                                 $schema: "http://json-schema.org/draft-07/schema#",
                                                                 type: "object",
                                                             },
