@@ -3,7 +3,6 @@ import {
     UpdateAccessAction,
     DeleteAction,
     UpdateTestWatchAction,
-    UpdateActionAction,
     UpdateTokensAction,
     RevokeTokenAction,
     UpdateChangeDetectionAction,
@@ -11,13 +10,11 @@ import {
     UpdateRunsAndDatasetsAction,
 } from "./reducers"
 import {
-    uiApi,
     testApi,
     subscriptionsApi,
     Action,
     Test,
     Transformer,
-    View,
     Watch,
     alertingApi,
     Access, TestListing, updateAction
@@ -52,57 +49,7 @@ export function sendTest(test: Test, alerting: AlertContextType): Promise<Test> 
 
 }
 
-export function fetchViews(testId: number, alerting: AlertContextType): Promise<View[]> {
-    return uiApi.getViews(testId).then(
-        views => views,
-        error => {
-            return alerting.dispatchError(
-                error,
-                "FETCH_VIEWS",
-                "Failed to fetch test views; the views may not exist or you don't have sufficient permissions to access them."
-            )
-        }
-    )
-}
-
-export function updateView(alerting: AlertContextType, testId: number, view: View): Promise<number> {
-    for (const c of view.components) {
-        if (c.labels.length === 0) {
-            alerting.dispatchError(
-                undefined,
-                "VIEW_UPDATE",
-                "Column " + c.headerName + " is invalid; must set at least one label."
-            )
-            return Promise.reject()
-        }
-    }
-    view.testId = testId
-    return uiApi.updateView(view).then(
-        viewId => {
-            const id: number = ensureInteger(viewId)
-            return id
-        },
-        error => alerting.dispatchError(error, "VIEW_UPDATE", "View update failed.")
-    )
-
-}
-
-export function deleteView(alerting: AlertContextType, testId: number, viewId: number): Promise<void> {
-    return uiApi.deleteView(testId, viewId).then(
-        _ => _,
-        error => alerting.dispatchError(error, "VIEW_DELETE", "View update failed.")
-    )
-}
-
-export function updateFolder(testId: number, prevFolder: string, newFolder: string, alerting: AlertContextType): Promise<void> {
-    return testApi.updateFolder(testId, newFolder).then(
-        _ => _,
-        error => alerting.dispatchError(error, "TEST_FOLDER_UPDATE", "Cannot update test folder")
-    )
-}
-
 export function updateActions(testId: number, actions: Action[], alerting: AlertContextType) {
-    return (dispatch: Dispatch<UpdateActionAction>) => {
         const promises: any[] = []
         actions.forEach(action => {
             promises.push(
@@ -111,7 +58,6 @@ export function updateActions(testId: number, actions: Action[], alerting: Alert
             )
         })
         return Promise.all(promises)
-    }
 }
 
 export function addToken(testId: number, value: string, description: string, permissions: number, alerting: AlertContextType) {
@@ -296,14 +242,4 @@ export function updateRunsAndDatasetsAction(
     datasets: number
 ): UpdateRunsAndDatasetsAction {
     return {type: actionTypes.UPDATE_RUNS_AND_DATASETS, testId, runs, datasets}
-}
-
-function ensureInteger(id: any): number {
-    if (typeof id === "string") {
-        return parseInt(id)
-    } else if (typeof id === "number") {
-        return id
-    } else {
-        throw "Cannot convert " + id + " to integer"
-    }
 }

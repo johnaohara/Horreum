@@ -334,7 +334,6 @@ export default function Changes() {
                         <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
                             <div style={{ display: "flex", flexWrap: "wrap", width: "100%" }}>
                                 <TestSelect
-                                    testList={tests}
                                     style={{ width: "fit-content" }}
                                     initialTestName={paramTest}
                                     onSelect={onSelectTest}

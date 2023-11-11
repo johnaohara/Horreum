@@ -1,5 +1,5 @@
 import {useState, useEffect, useContext} from "react"
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector } from "react-redux"
 
 import { Form, FormGroup, Switch, TextArea, TextInput } from "@patternfly/react-core"
 
@@ -9,7 +9,6 @@ import FolderSelect from "../../components/FolderSelect"
 import OptionalFunction from "../../components/OptionalFunction"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 
-import { TestDispatch } from "./reducers"
 import {Test, Access } from "../../api"
 import { useTester, defaultTeamSelector } from "../../auth"
 import {AppContext} from "../../context/appContext";
@@ -46,7 +45,6 @@ export default function General({ test, onTestIdChange, onModified, funcsRef }: 
         updateState(test)
     }, [test])
 
-    const dispatch = useDispatch<TestDispatch>()
     funcsRef.current = {
         save: () => {
             const newTest: Test = {
@@ -63,7 +61,7 @@ export default function General({ test, onTestIdChange, onModified, funcsRef }: 
                 tokens: [],
                 transformers: [],
             }
-            return dispatch(sendTest(newTest, alerting)).then(response => onTestIdChange((response as Test).id))
+            return sendTest(newTest, alerting).then(response => onTestIdChange(response.id))
         },
         reset: () => updateState(test),
     }

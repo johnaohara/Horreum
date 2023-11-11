@@ -95,7 +95,6 @@ const CopyVarsModal = ({ isOpen, onClose, onConfirm, tests  }: TestSelectModalPr
             {!working && (
                 <>
                     <TestSelect
-                        testList={tests}
                         selection={test}
                         onSelect={t => {
                             setTest(t)

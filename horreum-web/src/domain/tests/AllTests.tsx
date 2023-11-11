@@ -27,9 +27,7 @@ import {
     allSubscriptions,
     addUserOrTeam,
     removeUserOrTeam,
-    updateFolder,
 } from "./actions"
-import * as selectors from "./selectors"
 
 import Table from "../../components/Table"
 import ActionMenu, { MenuItem, ActionMenuProps, useChangeAccess } from "../../components/ActionMenu"
@@ -45,7 +43,7 @@ import { isAuthenticatedSelector, useTester, teamToName, teamsSelector, userProf
 import { CellProps, Column, UseSortByColumnOptions } from "react-table"
 import { TestStorage, TestDispatch } from "./reducers"
 import { noop } from "../../utils"
-import { SortDirection, testApi, TestQueryResult, Access } from "../../api"
+import {SortDirection, testApi, TestQueryResult, Access, Test, mapTestSummaryToTest, updateFolder} from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
@@ -410,19 +408,20 @@ export default function AllTests() {
     // This selector causes re-render on any state update as the returned list is always new.
     // We would need deepEquals for a proper comparison - the selector combines tests and watches
     // and modifies the Test objects - that wouldn't trigger shallowEqual, though
-    const allTests = useSelector(selectors.all)
+    const [allTests, setTests] = useState<Test[]>([])
     const teams = useSelector(teamsSelector)
     const isAuthenticated = useSelector(isAuthenticatedSelector)
     const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
     useEffect(() => {
         //TODO: what do we do with these?
         fetchTestsSummariesByFolder(alerting, rolesFilter.key, folder || undefined)
+            .then(summary => setTests(summary.tests?.map(t => mapTestSummaryToTest(t)) || []))
     }, [teams, rolesFilter, folder, reloadCounter])
     useEffect(() => {
         if (isAuthenticated) {
-            dispatch(allSubscriptions(alerting, folder || undefined)).catch(noop)
+            allSubscriptions(alerting, folder || undefined)
         }
-    }, [dispatch, isAuthenticated, rolesFilter, folder, reloadCounter])
+    }, [isAuthenticated, rolesFilter, folder, reloadCounter])
     if (isAuthenticated) {
         columns = [watchingColumn, ...columns]
     }

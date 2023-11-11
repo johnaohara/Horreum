@@ -24,7 +24,7 @@ import {
     Middleware,
     Schema,
     Test,
-    TestListing,
+    TestListing, TestSummary, View,
 } from "./generated"
 import store from "./store"
 import {ADD_ALERT} from "./alerts"
@@ -200,6 +200,11 @@ export function fetchTestsSummariesByFolder(alertingContext: AlertContextType, r
     return executeApiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
 }
 
+export function fetchTestsSummary(alertingContext: AlertContextType,roles?: string, folder?: string) : Promise<TestListing> {
+    return executeApiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
+}
+
+
 export function fetchTest(id: number, alerting: AlertContextType): Promise<Test> {
     return executeApiCall(testApi.get(id), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
 }
@@ -208,6 +213,36 @@ export function revokeTestToken(testId: number, tokenId: number, alerting: Alert
     return executeApiCall(testApi.dropToken(testId, tokenId), alerting, "REVOKE_TOKEN", "Failed to revoke token");
 }
 
+
+export function fetchViews(testId: number, alerting: AlertContextType): Promise<View[]> {
+    return executeApiCall(uiApi.getViews(testId), alerting, "FETCH_VIEWS", "Failed to fetch test views; the views may not exist or you don't have sufficient permissions to access them.");
+}
+
+export function updateView(alerting: AlertContextType, testId: number, view: View): Promise<number> {
+    for (const c of view.components) {
+        if (c.labels.length === 0) {
+            alerting.dispatchError(
+                undefined,
+                "VIEW_UPDATE",
+                "Column " + c.headerName + " is invalid; must set at least one label."
+            )
+            return Promise.reject()
+        }
+    }
+    view.testId = testId
+    return executeApiCall(uiApi.updateView(view), alerting, "VIEW_UPDATE", "View update failed.");
+}
+
+export function deleteView(alerting: AlertContextType, testId: number, viewId: number): Promise<void> {
+    return executeApiCall(uiApi.deleteView(testId, viewId), alerting, "VIEW_DELETE", "View update failed.");
+}
+
+export function updateFolder(testId: number, prevFolder: string, newFolder: string, alerting: AlertContextType): Promise<void> {
+    return executeApiCall(testApi.updateFolder(testId, newFolder), alerting, "TEST_FOLDER_UPDATE", "Cannot update test folder");
+}
+
+
+
 function executeApiCall<T>(apiCall: Promise<T>, alerting: AlertContextType, errorKey: string, errorMessage: string): Promise<T> {
     return apiCall.then(
         response => response,
@@ -215,5 +250,10 @@ function executeApiCall<T>(apiCall: Promise<T>, alerting: AlertContextType, erro
     )
 }
 
+
+
+export function mapTestSummaryToTest(testSummary: TestSummary): Test {
+    return {...testSummary, notificationsEnabled: false }
+}
 
 

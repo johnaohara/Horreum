@@ -29,9 +29,6 @@ import { toEpochMillis, fingerprintToString } from "../../utils"
 
 import { teamsSelector, teamToName, tokenSelector } from "../../auth"
 
-import { fetchTest } from "../tests/actions"
-import { get } from "../tests/selectors"
-
 import Table from "../../components/Table"
 import {
     CellProps,
@@ -41,7 +38,7 @@ import {
     Column,
     UseSortByColumnOptions,
 } from "react-table"
-import {DatasetSummary, DatasetList, SortDirection, datasetApi, testApi, ExportedLabelValues} from "../../api"
+import {DatasetSummary, DatasetList, SortDirection, datasetApi, testApi, ExportedLabelValues, fetchTest, Test} from "../../api"
 import { Description, ExecutionTime, renderCell } from "./components"
 import { TestDispatch } from "../tests/reducers"
 import SchemaList from "./SchemaList"
@@ -133,7 +130,7 @@ export default function TestDatasets() {
     const { testId: stringTestId } = useParams<any>()
     const testId = parseInt(stringTestId)
 
-    const test = useSelector(get(testId))
+    const [test, setTest] = useState<Test | undefined>(undefined)
     console.log(test)
     const [filter, setFilter] = useState<SelectedLabels>()
     const [filterExpanded, setFilterExpanded] = useState(false)
@@ -153,9 +150,11 @@ export default function TestDatasets() {
     const token = useSelector(tokenSelector)
     useEffect(() => {
         fetchTest(testId, alerting)
+            .then(setTest)
+            // .then(fetchViews(testId, alerting).then())
     // ).catch(noop)
     //         .then( () => dispatch(actions.fetchViews(testId, alerting)) )
-    }, [dispatch, testId, teams, token])
+    }, [testId, teams, token])
     useEffect(() => {
         setLoading(true)
         datasetApi.listByTest(

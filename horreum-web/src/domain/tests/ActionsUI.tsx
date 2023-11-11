@@ -1,5 +1,4 @@
 import {useContext, useEffect, useState} from "react"
-import { useDispatch } from "react-redux"
 import {
     Alert,
     AlertVariant,
@@ -14,8 +13,6 @@ import {
 } from "@patternfly/react-core"
 
 import { useTester } from "../../auth"
-import { noop } from "../../utils"
-import { TestDispatch } from "./reducers"
 import {Action, getTestActions} from "../../api"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import { updateActions } from "./actions"
@@ -41,7 +38,6 @@ export default function ActionsUI({ testId, testOwner, funcsRef, onModified }: A
     const isTester = useTester(testOwner)
     const hasDuplicates = new Set(actions.map(h => h.event + "_" + h.config.url)).size !== actions.length
 
-    const dispatch = useDispatch<TestDispatch>()
     useEffect(() => {
         if (!testId || !isTester) {
             return
@@ -50,7 +46,7 @@ export default function ActionsUI({ testId, testOwner, funcsRef, onModified }: A
     }, [testId, isTester])
 
     funcsRef.current = {
-        save: () => dispatch(updateActions(testId, actions, alerting)).catch(noop),
+        save: () => updateActions(testId, actions, alerting),
         reset: () => {
             // Perform a deep copy of the view object to prevent modifying store
             setActions(JSON.parse(JSON.stringify(actions)) as Action[])

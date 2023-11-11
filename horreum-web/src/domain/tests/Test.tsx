@@ -1,7 +1,6 @@
 import {useState, useEffect, useRef, useContext} from "react"
 import { useParams } from "react-router"
 
-//TODO: remove
 import { useSelector } from "react-redux"
 
 import {
@@ -18,8 +17,6 @@ import {
 } from "@patternfly/react-core"
 import { Link } from "react-router-dom"
 
-import * as actions from "./actions"
-
 import ButtonLink from "../../components/ButtonLink"
 import SavedTabs, { SavedTab, TabFunctions, saveFunc, resetFunc, modifiedFunc } from "../../components/SavedTabs"
 
@@ -34,7 +31,7 @@ import Access from "./Access"
 import Subscriptions from "./Subscriptions"
 import Transformers from "./Transformers"
 import MissingDataNotifications from "./MissingDataNotifications"
-import {fetchTest, Test} from "../../api";
+import {fetchTest, fetchViews, Test} from "../../api";
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
 
@@ -69,7 +66,7 @@ export default function TestView() {
             setLoaded(false)
             fetchTest(testId, alerting)
                 .then(setTest)
-                .then( () => actions.fetchViews(testId, alerting) )
+                .then( () => fetchViews(testId, alerting) )
                 .finally(() => setLoaded(true))
         }
     }, [testId, teams])
