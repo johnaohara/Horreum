@@ -34,7 +34,7 @@ import SavedTabs, { SavedTab, TabFunctions, modifiedFunc, resetFunc, saveFunc } 
 import TeamSelect from "../../components/TeamSelect"
 import Transformers from "./Transformers"
 import Labels from "./Labels"
-import {Access, Schema as SchemaDef, schemaApi} from "../../api"
+import {Access, getSchema, Schema as SchemaDef, schemaApi} from "../../api"
 import SchemaExportImport from "./SchemaExportImport"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
@@ -212,11 +212,9 @@ export default function Schema() {
     useEffect(() => {
         if (schemaId >= 0) {
             setLoading(true)
-            schemaApi.getSchema(schemaId)
-                .then(
-                    schema => setSchema(schema),
-                    error => alerting.dispatchError(error, "GET_SCHEMA", "Failed to fetch schema")
-                ).finally(() => setLoading(false))
+            getSchema(schemaId, alerting)
+                .then(setSchema)
+                .finally(() => setLoading(false))
         } else {
             setLoading(false)
         }

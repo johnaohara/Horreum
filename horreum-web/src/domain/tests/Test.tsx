@@ -24,7 +24,6 @@ import ButtonLink from "../../components/ButtonLink"
 import SavedTabs, { SavedTab, TabFunctions, saveFunc, resetFunc, modifiedFunc } from "../../components/SavedTabs"
 
 import { useTester, teamsSelector } from "../../auth"
-import { noop } from "../../utils"
 import General from "./General"
 import Views from "./Views"
 import ChangeDetectionForm from "./ChangeDetectionForm"
@@ -35,7 +34,7 @@ import Access from "./Access"
 import Subscriptions from "./Subscriptions"
 import Transformers from "./Transformers"
 import MissingDataNotifications from "./MissingDataNotifications"
-import {Test, testApi} from "../../api";
+import {fetchTest, Test} from "../../api";
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
 
@@ -68,14 +67,9 @@ export default function TestView() {
     useEffect(() => {
         if (testId !== 0) {
             setLoaded(false)
-            testApi.get(testId)
-                .then( (test) => setTest(test))
+            fetchTest(testId, alerting)
+                .then(setTest)
                 .then( () => actions.fetchViews(testId, alerting) )
-                .catch( (error) => alerting.dispatchError(
-                    error,
-                    "FETCH_TEST",
-                    "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it."
-                ))
                 .finally(() => setLoaded(true))
         }
     }, [testId, teams])
@@ -269,7 +263,6 @@ export default function TestView() {
                                 fragment="export"
                                 isHidden={testId <= 0 || !isTester}
                                 onSave={() => Promise.resolve()}
-                                onReset={noop}
                                 isModified={() => false}
                             >
                                 <TestExportImport name={test?.name || "test"} id={testId} />

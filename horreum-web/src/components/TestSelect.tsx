@@ -1,17 +1,8 @@
-import {CSSProperties, useContext, useEffect, useMemo, useState} from "react"
+import {CSSProperties, useEffect, useMemo, useState} from "react"
 
 import { Select, SelectGroup, SelectOption, SelectOptionObject, Split, SplitItem } from "@patternfly/react-core"
 
-import { useDispatch, useSelector, shallowEqual } from "react-redux"
-
-import { TestDispatch } from "../domain/tests/reducers"
 import { Test } from "../api"
-import { all } from "../domain/tests/selectors"
-import { fetchSummary } from "../domain/tests/actions"
-import { teamsSelector } from "../auth"
-import { noop } from "../utils"
-import {AppContext} from "../context/appContext";
-import {AppContextType} from "../context/@types/appContextTypes";
 
 export interface SelectedTest extends SelectOptionObject {
     id: number
@@ -19,6 +10,7 @@ export interface SelectedTest extends SelectOptionObject {
 }
 
 type TestSelectProps = {
+    testList: Test[]
     selection?: SelectedTest
     // always use "" for root folder here
     onSelect(test: SelectedTest | undefined, folder: string | undefined, isInitial: boolean): void
@@ -49,17 +41,10 @@ function groupByFolder(tests: Test[] | undefined | false) {
 }
 
 export default function TestSelect(props: TestSelectProps) {
-    const { alerting } = useContext(AppContext) as AppContextType;
     // a new instance of test list is created in every invocation => we need shallowEqual
-    const tests = useSelector(all, shallowEqual)
-    const dispatch = useDispatch<TestDispatch>()
-    const teams = useSelector(teamsSelector)
     useEffect(() => {
-        dispatch(fetchSummary(alerting, undefined, "*")).catch(noop)
-    }, [dispatch, teams])
-    useEffect(() => {
-        if (props.initialTestName && tests) {
-            const initialTest = tests.find(t => t.name === props.initialTestName)
+        if (props.initialTestName && props.testList) {
+            const initialTest = props.testList.find(t => t.name === props.initialTestName)
             if (initialTest) {
                 props.onSelect(
                     { id: initialTest.id, owner: initialTest.owner, toString: () => initialTest.name },
@@ -68,23 +53,19 @@ export default function TestSelect(props: TestSelectProps) {
                 )
             }
         }
-    }, [props.initialTestName, tests, props.onSelect])
-    if (tests && tests.length < 16) {
-        return <FewTestsSelect tests={tests} {...props} />
+    }, [props.initialTestName, props.testList, props.onSelect])
+    if (props.testList && props.testList.length < 16) {
+        return <FewTestsSelect {...props} />
     } else {
-        return <ManyTestsSelect tests={tests} {...props} />
+        return <ManyTestsSelect {...props} />
     }
 }
 
-type FewTestsSelectProps = {
-    tests: Test[] | undefined
-} & TestSelectProps
-
 const ROOT_FOLDER = "Horreum"
 
-function FewTestsSelect(props: FewTestsSelectProps) {
+function FewTestsSelect(props: TestSelectProps) {
     const [open, setOpen] = useState(false)
-    const groupedTests = useMemo(() => groupByFolder(props.tests), [props.tests])
+    const groupedTests = useMemo(() => groupByFolder(props.testList), [props.testList])
     return (
         <Select
             isOpen={open}
@@ -93,7 +74,7 @@ function FewTestsSelect(props: FewTestsSelectProps) {
             menuAppendTo="parent"
             onSelect={(_, item) => {
                 const test = item as SelectedTest
-                const actualTest = props.tests?.find(t => t.id === test.id)
+                const actualTest = props.testList?.find(t => t.id === test.id)
                 // if this is extra option => folder === undefined
                 // if this is test we'll force "" for root folder
                 const folder = actualTest === undefined ? undefined : actualTest.folder || ""
@@ -126,25 +107,21 @@ function FewTestsSelect(props: FewTestsSelectProps) {
     )
 }
 
-type ManyTestsSelectProps = {
-    tests: Test[] | undefined
-} & TestSelectProps
-
-function ManyTestsSelect(props: ManyTestsSelectProps) {
+function ManyTestsSelect(props: TestSelectProps) {
     const [foldersOpen, setFoldersOpen] = useState(false)
     const [testsOpen, setTestsOpen] = useState(false)
     const [selectedFolder, setSelectedFolder] = useState<string>()
     const [selectedExtra, setSelectedExtra] = useState<SelectedTest>()
     useEffect(() => {
-        if (!props.selection || !props.tests) {
+        if (!props.selection || !props.testList) {
             return
         }
 
-        setSelectedFolder(props.tests.find(t => t.id === props.selection?.id)?.folder || ROOT_FOLDER)
-    }, [props.selection, props.tests])
+        setSelectedFolder(props.testList.find(t => t.id === props.selection?.id)?.folder || ROOT_FOLDER)
+    }, [props.selection, props.testList])
     const folders = useMemo(
-        () => [ROOT_FOLDER, ...[...new Set((props.tests || []).map(t => t.folder).filter(f => !!f))].sort()],
-        [props.tests]
+        () => [ROOT_FOLDER, ...[...new Set((props.testList || []).map(t => t.folder).filter(f => !!f))].sort()],
+        [props.testList]
     )
     return (
         <Split style={props.style}>
@@ -196,7 +173,7 @@ function ManyTestsSelect(props: ManyTestsSelectProps) {
                     hasPlaceholderStyle={true}
                     isDisabled={props.isDisabled || selectedFolder === undefined || selectedExtra !== undefined}
                 >
-                    {props.tests
+                    {props.testList
                         ?.filter(t => t.folder === selectedFolder || (selectedFolder === ROOT_FOLDER && !t.folder))
                         .map((test, i) => (
                             <SelectOption

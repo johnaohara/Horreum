@@ -24,7 +24,7 @@ import { toEpochMillis, noop } from "../../utils"
 
 import { teamsSelector, teamToName } from "../../auth"
 
-import { fetchTest } from "../tests/actions"
+import { fetchTest } from "../../api"
 
 import Table from "../../components/Table"
 import {

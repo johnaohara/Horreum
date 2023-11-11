@@ -6,9 +6,7 @@ import { Select, SelectOption } from "@patternfly/react-core"
 import { teamsSelector } from "../auth"
 import { TestDispatch } from "../domain/tests/reducers"
 import { fetchFolders } from "../domain/tests/actions"
-import { allFolders } from "../domain/tests/selectors"
 import { UPDATE_FOLDERS } from "../domain/tests/actionTypes"
-import { noop } from "../utils"
 import {AppContext} from "../context/appContext";
 import {AppContextType} from "../context/@types/appContextTypes";
 
@@ -22,12 +20,12 @@ type FolderSelectProps = {
 export default function FolderSelect({folder, onChange, canCreate, readOnly}: FolderSelectProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
     const [open, setOpen] = useState(false)
-    const all = useSelector(allFolders())
+    const [folders, setFolders] = useState<string[]>([])
     const dispatch = useDispatch<TestDispatch>()
     const teams = useSelector(teamsSelector)
     useEffect(() => {
-        dispatch(fetchFolders(alerting)).catch(noop)
-    }, [dispatch, teams])
+        fetchFolders(alerting).then(setFolders)
+    }, [teams])
     return (
         <Select
             readOnly={readOnly}
@@ -42,12 +40,12 @@ export default function FolderSelect({folder, onChange, canCreate, readOnly}: Fo
                 setOpen(false)
             }}
             onCreateOption={newFolder => {
-                dispatch({ type: UPDATE_FOLDERS, folders: [...all, newFolder].sort() })
+                dispatch({ type: UPDATE_FOLDERS, folders: [...folders, newFolder].sort() })
                 onChange(newFolder)
             }}
             placeholderText="Horreum"
         >
-            {all.map((folder, i) => (
+            {folders.map((folder, i) => (
                 <SelectOption key={i} value={folder || ""}>
                     {folder || "Horreum"}
                 </SelectOption>

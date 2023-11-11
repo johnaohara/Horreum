@@ -21,7 +21,7 @@ import { NavLink } from "react-router-dom"
 import { EyeIcon, EyeSlashIcon, FolderOpenIcon } from "@patternfly/react-icons"
 
 import {
-    fetchSummary,
+    fetchTestsSummariesByFolder,
     updateAccess,
     deleteTest,
     allSubscriptions,
@@ -386,7 +386,7 @@ export default function AllTests() {
                     const move = useMoveToFolder({
                         name: arg.row.original.name,
                         folder: folder || "",
-                        onMove: (id, newFolder) => dispatch(updateFolder(id, folder || "", newFolder, alerting)),
+                        onMove: (id, newFolder) => updateFolder(id, folder || "", newFolder, alerting),
                     })
                     const del = useDelete({
                         name: arg.row.original.name,
@@ -415,8 +415,9 @@ export default function AllTests() {
     const isAuthenticated = useSelector(isAuthenticatedSelector)
     const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
     useEffect(() => {
-        dispatch(fetchSummary(alerting, rolesFilter.key, folder || undefined)).catch(noop)
-    }, [dispatch, teams, rolesFilter, folder, reloadCounter])
+        //TODO: what do we do with these?
+        fetchTestsSummariesByFolder(alerting, rolesFilter.key, folder || undefined)
+    }, [teams, rolesFilter, folder, reloadCounter])
     useEffect(() => {
         if (isAuthenticated) {
             dispatch(allSubscriptions(alerting, folder || undefined)).catch(noop)

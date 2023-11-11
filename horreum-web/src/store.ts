@@ -8,20 +8,17 @@ const { routerMiddleware, routerReducer } = createReduxHistoryContext({
 })
 
 import { TestsState, reducer as testReducer } from "./domain/tests/reducers"
-import { ActionsState, reducer as actionReducer } from "./domain/actions/reducers"
 import { AuthState, reducer as authReducer } from "./auth"
 
 
 export interface State {
     auth: AuthState
-    actions: ActionsState
     tests: TestsState
 }
 
 const appReducers = combineReducers({
     router: routerReducer,
     tests: testReducer,
-    actions: actionReducer,
     auth: authReducer,
 })
 const enhancer = compose(applyMiddleware(thunk), applyMiddleware(routerMiddleware), enableDevMode())

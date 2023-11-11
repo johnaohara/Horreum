@@ -228,6 +228,10 @@ export default function Changes() {
             return undefined
         }
     })
+    const [selectedChange, setSelectedChange] = useState<number>()
+    const [selectedVariable, setSelectedVariable] = useState<number>()
+
+
     const [panels, setPanels] = useState<PanelInfo[]>([])
     const [loadingPanels, setLoadingPanels] = useState(false)
     const [loadingFingerprints, setLoadingFingerprints] = useState(false)
@@ -285,9 +289,6 @@ export default function Changes() {
             setDate(newDate)
         }
     }, [endTime /* date omitted intentionally */])
-    const [selectedChange, setSelectedChange] = useState<number>()
-    const [selectedVariable, setSelectedVariable] = useState<number>()
-
     const onSelectTest = useCallback((selection, _, isInitial) => {
         if (selection === undefined) {
             setSelectedTest(undefined)
@@ -333,6 +334,7 @@ export default function Changes() {
                         <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
                             <div style={{ display: "flex", flexWrap: "wrap", width: "100%" }}>
                                 <TestSelect
+                                    testList={tests}
                                     style={{ width: "fit-content" }}
                                     initialTestName={paramTest}
                                     onSelect={onSelectTest}

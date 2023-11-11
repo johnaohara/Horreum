@@ -1,5 +1,5 @@
 import {useContext, useEffect, useMemo, useRef, useState} from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 import {
     ActionGroup,
     Bullseye,
@@ -14,7 +14,7 @@ import { expandable, ICell, IRow, Table, TableHeader, TableBody } from "@pattern
 import { useHistory, NavLink } from "react-router-dom"
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, YAxis } from "recharts"
 
-import {datasetApi, Test, testApi, View} from "../../api"
+import {datasetApi, Test, View} from "../../api"
 import { tokenSelector } from "../../auth"
 import { colors } from "../../charts"
 
@@ -22,8 +22,7 @@ import PrintButton from "../../components/PrintButton"
 import FragmentTabs, { FragmentTab } from "../../components/FragmentTabs"
 
 import { renderValue } from "./components"
-import { fetchViews } from "../tests/actions"
-import { viewsSelector } from "./selectors"
+import {fetchTest, fetchViews} from "../tests/actions"
 import {AppContext} from "../../context/appContext";
 import {AlertContextType, AppContextType} from "../../context/@types/appContextTypes";
 
@@ -40,16 +39,12 @@ export default function DatasetComparison() {
     const history = useHistory()
     const params = new URLSearchParams(history.location.search)
     const testId = parseInt(params.get("testId") || "-1")
-    const views = useSelector(viewsSelector(testId))
-    const dispatch = useDispatch()
+    const [views, setViews] = useState<View[]>([])
     const [test, setTest] = useState<Test>()
     useEffect(() => {
-        testApi.get(testId).then(
-            test => {
-                setTest(test)
-                dispatch(fetchViews(testId, alerting))
-            },
-            e => alerting.dispatchError( e, "FETCH_TEST", "Failed to fetch test " + testId)
+        fetchTest(testId, alerting)
+            .then(setTest)
+            .then(() => fetchViews(testId, alerting).then(setViews)
         )
     }, [testId])
     const datasets = useMemo(

@@ -3,7 +3,7 @@ import {useContext, useEffect, useState} from "react"
 import { UseSortByColumnOptions } from "react-table"
 import { Bullseye, Button, Spinner, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core"
 
-import {actionApi, AllowedSite} from "../../api"
+import { addSite, AllowedSite, deleteSite, getAllowedSites} from "../../api"
 
 
 import Table from "../../components/Table"
@@ -19,9 +19,7 @@ function AllowedSiteList() {
     const [prefixes, setPrefixes] = useState<AllowedSite[]>()
     useEffect(() => {
         setPrefixes(undefined)
-        actionApi.allowedSites().then(setPrefixes, e =>
-            alerting.dispatchError(e,"FETCH_ALLOWED_SITES", "Failed to fetch allowed sites")
-        )
+        getAllowedSites(alerting).then(setPrefixes)
     }, [])
     const columns: C[] = [
         {
@@ -50,9 +48,7 @@ function AllowedSiteList() {
                                 if (prefixes) {
                                     setPrefixes(prefixes.filter(p => p.id !== value))
                                 }
-                                actionApi.deleteSite(value).catch(e =>
-                                    alerting.dispatchError(e,"REMOVE_ALLOWED_SITE", "Failed to remove allowed site")
-                                )
+                                return deleteSite(value, alerting)
                             }}
                         >
                             Delete
@@ -69,12 +65,7 @@ function AllowedSiteList() {
             <AddAllowedSiteModal
                 isOpen={isOpen}
                 onClose={() => setOpen(false)}
-                onSubmit={prefix =>
-                    actionApi.addSite(prefix).then(
-                        p => setPrefixes([...(prefixes || []), p]),
-                        e => alerting.dispatchError(e,"ADD_ALLOWED_SITE", "Failed to add allowed site.")
-                    )
-                }
+                onSubmit={prefix => addSite(prefix, alerting)}
             />
             <Toolbar
                 className="pf-l-toolbar pf-u-justify-content-space-between pf-u-mx-xl pf-u-my-md"

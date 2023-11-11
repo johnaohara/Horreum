@@ -1,6 +1,6 @@
 import {useContext, useEffect, useRef, useState} from "react"
 import { Dropdown, DropdownItem, DropdownToggle, FormGroup, InputGroup, TextInput } from "@patternfly/react-core"
-import {actionApi, AllowedSite} from "../api"
+import { AllowedSite, getAllowedSites} from "../api"
 import {AppContext} from "../context/appContext";
 import {AppContextType} from "../context/@types/appContextTypes";
 
@@ -28,9 +28,7 @@ export default function HttpActionUrlSelector(props: HttpActionUrlSelectorProps)
     const [prefixes, setPrefixes] = useState<AllowedSite[]>([{ id: -1, prefix: "" }])
     useEffect(() => {
         if (props.active) {
-            actionApi.allowedSites().then(setPrefixes, e =>
-                alerting.dispatchError(e, "FETCH_ALLOWED_SITES", "Failed to fetch allowed sites")
-            )
+            getAllowedSites(alerting).then(setPrefixes)
         }
     }, [props.active])
 

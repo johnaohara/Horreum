@@ -16,7 +16,7 @@ import {
 import { useTester } from "../../auth"
 import { noop } from "../../utils"
 import { TestDispatch } from "./reducers"
-import { Action, actionApi} from "../../api"
+import {Action, getTestActions} from "../../api"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import { updateActions } from "./actions"
 import { testEventTypes } from "../actions/reducers"
@@ -46,11 +46,8 @@ export default function ActionsUI({ testId, testOwner, funcsRef, onModified }: A
         if (!testId || !isTester) {
             return
         }
-        actionApi.getTestActions(testId).then(
-            response => setActions(response),
-            error => alerting.dispatchError(error, "ACTION_FETCH", "Failed to fetch actions")
-        )
-    }, [testId, isTester, dispatch])
+        getTestActions(testId, alerting).then(setActions)
+    }, [testId, isTester])
 
     funcsRef.current = {
         save: () => dispatch(updateActions(testId, actions, alerting)).catch(noop),

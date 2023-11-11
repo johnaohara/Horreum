@@ -51,15 +51,17 @@ type TestSelectModalProps = {
     isOpen: boolean
     onClose(): void
     onConfirm(testId: number, group: string | undefined): Promise<any>
+    tests: Test[]
 }
 
-const CopyVarsModal = ({ isOpen, onClose, onConfirm }: TestSelectModalProps) => {
+const CopyVarsModal = ({ isOpen, onClose, onConfirm, tests  }: TestSelectModalProps) => {
     const { alerting } = useContext(AppContext) as AppContextType;
     const [test, setTest] = useState<SelectedTest>()
     const [working, setWorking] = useState(false)
     const [selectGroupOpen, setSelectGroupOpen] = useState(false)
     const [groups, setGroups] = useState<string[]>([])
     const [group, setGroup] = useState<string>()
+
     const reset = () => {
         setTest(undefined)
         setWorking(false)
@@ -93,6 +95,7 @@ const CopyVarsModal = ({ isOpen, onClose, onConfirm }: TestSelectModalProps) => 
             {!working && (
                 <>
                     <TestSelect
+                        testList={tests}
                         selection={test}
                         onSelect={t => {
                             setTest(t)
@@ -259,6 +262,9 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
     const dispatch = useDispatch()
     // dummy variable to cause reloading of variables
     const [reload, setReload] = useState(0)
+    const [tests, setTests] = useState<Test[]>([])
+
+
     useEffect(() => {
         alertingApi.variables(test.id).then(
             response => {
@@ -606,6 +612,7 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
                 message="Really drop all datapoints, calculating new ones?"
             />
             <CopyVarsModal
+                tests={tests}
                 isOpen={copyOpen}
                 onClose={() => setCopyOpen(false)}
                 onConfirm={(otherTestId, group) => {

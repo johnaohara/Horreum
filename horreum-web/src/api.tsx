@@ -18,11 +18,18 @@ import {
     UserApi,
 
 } from "./generated/apis"
-import {Configuration, Middleware} from "./generated"
+import {
+    Action, AllowedSite,
+    Configuration,
+    Middleware,
+    Schema,
+    Test,
+    TestListing,
+} from "./generated"
 import store from "./store"
 import {ADD_ALERT} from "./alerts"
 import {TryLoginAgain} from "./auth"
-
+import {AlertContextType} from "./context/@types/appContextTypes";
 export * from "./generated/models"
 
 const authMiddleware: Middleware = {
@@ -133,7 +140,7 @@ const configuration = new Configuration({
     middleware: [authMiddleware, serializationMiddleware, noResponseMiddleware],
 });
 
-export const actionApi = new ActionApi(configuration)
+const actionApi = new ActionApi(configuration)
 export const alertingApi = new AlertingApi(configuration)
 export const bannerApi = new BannerApi(configuration)
 export const changesApi = new ChangesApi(configuration)
@@ -150,3 +157,63 @@ export const testApi = new TestApi(configuration)
 export const uiApi = new UiApi(configuration)
 export const userApi = new UserApi(configuration)
 export const configApi = new ConfigApi(configuration)
+
+
+//Actions
+export function addAction(action: Action, alerting: AlertContextType): Promise<Action> {
+    return executeApiCall(actionApi.add(action), alerting, "ADD_ACTION", "Failed to add action");
+}
+export function addSite(prefix: string, alerting: AlertContextType): Promise<AllowedSite> {
+    return executeApiCall(actionApi.addSite(prefix), alerting, "ADD_ALLOWED_SITE", "Failed to add allowed site");
+}
+export function deleteSite(id: number, alerting: AlertContextType): Promise<void> {
+    return executeApiCall(actionApi.deleteSite(id), alerting, "REMOVE_ALLOWED_SITE", "Failed to remove allowed site");
+
+}
+export function getTestActions(testId: number, alerting: AlertContextType): Promise<Action[]> {
+    return executeApiCall(actionApi.getTestActions(testId), alerting, "GET_TEST_ACTIONS", "Failed to get test actions");
+}
+
+export function getAllowedSites(alerting: AlertContextType): Promise<AllowedSite[]> {
+    return executeApiCall(actionApi.allowedSites(), alerting, "GET_ALLOWED_SITES", "Failed to get allowed sites");
+}
+
+export function allActions(alerting: AlertContextType): Promise<Action[]> {
+    return executeApiCall(actionApi.list(), alerting, "GET_ACTIONS", "Failed to get actions");
+}
+
+export function removeAction(id: number, alerting: AlertContextType): Promise<void> {
+    return executeApiCall(actionApi._delete(id), alerting, "REMOVE_ACTION", "Failed to remove action");
+}
+
+export function updateAction(action: Action, alerting: AlertContextType): Promise<Action> {
+    return executeApiCall(actionApi.update(action), alerting, "UPDATE_ACTION", "Failed to update action");
+}
+
+//Schemas
+export function getSchema(schemaId: number, alerting: AlertContextType): Promise<Schema> {
+    return executeApiCall(schemaApi.getSchema(schemaId), alerting, "GET_SCHEMA", "Failed to fetch schema");
+}
+
+//Tests
+export function fetchTestsSummariesByFolder(alertingContext: AlertContextType, roles?: string, folder?: string): Promise<TestListing> {
+    return executeApiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
+}
+
+export function fetchTest(id: number, alerting: AlertContextType): Promise<Test> {
+    return executeApiCall(testApi.get(id), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
+}
+
+export function revokeTestToken(testId: number, tokenId: number, alerting: AlertContextType) {
+    return executeApiCall(testApi.dropToken(testId, tokenId), alerting, "REVOKE_TOKEN", "Failed to revoke token");
+}
+
+function executeApiCall<T>(apiCall: Promise<T>, alerting: AlertContextType, errorKey: string, errorMessage: string): Promise<T> {
+    return apiCall.then(
+        response => response,
+        error => alerting.dispatchError(error, errorKey, errorMessage)
+    )
+}
+
+
+
