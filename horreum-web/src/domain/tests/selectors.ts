@@ -1,6 +1,5 @@
 import { State } from "../../store"
 
-export const isLoading = (state: State) => state.tests.loading
 
 export function all(state: State) {
     if (!state.tests.byId) {
@@ -26,8 +25,4 @@ export const get = (id: number) => (state: State) => {
 
 export function subscriptions(id: number) {
     return (state: State) => state.tests.watches?.get(id)
-}
-
-export function allFolders() {
-    return (state: State) => state.tests.allFolders
 }

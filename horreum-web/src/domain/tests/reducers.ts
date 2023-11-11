@@ -85,12 +85,6 @@ export interface DeleteViewAction {
     viewId: number
 }
 
-export interface UpdateActionAction {
-    type: typeof actionTypes.UPDATE_ACTION
-    testId: number
-    action: Action
-}
-
 export interface UpdateTokensAction {
     type: typeof actionTypes.UPDATE_TOKENS
     testId: number
@@ -138,20 +132,11 @@ export interface UpdateRunsAndDatasetsAction {
 }
 
 export type TestAction =
-    | LoadingAction
-    | LoadedSummaryAction
-    | LoadedTestAction
     | DeleteAction
     | UpdateAccessAction
     | UpdateTestWatchAction
-    | LoadedViewsAction
-    | UpdateViewAction
-    | DeleteViewAction
-    | UpdateActionAction
     | UpdateTokensAction
     | RevokeTokenAction
-    | UpdateFoldersAction
-    | UpdateFolderAction
     | UpdateTransformersAction
     | UpdateChangeDetectionAction
     | UpdateRunsAndDatasetsAction
@@ -160,34 +145,6 @@ export type TestDispatch = ThunkDispatch<any, unknown, TestAction >
 
 export const reducer = (state = new TestsState(), action: TestAction) => {
     switch (action.type) {
-        case actionTypes.LOADING:
-            state.loading = action.isLoading
-            break
-        case actionTypes.LOADED_SUMMARY:
-            {
-                state.loading = false
-                let byId = Map<number, TestStorage>()
-                action.tests.forEach(test => {
-                    byId = byId.set(test.id, test)
-                })
-                state.byId = byId
-            }
-            break
-        case actionTypes.LOADED_TEST:
-            state.loading = false
-            if (!state.byId) {
-                state.byId = Map<number, TestStorage>()
-            }
-            state.byId = (state.byId as Map<number, Test>).set(action.test.id, action.test)
-            break
-        case actionTypes.LOADED_VIEWS:
-            {
-                const test = state.byId?.get(action.testId)
-                if (test) {
-                    state.byId = state.byId?.set(action.testId, {...test, views: action.views})
-                }
-            }
-            break
         case actionTypes.UPDATE_ACCESS:
             {
                 const test = state.byId?.get(action.id)
@@ -204,33 +161,6 @@ export const reducer = (state = new TestsState(), action: TestAction) => {
         case actionTypes.UPDATE_TEST_WATCH:
             {
                 state.watches = state.watches.merge(action.byId)
-            }
-            break
-        case actionTypes.UPDATE_VIEW:
-            {
-                const test = state.byId?.get(action.testId)
-                if (test) {
-                    const loadedViews : View[] = test.views || []
-                    let views
-                    if (loadedViews.some(v => v.id === action.view.id)) {
-                        views = loadedViews.map(v => (v.id === action.view.id ? action.view : v))
-                    } else {
-                        views = [...loadedViews, action.view]
-                    }
-                    state.byId = state.byId?.set(action.testId, { ...test, views })
-                }
-            }
-            break
-        case actionTypes.DELETE_VIEW:
-            {
-                const test = state.byId?.get(action.testId)
-                if (test) {
-                    // just ignore deleting default view, that's not legal
-                    state.byId = state.byId?.set(action.testId, {
-                        ...test,
-                        views: test.views?.filter(v => v.id !== action.viewId),
-                    })
-                }
             }
             break
         case actionTypes.UPDATE_TOKENS:
@@ -252,22 +182,6 @@ export const reducer = (state = new TestsState(), action: TestAction) => {
                 }
             }
             break
-        case actionTypes.UPDATE_ACTION:
-            {
-                //TODO: define state changes
-            }
-            break
-        case actionTypes.UPDATE_FOLDERS:
-            {
-                state.allFolders = action.folders
-            }
-            break
-        case actionTypes.UPDATE_FOLDER: {
-            // the byId has only the entries from current page, and if we're moving the
-            // test elsewhere we're effectively removing it from the current view
-            state.byId = state.byId?.remove(action.testId)
-            break
-        }
         case actionTypes.UPDATE_TRANSFORMERS: {
             const test = state.byId?.get(action.testId)
             if (test) {
