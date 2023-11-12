@@ -25,9 +25,9 @@ import { TabFunctionsRef } from "../../components/SavedTabs"
 
 import { useTester, teamToName, defaultTeamSelector } from "../../auth"
 import { noop } from "../../utils"
-import { addToken, revokeToken, updateAccess } from "./actions"
+import { addToken, revokeToken} from "./actions"
 import { TestDispatch } from "./reducers"
-import {Test, Access as authAccess } from "../../api"
+import {Test, Access as authAccess, updateAccess} from "../../api"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
 
@@ -157,7 +157,7 @@ function Access(props: AccessProps) {
             if (!props.test) {
                 return Promise.reject()
             }
-            return dispatch(updateAccess(props.test.id, owner, access, alerting))
+            return updateAccess(props.test.id, owner, access, alerting)
         },
         reset: () => {
             setOwner(props.test?.owner || defaultRole || "")

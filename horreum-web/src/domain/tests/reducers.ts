@@ -2,9 +2,6 @@ import * as actionTypes from "./actionTypes"
 import { Map } from "immutable"
 import { ThunkDispatch } from "redux-thunk"
 import {
-    Access,
-    Action,
-    Run,
     Test,
     TestToken,
     Transformer,
@@ -12,7 +9,6 @@ import {
 } from "../../api"
 import { AnyAction } from "redux"
 
-export type CompareFunction = (runs: Run[]) => string
 
 export interface TestStorage extends Test {
     datasets?: number // dataset count in AllTests
@@ -30,59 +26,9 @@ export class TestsState {
     watches: Map<number, string[] | undefined> = Map<number, string[] | undefined>()
 }
 
-export interface LoadingAction {
-    type: typeof actionTypes.LOADING
-    isLoading: boolean
-}
-
-export interface LoadedSummaryAction {
-    type: typeof actionTypes.LOADED_SUMMARY
-    tests: Test[]
-}
-
-export interface LoadedTestAction {
-    type: typeof actionTypes.LOADED_TEST
-    test: Test
-}
-
-export interface DeleteAction {
-    type: typeof actionTypes.DELETE
-    id: number
-}
-
-export interface UpdateAccessAction {
-    type: typeof actionTypes.UPDATE_ACCESS
-    id: number
-    owner: string
-    access: Access
-}
-
 export interface UpdateTestWatchAction {
     type: typeof actionTypes.UPDATE_TEST_WATCH
     byId: Map<number, string[] | undefined>
-}
-
-export interface GetViewsAction {
-    type: typeof actionTypes.GET_VIEWS
-    testId: number
-}
-
-export interface LoadedViewsAction {
-    type: typeof actionTypes.LOADED_VIEWS
-    testId: number
-    views: View[]
-}
-
-export interface UpdateViewAction {
-    type: typeof actionTypes.UPDATE_VIEW
-    testId: number
-    view: View
-}
-
-export interface DeleteViewAction {
-    type: typeof actionTypes.DELETE_VIEW
-    testId: number
-    viewId: number
 }
 
 export interface UpdateTokensAction {
@@ -97,17 +43,6 @@ export interface RevokeTokenAction {
     tokenId: number
 }
 
-export interface UpdateFoldersAction {
-    type: typeof actionTypes.UPDATE_FOLDERS
-    folders: string[]
-}
-
-export interface UpdateFolderAction {
-    type: typeof actionTypes.UPDATE_FOLDER
-    testId: number
-    prevFolder: string
-    newFolder: string
-}
 
 export interface UpdateTransformersAction {
     type: typeof actionTypes.UPDATE_TRANSFORMERS
@@ -132,8 +67,6 @@ export interface UpdateRunsAndDatasetsAction {
 }
 
 export type TestAction =
-    | DeleteAction
-    | UpdateAccessAction
     | UpdateTestWatchAction
     | UpdateTokensAction
     | RevokeTokenAction
@@ -145,19 +78,6 @@ export type TestDispatch = ThunkDispatch<any, unknown, TestAction >
 
 export const reducer = (state = new TestsState(), action: TestAction) => {
     switch (action.type) {
-        case actionTypes.UPDATE_ACCESS:
-            {
-                const test = state.byId?.get(action.id)
-                if (test) {
-                    state.byId = state.byId?.set(action.id, { ...test, owner: action.owner, access: action.access })
-                }
-            }
-            break
-        case actionTypes.DELETE:
-            {
-                state.byId = state.byId?.delete(action.id)
-            }
-            break
         case actionTypes.UPDATE_TEST_WATCH:
             {
                 state.watches = state.watches.merge(action.byId)

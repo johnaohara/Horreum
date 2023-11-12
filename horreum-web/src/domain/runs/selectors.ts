@@ -6,6 +6,5 @@ export const viewsSelector = (testID : number) => (state: State) => {
         return undefined
     }
     return state.tests.byId.get(testID)?.views
-
 }
 

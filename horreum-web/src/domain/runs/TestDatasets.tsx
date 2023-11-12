@@ -1,7 +1,6 @@
 import {useCallback, useContext, useEffect, useMemo, useState} from "react"
 import { useParams } from "react-router"
 import { useSelector } from "react-redux"
-import { useDispatch } from "react-redux"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -40,7 +39,6 @@ import {
 } from "react-table"
 import {DatasetSummary, DatasetList, SortDirection, datasetApi, testApi, ExportedLabelValues, fetchTest, Test} from "../../api"
 import { Description, ExecutionTime, renderCell } from "./components"
-import { TestDispatch } from "../tests/reducers"
 import SchemaList from "./SchemaList"
 import { NoSchemaInDataset } from "./NoSchema"
 import ButtonLink from "../../components/ButtonLink"
@@ -141,7 +139,6 @@ export default function TestDatasets() {
     const [viewId, setViewId] = useState<number>()
     const pagination = useMemo(() => ({ page, perPage, sort, direction }), [page, perPage, sort, direction])
 
-    const dispatch = useDispatch<TestDispatch>()
     const [loading, setLoading] = useState(false)
     const [datasets, setDatasets] = useState<DatasetList>()
     const [comparedDatasets, setComparedDatasets] = useState<DatasetSummary[]>()
@@ -170,7 +167,7 @@ export default function TestDatasets() {
                 alerting.dispatchError( error, "FETCH_DATASETS", "Failed to fetch datasets in test " + testId)
             )
             .finally(() => setLoading(false))
-    }, [dispatch, testId, filter, pagination, teams, viewId])
+    }, [ testId, filter, pagination, teams, viewId])
     useEffect(() => {
         document.title = (test?.name || "Loading...") + " | Horreum"
     }, [test])

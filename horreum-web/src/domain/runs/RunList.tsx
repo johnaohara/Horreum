@@ -49,100 +49,6 @@ type C = CellProps<RunSummary> &
 
 type RunColumn = Column<RunSummary> & UseSortByColumnOptions<RunSummary>
 
-const tableColumns: RunColumn[] = [
-    {
-        Header: "",
-        id: "selection",
-        disableSortBy: true,
-        Cell: ({ row }: C) => {
-            const props = row.getToggleRowSelectedProps()
-            delete props.indeterminate
-            // Note: to limit selection to 2 entries use
-            //   disabled={!row.isSelected && selectedFlatRows.length >= 2}
-            // with { row, selectedFlatRows }: C as this function's argument
-            return <input type="checkbox" {...props} />
-        },
-    },
-    {
-        Header: "Id",
-        accessor: "id",
-        Cell: (arg: C) => {
-            const {
-                cell: { value },
-            } = arg
-            return (
-                <>
-                    <NavLink to={`/run/${value}#run`}>
-                        <ArrowRightIcon />
-                        {"\u00A0"}
-                        {value}
-                    </NavLink>
-                    {arg.row.original.trashed && <TrashIcon style={{ fill: "#888", marginLeft: "10px" }} />}
-                </>
-            )
-        },
-    },
-    {
-        Header: "Schema(s)",
-        accessor: "schemas",
-        disableSortBy: true,
-        Cell: (arg: C) => {
-            const {
-                cell: { value },
-            } = arg
-            // LEFT JOIN results in schema.id == 0
-            if (!value || Object.keys(value).length == 0) {
-                return <NoSchemaInRun />
-            } else {
-                return <SchemaList schemas={value} validationErrors={arg.row.original.validationErrors || []} />
-            }
-        },
-    },
-    {
-        Header: "Description",
-        accessor: "description",
-        Cell: (arg: C) => Description(arg.cell.value),
-    },
-    {
-        Header: "Executed",
-        accessor: "start",
-        Cell: (arg: C) => ExecutionTime(arg.row.original),
-    },
-    {
-        Header: "Duration",
-        id: "(stop - start)",
-        accessor: (run: RunSummary) =>
-            Duration.fromMillis(toEpochMillis(run.stop) - toEpochMillis(run.start)).toFormat("hh:mm:ss.SSS"),
-    },
-    {
-        Header: "Datasets",
-        accessor: "datasets",
-        Cell: (arg: C) => arg.cell.value.length,
-    },
-    {
-        Header: "Owner",
-        id: "owner",
-        accessor: (row: RunSummary) => ({
-            owner: row.owner,
-            access: row.access,
-        }),
-        Cell: (arg: C) => (
-            <>
-                {teamToName(arg.cell.value.owner)}
-                <span style={{ marginLeft: '8px' }}>
-                <AccessIconOnly access={arg.cell.value.access} />
-                </span>
-            </>
-        ),
-    },
-    {
-        Header: "Actions",
-        id: "actions",
-        accessor: "id",
-        disableSortBy: true,
-        Cell: (arg: CellProps<RunSummary, number>) => Menu(arg.row.original),
-    },
-]
 
 export default function RunList() {
     const { alerting } = useContext(AppContext) as AppContextType;
@@ -163,14 +69,7 @@ export default function RunList() {
     const teams = useSelector(teamsSelector)
     const [isLoading, setIsLoading] = useState(false)
 
-    useEffect(() => {
-        setIsLoading(true)
-        fetchTest(testId, alerting)
-            .then(test => setTest(test))
-            .catch(noop)
-        setIsLoading(false)
-    }, [testId, teams])
-    useEffect(() => {
+    const loadTestRuns = () => {
         setIsLoading(true)
         runApi.listTestRuns(
             testId,
@@ -186,10 +85,22 @@ export default function RunList() {
             },
             error => alerting.dispatchError(error,"FETCH_RUNS", "Failed to fetch runs for test " + testId)
         ).finally(() => setIsLoading(false))
+    }
+
+    useEffect(() => {
+        setIsLoading(true)
+        fetchTest(testId, alerting)
+            .then(test => setTest(test))
+            .catch(noop)
+        setIsLoading(false)
+    }, [testId, teams])
+    useEffect(() => {
+        loadTestRuns()
     }, [test, showTrashed, page, perPage, sort, direction, pagination, testId])
     useEffect(() => {
         document.title = (test?.name || "Loading...") + " | Horreum"
     }, [test])
+
 
     const compareUrl = test && new Function("return " + test.compareUrl)()
     const [actualCompareUrl, compareError] = useMemo(() => {
@@ -211,6 +122,101 @@ export default function RunList() {
             alerting.dispatchError(compareError,"COMPARE_FAILURE", "Compare function failed")
         }
     }, [hasError, compareError])
+
+    const tableColumns: RunColumn[] = [
+        {
+            Header: "",
+            id: "selection",
+            disableSortBy: true,
+            Cell: ({ row }: C) => {
+                const props = row.getToggleRowSelectedProps()
+                delete props.indeterminate
+                // Note: to limit selection to 2 entries use
+                //   disabled={!row.isSelected && selectedFlatRows.length >= 2}
+                // with { row, selectedFlatRows }: C as this function's argument
+                return <input type="checkbox" {...props} />
+            },
+        },
+        {
+            Header: "Id",
+            accessor: "id",
+            Cell: (arg: C) => {
+                const {
+                    cell: { value },
+                } = arg
+                return (
+                    <>
+                        <NavLink to={`/run/${value}#run`}>
+                            <ArrowRightIcon />
+                            {"\u00A0"}
+                            {value}
+                        </NavLink>
+                        {arg.row.original.trashed && <TrashIcon style={{ fill: "#888", marginLeft: "10px" }} />}
+                    </>
+                )
+            },
+        },
+        {
+            Header: "Schema(s)",
+            accessor: "schemas",
+            disableSortBy: true,
+            Cell: (arg: C) => {
+                const {
+                    cell: { value },
+                } = arg
+                // LEFT JOIN results in schema.id == 0
+                if (!value || Object.keys(value).length == 0) {
+                    return <NoSchemaInRun />
+                } else {
+                    return <SchemaList schemas={value} validationErrors={arg.row.original.validationErrors || []} />
+                }
+            },
+        },
+        {
+            Header: "Description",
+            accessor: "description",
+            Cell: (arg: C) => Description(arg.cell.value),
+        },
+        {
+            Header: "Executed",
+            accessor: "start",
+            Cell: (arg: C) => ExecutionTime(arg.row.original),
+        },
+        {
+            Header: "Duration",
+            id: "(stop - start)",
+            accessor: (run: RunSummary) =>
+                Duration.fromMillis(toEpochMillis(run.stop) - toEpochMillis(run.start)).toFormat("hh:mm:ss.SSS"),
+        },
+        {
+            Header: "Datasets",
+            accessor: "datasets",
+            Cell: (arg: C) => arg.cell.value.length,
+        },
+        {
+            Header: "Owner",
+            id: "owner",
+            accessor: (row: RunSummary) => ({
+                owner: row.owner,
+                access: row.access,
+            }),
+            Cell: (arg: C) => (
+                <>
+                    {teamToName(arg.cell.value.owner)}
+                    <span style={{ marginLeft: '8px' }}>
+                <AccessIconOnly access={arg.cell.value.access} />
+                </span>
+                </>
+            ),
+        },
+        {
+            Header: "Actions",
+            id: "actions",
+            accessor: "id",
+            disableSortBy: true,
+            Cell: (arg: CellProps<RunSummary, number>) => Menu(arg.row.original, loadTestRuns),
+        },
+    ]
 
     return (
         <PageSection>

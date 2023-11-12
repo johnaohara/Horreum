@@ -2,7 +2,6 @@ import {useContext, useEffect, useState} from "react"
 import { useParams } from "react-router"
 import { useSelector } from "react-redux"
 
-import * as actions from "./actions"
 import { formatDateTime, noop } from "../../utils"
 import { teamsSelector, useTester } from "../../auth"
 
@@ -16,7 +15,7 @@ import DatasetData from "./DatasetData"
 import MetaData from "./MetaData"
 import RunData from "./RunData"
 import TransformationLogModal from "../tests/TransformationLogModal"
-import {Access, runApi, RunExtended} from "../../api"
+import {Access, fetchRunSummary, recalculateDatasets, runApi, RunExtended, updateAccess} from "../../api"
 import {AppContext} from "../../context/appContext";
 import { AppContextType} from "../../context/@types/appContextTypes";
 
@@ -35,28 +34,32 @@ export default function Run() {
     const teams = useSelector(teamsSelector)
     const isTester = useTester(run?.owner)
 
+    const retransformClick = () => {
+        if ( run !== undefined) {
+            setRecalculating(true)
+            recalculateDatasets(run.id, run.testid, alerting)
+                .then(recalcDataSets => setRun({...run,datasets: recalcDataSets}))
+                .finally(() => setRecalculating(false))
+        }
+    }
 
-    useEffect(() => {
+    const getRunSummary = () => {
         const urlParams = new URLSearchParams(window.location.search)
         const token = urlParams.get("token")
         setLoading(true)
-        runApi.getRunSummary(id, token === null ? undefined : token).then(
-            response =>
-                    setRun({
-                        data: "",
-                        schemas: [],
-                        metadata: response.hasMetadata ? "" : undefined,
-                        ...response,
-                    }),
-            error => alerting.dispatchError(error,"FETCH_RUN_SUMMARY", "Failed to fetch data for run " + id)
+        fetchRunSummary(id, token === null ? undefined : token, alerting).then(
+            response =>setRun({data: "",schemas: [],metadata: response.hasMetadata ? "" : undefined,...response})
         ).finally(() => setLoading(false))
+    }
+
+    useEffect(() => {
+        getRunSummary()
     }, [id, teams, updateCounter])
 
-    const updateAccess = (id: number, testid: number, owner: string, access: Access) : Promise<void> => {
-        return runApi.updateAccess(id, access, owner).then(
-            () => noop(),
-            error => alerting.dispatchError(error, "UPDATE_RUN_ACCESS", "Failed to update run access")
-        ) //TODO:: refresh view
+    const accessUpdate = (owner : string, access : Access) => {
+        if( run !== undefined) {
+            updateAccess(run.id, owner, access, alerting).then(() => getRunSummary())
+        }
     }
 
     return (
@@ -93,8 +96,7 @@ export default function Run() {
                                                 owner={run.owner}
                                                 access={run.access as Access}
                                                 readOnly={!isTester}
-                                                onUpdate={(owner, access) => updateAccess(run.id, run.testid, owner, access)
-                                                }
+                                                onUpdate={(owner, access) => accessUpdate(owner, access)}
                                             />
                                         </Td>
                                         <Td>{formatDateTime(run.start)}</Td>
@@ -105,15 +107,7 @@ export default function Run() {
                                                 <>
                                                     <Button
                                                         isDisabled={recalculating}
-                                                        onClick={() => {
-                                                            setRecalculating(true)
-                                                            actions.recalculateDatasets(run.id, run.testid, alerting)
-                                                                .then(recalcDataSets => {
-                                                                    setRun({...run,
-                                                                    datasets: recalcDataSets})
-                                                                })
-                                                                .finally(() => setRecalculating(false))
-                                                        }}
+                                                        onClick={retransformClick}
                                                     >
                                                         Re-transform datasets {recalculating && <Spinner size="md" />}
                                                     </Button>

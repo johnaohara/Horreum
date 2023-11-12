@@ -1,14 +1,12 @@
 import {useContext, useEffect, useState} from "react"
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector } from "react-redux"
 
 import { Select, SelectOption } from "@patternfly/react-core"
 
 import { teamsSelector } from "../auth"
-import { TestDispatch } from "../domain/tests/reducers"
-import { fetchFolders } from "../domain/tests/actions"
-import { UPDATE_FOLDERS } from "../domain/tests/actionTypes"
 import {AppContext} from "../context/appContext";
 import {AppContextType} from "../context/@types/appContextTypes";
+import {fetchFolders} from "../api";
 
 type FolderSelectProps = {
     folder: string
@@ -21,7 +19,6 @@ export default function FolderSelect({folder, onChange, canCreate, readOnly}: Fo
     const { alerting } = useContext(AppContext) as AppContextType;
     const [open, setOpen] = useState(false)
     const [folders, setFolders] = useState<string[]>([])
-    const dispatch = useDispatch<TestDispatch>()
     const teams = useSelector(teamsSelector)
     useEffect(() => {
         fetchFolders(alerting).then(setFolders)
@@ -40,7 +37,6 @@ export default function FolderSelect({folder, onChange, canCreate, readOnly}: Fo
                 setOpen(false)
             }}
             onCreateOption={newFolder => {
-                dispatch({ type: UPDATE_FOLDERS, folders: [...folders, newFolder].sort() })
                 onChange(newFolder)
             }}
             placeholderText="Horreum"

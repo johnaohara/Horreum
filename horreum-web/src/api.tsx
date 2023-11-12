@@ -19,17 +19,19 @@ import {
 
 } from "./generated/apis"
 import {
+    Access,
     Action, AllowedSite,
     Configuration,
-    Middleware,
+    Middleware, RunSummary,
     Schema,
     Test,
     TestListing, TestSummary, View,
 } from "./generated"
 import store from "./store"
-import {ADD_ALERT} from "./alerts"
+import {ADD_ALERT, constraintValidationFormatter} from "./alerts"
 import {TryLoginAgain} from "./auth"
 import {AlertContextType} from "./context/@types/appContextTypes";
+import {noop} from "./utils";
 export * from "./generated/models"
 
 const authMiddleware: Middleware = {
@@ -161,63 +163,81 @@ export const configApi = new ConfigApi(configuration)
 
 //Actions
 export function addAction(action: Action, alerting: AlertContextType): Promise<Action> {
-    return executeApiCall(actionApi.add(action), alerting, "ADD_ACTION", "Failed to add action");
+    return apiCall(actionApi.add(action), alerting, "ADD_ACTION", "Failed to add action");
 }
 export function addSite(prefix: string, alerting: AlertContextType): Promise<AllowedSite> {
-    return executeApiCall(actionApi.addSite(prefix), alerting, "ADD_ALLOWED_SITE", "Failed to add allowed site");
+    return apiCall(actionApi.addSite(prefix), alerting, "ADD_ALLOWED_SITE", "Failed to add allowed site");
 }
 export function deleteSite(id: number, alerting: AlertContextType): Promise<void> {
-    return executeApiCall(actionApi.deleteSite(id), alerting, "REMOVE_ALLOWED_SITE", "Failed to remove allowed site");
+    return apiCall(actionApi.deleteSite(id), alerting, "REMOVE_ALLOWED_SITE", "Failed to remove allowed site");
 
 }
 export function getTestActions(testId: number, alerting: AlertContextType): Promise<Action[]> {
-    return executeApiCall(actionApi.getTestActions(testId), alerting, "GET_TEST_ACTIONS", "Failed to get test actions");
+    return apiCall(actionApi.getTestActions(testId), alerting, "GET_TEST_ACTIONS", "Failed to get test actions");
 }
 
 export function getAllowedSites(alerting: AlertContextType): Promise<AllowedSite[]> {
-    return executeApiCall(actionApi.allowedSites(), alerting, "GET_ALLOWED_SITES", "Failed to get allowed sites");
+    return apiCall(actionApi.allowedSites(), alerting, "GET_ALLOWED_SITES", "Failed to get allowed sites");
 }
 
 export function allActions(alerting: AlertContextType): Promise<Action[]> {
-    return executeApiCall(actionApi.list(), alerting, "GET_ACTIONS", "Failed to get actions");
+    return apiCall(actionApi.list(), alerting, "GET_ACTIONS", "Failed to get actions");
 }
 
 export function removeAction(id: number, alerting: AlertContextType): Promise<void> {
-    return executeApiCall(actionApi._delete(id), alerting, "REMOVE_ACTION", "Failed to remove action");
+    return apiCall(actionApi._delete(id), alerting, "REMOVE_ACTION", "Failed to remove action");
 }
 
 export function updateAction(action: Action, alerting: AlertContextType): Promise<Action> {
-    return executeApiCall(actionApi.update(action), alerting, "UPDATE_ACTION", "Failed to update action");
+    return apiCall(actionApi.update(action), alerting, "UPDATE_ACTION", "Failed to update action");
 }
 
 //Schemas
 export function getSchema(schemaId: number, alerting: AlertContextType): Promise<Schema> {
-    return executeApiCall(schemaApi.getSchema(schemaId), alerting, "GET_SCHEMA", "Failed to fetch schema");
+    return apiCall(schemaApi.getSchema(schemaId), alerting, "GET_SCHEMA", "Failed to fetch schema");
 }
 
 //Tests
+export function allSubscriptions(alerting: AlertContextType, folder?: string) : Promise<{ [key: string]: Set<string>; }>{
+    return apiCall(subscriptionsApi.all(folder), alerting, "GET_ALL_SUBSCRIPTIONS", "Failed to fetch test subscriptions");
+}
+
+export function deleteTest(id: number, alerting: AlertContextType) : Promise<void>{
+    return apiCall(testApi._delete(id), alerting, "DELETE_TEST", "Failed to delete test " + id);
+}
 export function fetchTestsSummariesByFolder(alertingContext: AlertContextType, roles?: string, folder?: string): Promise<TestListing> {
-    return executeApiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
+    return apiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
+}
+export function fetchFolders(alerting: AlertContextType): Promise<string[]> {
+    return apiCall(testApi.folders(), alerting, "FETCH_FOLDERS", "Failed to fetch folders.");
 }
 
 export function fetchTestsSummary(alertingContext: AlertContextType,roles?: string, folder?: string) : Promise<TestListing> {
-    return executeApiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
+    return apiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
 }
 
 
 export function fetchTest(id: number, alerting: AlertContextType): Promise<Test> {
-    return executeApiCall(testApi.get(id), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
+    return apiCall(testApi.get(id), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
 }
 
 export function revokeTestToken(testId: number, tokenId: number, alerting: AlertContextType) {
-    return executeApiCall(testApi.dropToken(testId, tokenId), alerting, "REVOKE_TOKEN", "Failed to revoke token");
+    return apiCall(testApi.dropToken(testId, tokenId), alerting, "REVOKE_TOKEN", "Failed to revoke token");
+}
+
+export function sendTest(test: Test, alerting: AlertContextType): Promise<Test> {
+    return apiCall(testApi.add(test), alerting, "SEND_TEST", "Failed to send test");
+
 }
 
 
 export function fetchViews(testId: number, alerting: AlertContextType): Promise<View[]> {
-    return executeApiCall(uiApi.getViews(testId), alerting, "FETCH_VIEWS", "Failed to fetch test views; the views may not exist or you don't have sufficient permissions to access them.");
+    return apiCall(uiApi.getViews(testId), alerting, "FETCH_VIEWS", "Failed to fetch test views; the views may not exist or you don't have sufficient permissions to access them.");
 }
 
+export function updateAccess(id: number, owner: string, access: Access, alerting: AlertContextType) : Promise<void> {
+    return apiCall(testApi.updateAccess(id, access, owner), alerting, "UPDATE_ACCESS", "Failed to update test access");
+}
 export function updateView(alerting: AlertContextType, testId: number, view: View): Promise<number> {
     for (const c of view.components) {
         if (c.labels.length === 0) {
@@ -230,20 +250,41 @@ export function updateView(alerting: AlertContextType, testId: number, view: Vie
         }
     }
     view.testId = testId
-    return executeApiCall(uiApi.updateView(view), alerting, "VIEW_UPDATE", "View update failed.");
+    return apiCall(uiApi.updateView(view), alerting, "VIEW_UPDATE", "View update failed.");
 }
 
 export function deleteView(alerting: AlertContextType, testId: number, viewId: number): Promise<void> {
-    return executeApiCall(uiApi.deleteView(testId, viewId), alerting, "VIEW_DELETE", "View update failed.");
+    return apiCall(uiApi.deleteView(testId, viewId), alerting, "VIEW_DELETE", "View update failed.");
 }
 
 export function updateFolder(testId: number, prevFolder: string, newFolder: string, alerting: AlertContextType): Promise<void> {
-    return executeApiCall(testApi.updateFolder(testId, newFolder), alerting, "TEST_FOLDER_UPDATE", "Cannot update test folder");
+    return apiCall(testApi.updateFolder(testId, newFolder), alerting, "TEST_FOLDER_UPDATE", "Cannot update test folder");
+}
+
+///Runs
+export function fetchRunSummary(id: number, token: string | undefined, alerting: AlertContextType): Promise<RunSummary> {
+    return apiCall(runApi.getRunSummary(id, token), alerting, "FETCH_RUN_SUMMARY", "Failed to fetch data for run " + id);
+
+}
+
+export function recalculateDatasets(id: number, testid: number, alerting: AlertContextType) : Promise<number[]> {
+    return apiCall(runApi.recalculateDatasets(id), alerting, "RECALCULATE_DATASETS", "Failed to recalculate datasets");
+}
+
+export function trash(alerting: AlertContextType, id: number, testid: number, isTrashed = true) : Promise<void> {
+    return apiCall(runApi.trash(id, isTrashed), alerting, "RUN_TRASH", "Failed to trash run ID " + id);
+}
+
+export function updateRunAccess (id: number, testid: number, owner: string, access: Access, alerting: AlertContextType) : Promise<void> {
+    return apiCall(runApi.updateAccess(id, access, owner), alerting, "UPDATE_RUN_ACCESS", "Failed to update run access");
+}
+export function updateDescription(id: number, testid: number, description: string, alerting: AlertContextType) : Promise<void> {
+    return apiCall(runApi.updateDescription(id, description), alerting, "RUN_UPDATE", "Failed to update description for run ID " + id);
 }
 
 
-
-function executeApiCall<T>(apiCall: Promise<T>, alerting: AlertContextType, errorKey: string, errorMessage: string): Promise<T> {
+//Utils
+function apiCall<T>(apiCall: Promise<T>, alerting: AlertContextType, errorKey: string, errorMessage: string): Promise<T> {
     return apiCall.then(
         response => response,
         error => alerting.dispatchError(error, errorKey, errorMessage)

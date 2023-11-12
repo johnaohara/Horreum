@@ -1,17 +1,16 @@
-import { Component } from "react"
 import "@patternfly/patternfly/patternfly.css" //have to use this import to customize scss-variables.scss
 
-import { Nav, NavItem, NavList, Page, PageHeader, PageHeaderTools } from "@patternfly/react-core"
+import {Nav, NavItem, NavList, Page, PageHeader, PageHeaderTools} from "@patternfly/react-core"
 
-import { Router, NavLink } from "react-router-dom"
+import {Router, NavLink} from "react-router-dom"
 
-import { Provider, useSelector } from "react-redux"
-import { Route, Switch } from "react-router"
+import {Provider, useSelector} from "react-redux"
+import {Route, Switch} from "react-router"
 
 import store from "./store"
-import { isAdminSelector, LoginLogout } from "./auth"
-import { initKeycloak } from "./keycloak"
-import { UserProfileLink, UserSettings } from "./domain/user/UserSettings"
+import {isAdminSelector, LoginLogout} from "./auth"
+import {initKeycloak} from "./keycloak"
+import {UserProfileLink, UserSettings} from "./domain/user/UserSettings"
 
 import RunList from "./domain/runs/RunList"
 import TestDatasets from "./domain/runs/TestDatasets"
@@ -35,21 +34,16 @@ import TableReportConfigPage from "./domain/reports/TableReportConfigPage"
 import NotFound from "./404"
 
 import About from "./About"
-import ContextProvider, { history } from "./context/appContext";
+import ContextProvider, {history} from "./context/appContext";
 
-class App extends Component {
-    constructor(props: any) {
-        super(props)
-        initKeycloak(store.getState())
-    }
+export default function App() {
+    initKeycloak(store.getState())
 
-    render() {
-        return (
-            <Provider store={store}>
-                <Main />
-            </Provider>
-        )
-    }
+    return (
+        <Provider store={store}>
+            <Main/>
+        </Provider>
+    )
 }
 
 function Main() {
@@ -90,46 +84,44 @@ function Main() {
                                         </NavList>
                                     </Nav>
                                 }
-                                headerTools={
-                                    <PageHeaderTools>
-                                        <UserProfileLink />
-                                        <LoginLogout />
-                                        <About />
-                                    </PageHeaderTools>
-                                }
-                            />
+                        headerTools={
+                            <PageHeaderTools>
+                                <UserProfileLink />
+                                <LoginLogout />
+                                <About />
+                            </PageHeaderTools>
                         }
-                    >
-                        <Alerts />
-                        <Switch>
-                            <Route exact path="/" component={AllTests} />
-                            <Route exact path="/test" component={AllTests} />
-                            <Route exact path="/test/:testId" component={Test} />
+                    />
+                }
+            >
+                <Alerts/>
+                <Switch>
+                    <Route exact path="/" component={AllTests} />
+                    <Route exact path="/test" component={AllTests} />
+                    <Route exact path="/test/:testId" component={Test} />
 
-                            <Route exact path="/run/list/:testId" component={RunList} />
-                            <Route exact path="/run/dataset/list/:testId" component={TestDatasets} />
-                            <Route exact path="/run/:id" component={Run} />
-                            <Route exact path="/dataset/comparison" component={DatasetComparison} />
+                    <Route exact path="/run/list/:testId" component={RunList} />
+                    <Route exact path="/run/dataset/list/:testId" component={TestDatasets} />
+                    <Route exact path="/run/:id" component={Run} />
+                    <Route exact path="/dataset/comparison" component={DatasetComparison} />
 
-                            <Route exact path="/schema" component={SchemaList} />
-                            <Route path="/schema/:schemaId" component={Schema} />
+                    <Route exact path="/schema" component={SchemaList} />
+                    <Route path="/schema/:schemaId" component={Schema} />
 
-                            <Route exact path="/changes" component={Changes} />
+                    <Route exact path="/changes" component={Changes} />
 
-                            <Route exact path="/reports" component={Reports} />
-                            <Route exact path="/reports/table/config/:configId" component={TableReportConfigPage} />
-                            <Route exact path="/reports/table/:id" component={TableReportPage} />
+                    <Route exact path="/reports" component={Reports} />
+                    <Route exact path="/reports/table/config/:configId" component={TableReportConfigPage} />
+                    <Route exact path="/reports/table/:id" component={TableReportPage} />
 
-                            <Route exact path="/admin" component={Admin} />
-                            <Route exact path="/usersettings" component={UserSettings} />
-                            <Route component={NotFound} />
-                        </Switch>
-                    </Page>
-                    {/* <ContextHelp /> */}
-                </Router>
-            </ContextProvider>
-    </Provider>
+                    <Route exact path="/admin" component={Admin} />
+                    <Route exact path="/usersettings" component={UserSettings} />
+                    <Route component={NotFound} />
+                </Switch>
+            </Page>
+            {/* <ContextHelp /> */}
+        </Router>
+        </ContextProvider>
+        </Provider>
     )
 }
-
-export default App

@@ -5,9 +5,9 @@ import { TreeView, TreeViewDataItem } from "@patternfly/react-core"
 import { FolderIcon, FolderOpenIcon } from "@patternfly/react-icons"
 
 import { teamsSelector } from "../../auth"
-import { fetchFolders } from "./actions"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
+import {fetchFolders} from "../../api";
 
 type FoldersTreeProps = {
     folder: string

@@ -1,5 +1,3 @@
-import { useDispatch } from "react-redux"
-
 import { schemaApi } from "../../api"
 import IndirectLink from "../../components/IndirectLink"
 import {useContext} from "react";
@@ -12,7 +10,6 @@ type SchemaLinkProps = {
 
 export default function SchemaLink({ uri }: SchemaLinkProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const dispatch = useDispatch()
     return (
         <IndirectLink
             style={{ padding: 0, fontWeight: "var(--pf-global--link--FontWeight)" }}

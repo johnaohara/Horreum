@@ -22,9 +22,6 @@ import { EyeIcon, EyeSlashIcon, FolderOpenIcon } from "@patternfly/react-icons"
 
 import {
     fetchTestsSummariesByFolder,
-    updateAccess,
-    deleteTest,
-    allSubscriptions,
     addUserOrTeam,
     removeUserOrTeam,
 } from "./actions"
@@ -43,10 +40,20 @@ import { isAuthenticatedSelector, useTester, teamToName, teamsSelector, userProf
 import { CellProps, Column, UseSortByColumnOptions } from "react-table"
 import { TestStorage, TestDispatch } from "./reducers"
 import { noop } from "../../utils"
-import {SortDirection, testApi, TestQueryResult, Access, Test, mapTestSummaryToTest, updateFolder} from "../../api"
+import {
+    SortDirection,
+    testApi,
+    TestQueryResult,
+    Access,
+    Test,
+    mapTestSummaryToTest,
+    updateFolder,
+    deleteTest, updateAccess, allSubscriptions
+} from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
+import {Map} from "immutable";
 
 type WatchDropdownProps = {
     id: number
@@ -161,12 +168,12 @@ function useRecalculate(): MenuItem<undefined> {
 
 type DeleteConfig = {
     name: string
+    afterDelete(): void
 }
 
 function useDelete(config: DeleteConfig): MenuItem<DeleteConfig> {
     const { alerting } = useContext(AppContext) as AppContextType;
     const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false)
-    const dispatch = useDispatch<TestDispatch>()
     return [
         (props: ActionMenuProps, isOwner: boolean, close: () => void, config: DeleteConfig) => {
             return {
@@ -188,7 +195,7 @@ function useDelete(config: DeleteConfig): MenuItem<DeleteConfig> {
                         isOpen={confirmDeleteModalOpen}
                         onClose={() => setConfirmDeleteModalOpen(false)}
                         onDelete={() => {
-                            dispatch(deleteTest(props.id, alerting)).catch(noop)
+                            deleteTest(props.id, alerting).then(() => {config.afterDelete()})
                         }}
                         testId={props.id}
                         testName={config.name}
@@ -276,7 +283,6 @@ export default function AllTests() {
     const history = useHistory()
     const params = new URLSearchParams(history.location.search)
     const [folder, setFolder] = useState(params.get("folder"))
-    const [reloadCounter, setReloadCounter] = useState(0)
 
     document.title = "Tests | Horreum"
     const dispatch = useDispatch<TestDispatch>()
@@ -378,16 +384,17 @@ export default function AllTests() {
                 Cell: (arg: C) => {
                     const changeAccess = useChangeAccess({
                         onAccessUpdate: (id: number, owner: string, access: Access) => {
-                            dispatch(updateAccess(id, owner, access, alerting)).catch(noop)
+                            updateAccess(id, owner, access, alerting).then(() => loadTests())
                         },
                     })
                     const move = useMoveToFolder({
                         name: arg.row.original.name,
                         folder: folder || "",
-                        onMove: (id, newFolder) => updateFolder(id, folder || "", newFolder, alerting),
+                        onMove: (id, newFolder) => updateFolder(id, folder || "", newFolder, alerting).then(loadTests),
                     })
                     const del = useDelete({
                         name: arg.row.original.name,
+                        afterDelete: () => loadTests(),
                     })
                     const recalc = useRecalculate()
                     return (
@@ -405,28 +412,32 @@ export default function AllTests() {
         [dispatch, folder]
     )
 
-    // This selector causes re-render on any state update as the returned list is always new.
-    // We would need deepEquals for a proper comparison - the selector combines tests and watches
-    // and modifies the Test objects - that wouldn't trigger shallowEqual, though
     const [allTests, setTests] = useState<Test[]>([])
     const teams = useSelector(teamsSelector)
     const isAuthenticated = useSelector(isAuthenticatedSelector)
     const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
-    useEffect(() => {
-        //TODO: what do we do with these?
+
+    const loadTests = () => {
         fetchTestsSummariesByFolder(alerting, rolesFilter.key, folder || undefined)
             .then(summary => setTests(summary.tests?.map(t => mapTestSummaryToTest(t)) || []))
-    }, [teams, rolesFilter, folder, reloadCounter])
+    }
+
+    useEffect(() => {
+        loadTests()
+    }, [teams, rolesFilter, folder])
     useEffect(() => {
         if (isAuthenticated) {
+            //TOOD : figure out what to do with these subscriptions
             allSubscriptions(alerting, folder || undefined)
+                .then((response) => {Map(Object.entries(response).map(([key, value]) => [parseInt(key), [...value]]))})
         }
-    }, [isAuthenticated, rolesFilter, folder, reloadCounter])
+    }, [isAuthenticated, rolesFilter, folder])
     if (isAuthenticated) {
         columns = [watchingColumn, ...columns]
     }
 
     const isTester = useTester()
+
     return (
         <PageSection>
             <Card>
@@ -436,7 +447,7 @@ export default function AllTests() {
                             <ButtonLink to="/test/_new">New Test</ButtonLink>
                             <TestImportButton
                                 tests={allTests || []}
-                                onImported={() => setReloadCounter(reloadCounter + 1)}
+                                onImported={() => loadTests()}
                             />
                         </>
                     )}

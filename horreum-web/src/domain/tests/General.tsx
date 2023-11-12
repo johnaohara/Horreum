@@ -3,13 +3,11 @@ import { useSelector } from "react-redux"
 
 import { Form, FormGroup, Switch, TextArea, TextInput } from "@patternfly/react-core"
 
-import { sendTest } from "./actions"
-
 import FolderSelect from "../../components/FolderSelect"
 import OptionalFunction from "../../components/OptionalFunction"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 
-import {Test, Access } from "../../api"
+import {Test, Access, sendTest} from "../../api"
 import { useTester, defaultTeamSelector } from "../../auth"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";

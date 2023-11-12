@@ -1,7 +1,5 @@
 import * as actionTypes from "./actionTypes"
 import {
-    UpdateAccessAction,
-    DeleteAction,
     UpdateTestWatchAction,
     UpdateTokensAction,
     RevokeTokenAction,
@@ -13,17 +11,13 @@ import {
     testApi,
     subscriptionsApi,
     Action,
-    Test,
     Transformer,
     Watch,
     alertingApi,
-    Access, TestListing, updateAction
+    TestListing, updateAction
 } from "../../api"
 import {Dispatch} from "redux"
 import {Map} from "immutable"
-import {
-    constraintValidationFormatter,
-} from "../../alerts"
 import {AlertContextType} from "../../context/@types/appContextTypes";
 
 export function fetchTestsSummariesByFolder(alertingContext: AlertContextType, roles?: string, folder?: string): Promise<TestListing> {
@@ -35,19 +29,6 @@ export function fetchTestsSummariesByFolder(alertingContext: AlertContextType, r
     )
 }
 
-export function sendTest(test: Test, alerting: AlertContextType): Promise<Test> {
-    return testApi.add(test).then(
-        response => response,
-        error =>
-            alerting.dispatchError(
-                error,
-                "UPDATE_TEST",
-                "Failed to create/update test " + test.name,
-                constraintValidationFormatter("the saved test")
-            )
-    )
-
-}
 
 export function updateActions(testId: number, actions: Action[], alerting: AlertContextType) {
         const promises: any[] = []
@@ -89,35 +70,6 @@ export function revokeToken(testId: number, tokenId: number, alerting: AlertCont
                 }),
             error => alerting.dispatchError(error, "REVOKE_TOKEN", "Failed to revoke token")
         )
-}
-
-export function updateAccess(id: number, owner: string, access: Access, alerting: AlertContextType) {
-    return (dispatch: Dispatch<UpdateAccessAction>) =>
-        testApi.updateAccess(id, access, owner).then(
-            () => dispatch({type: actionTypes.UPDATE_ACCESS, id, owner, access}),
-            error =>
-                alerting.dispatchError(
-                    error,
-                    "UPDATE_ACCESS",
-                    "Test access update failed",
-                    constraintValidationFormatter("the saved test")
-                )
-        )
-}
-
-export function deleteTest(id: number, alerting: AlertContextType) {
-    return (dispatch: Dispatch<DeleteAction>) =>
-        testApi._delete(id).then(
-            () => dispatch({type: actionTypes.DELETE, id}),
-            error => alerting.dispatchError(error, "DELETE_TEST", "Failed to delete test " + id)
-        )
-}
-
-export function allSubscriptions(alerting: AlertContextType, folder?: string) : Promise<{ [key: string]: Set<string>; }>{
-    return subscriptionsApi.all(folder).then(
-        response => Map(Object.entries(response).map(([key, value]) => [parseInt(key), [...value]])),
-        error => alerting.dispatchError(error, "GET_ALL_SUBSCRIPTIONS", "Failed to fetch test subscriptions")
-    )
 }
 
 function watchToList(watch: Watch) {
@@ -184,12 +136,6 @@ export function removeUserOrTeam(id: number, userOrTeam: string, alerting: Alert
     }
 }
 
-export function fetchFolders(alerting: AlertContextType): Promise<string[]> {
-    return testApi.folders().then(
-        response => response,
-        error => alerting.dispatchError(error, "UPDATE_FOLDERS", "Failed to retrieve a list of existing folders")
-    )
-}
 
 export function updateTransformers(testId: number, transformers: Transformer[], alerting: AlertContextType) {
     return (dispatch: Dispatch<UpdateTransformersAction>) => {

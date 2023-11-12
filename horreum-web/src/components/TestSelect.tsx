@@ -5,6 +5,8 @@ import { Select, SelectGroup, SelectOption, SelectOptionObject, Split, SplitItem
 import {fetchTestsSummary, mapTestSummaryToTest, Test} from "../api"
 import {AppContext} from "../context/appContext";
 import {AppContextType} from "../context/@types/appContextTypes";
+import {useSelector} from "react-redux";
+import {teamsSelector} from "../auth";
 
 export interface SelectedTest extends SelectOptionObject {
     id: number
@@ -44,11 +46,12 @@ function groupByFolder(tests: Test[] | undefined | false) {
 
 export default function TestSelect(props: TestSelectProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
+    const teams = useSelector(teamsSelector)
     const [testList, setTestList] = useState<Test[]>()
-    useEffect(() => {
-        fetchTestsSummary(alerting, "*")
+    useMemo(() => {
+        fetchTestsSummary(alerting, undefined, "*")
             .then(summary => setTestList(summary.tests?.map(t => mapTestSummaryToTest(t)) || []))
-    }, [])
+    }, [teams]    )
     // a new instance of test list is created in every invocation => we need shallowEqual
     useEffect(() => {
         if (props.initialTestName && testList) {

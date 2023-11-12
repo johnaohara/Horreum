@@ -2,20 +2,15 @@ import {useContext, useState} from "react"
 import { Button, DropdownItem, Modal, Spinner, TextInput, Tooltip } from "@patternfly/react-core"
 import { WarningTriangleIcon } from "@patternfly/react-icons"
 import moment from "moment"
-import { useDispatch } from "react-redux"
-
-import { RunsDispatch } from "./reducers"
-import { resetToken, dropToken, updateAccess, trash, updateDescription, recalculateDatasets } from "./actions"
 import ActionMenu, {
     ActionMenuProps,
     MenuItem,
-    useShareLink,
     useChangeAccess,
     useDelete,
 } from "../../components/ActionMenu"
-import { formatDateTime, toEpochMillis, noop } from "../../utils"
+import { formatDateTime, toEpochMillis } from "../../utils"
 import { useTester } from "../../auth"
-import { Access, RunSummary } from "../../api"
+import {Access, recalculateDatasets, RunSummary, trash, updateDescription, updateRunAccess} from "../../api"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
 
@@ -76,7 +71,6 @@ export const ExecutionTime = (timestamps: StartStop) => (
 
 function useRestore(run: RunSummary): MenuItem<RunSummary> {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const dispatch = useDispatch<RunsDispatch>()
     return [
         (props: ActionMenuProps, isTester: boolean, close: () => void, run: RunSummary) => {
             return {
@@ -85,7 +79,7 @@ function useRestore(run: RunSummary): MenuItem<RunSummary> {
                         key="restore"
                         onClick={() => {
                             close()
-                            dispatch(trash(alerting, run.id, run.testid, false)).catch(noop)
+                            trash(alerting, run.id, run.testid, false).then()
                         }}
                     >
                         Restore
@@ -111,7 +105,6 @@ function useRecalculateDatasets(run: RunSummary): MenuItem<RunSummary> {
                         onClick={() => {
                             setRecalculating(true)
                             recalculateDatasets(props.id, run.testid, alerting)
-                                .then(noop) //do not do anything with the result
                                 .finally(() => {
                                     setRecalculating(false)
                                     close()
@@ -158,25 +151,18 @@ function useUpdateDescription(run: RunSummary): MenuItem<RunSummary> {
     ]
 }
 
-export function Menu(run: RunSummary) {
+export function Menu(run: RunSummary, refreshCallback: () => void) {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const dispatch = useDispatch<RunsDispatch>()
 
-    const shareLink = useShareLink({
-        token: run.token || undefined,
-        tokenToLink: (id, token) => "/run/" + id + "?token=" + token,
-        onTokenReset: id => dispatch(resetToken(alerting, id, run.testid)).catch(noop),
-        onTokenDrop: id => dispatch(dropToken(alerting, id, run.testid)).catch(noop),
-    })
     const changeAccess = useChangeAccess({
-        onAccessUpdate: (id, owner, access) => dispatch(updateAccess(alerting, id, run.testid, owner, access)).catch(noop),
+        onAccessUpdate: (id, owner, access) => updateRunAccess(id, run.testid, owner, access, alerting).then(refreshCallback),
     })
     const del = useDelete({
-        onDelete: id => dispatch(trash(alerting, id, run.testid)).catch(noop),
+        onDelete: id => trash(alerting, id, run.testid).then(refreshCallback),
     })
     const recalculate = useRecalculateDatasets(run)
     const restore = useRestore(run)
-    const menuItems: MenuItem<any>[] = [shareLink, changeAccess, recalculate]
+    const menuItems: MenuItem<any>[] = [changeAccess, recalculate]
     menuItems.push(run.trashed ? restore : del)
 
     const isTester = useTester(run.owner)
@@ -206,7 +192,6 @@ export function UpdateDescriptionModal({ isOpen, onClose, run }: UpdateDescripti
     const { alerting } = useContext(AppContext) as AppContextType;
     const [value, setValue] = useState(run.description)
     const [updating, setUpdating] = useState(false)
-    const dispatch = useDispatch<RunsDispatch>()
 
     return (
         <Modal variant="small" title="UpdateDescription" isOpen={isOpen} onClose={onClose}>
@@ -222,10 +207,8 @@ export function UpdateDescriptionModal({ isOpen, onClose, run }: UpdateDescripti
                 variant="primary"
                 onClick={() => {
                     setUpdating(true)
-                    dispatch(updateDescription(run.id, run.testid, value || "", alerting))
-                        .catch(_ => {
-                            setValue(run.description)
-                        })
+                    updateDescription(run.id, run.testid, value || "", alerting)
+                        .then(_ => setValue(run.description))
                         .finally(() => {
                             setUpdating(false)
                             onClose()
