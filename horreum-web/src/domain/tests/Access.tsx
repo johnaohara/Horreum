@@ -1,5 +1,5 @@
 import {useContext, useEffect, useState} from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 
 import {
     Button,
@@ -25,9 +25,7 @@ import { TabFunctionsRef } from "../../components/SavedTabs"
 
 import { useTester, teamToName, defaultTeamSelector } from "../../auth"
 import { noop } from "../../utils"
-import { addToken, revokeToken} from "./actions"
-import { TestDispatch } from "./reducers"
-import {Test, Access as authAccess, updateAccess} from "../../api"
+import {Test, Access as authAccess, updateAccess, revokeTestToken, addTestToken} from "../../api"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
 
@@ -151,7 +149,6 @@ function Access(props: AccessProps) {
         setAccess(props.test?.access || authAccess.Public)
     }, [props.test, defaultRole])
 
-    const dispatch = useDispatch<TestDispatch>()
     props.funcsRef.current = {
         save: () => {
             if (!props.test) {
@@ -232,7 +229,7 @@ function Access(props: AccessProps) {
                                 <Button
                                     onClick={() => {
                                         if (props.test?.id) {
-                                            dispatch(revokeToken(props.test?.id, token.id, alerting)).catch(noop)
+                                            revokeTestToken(props.test.id, token.id, alerting).then(noop)
                                         }
                                     }}
                                 >
@@ -251,7 +248,7 @@ function Access(props: AccessProps) {
                     if (!props.test) {
                         return Promise.reject()
                     }
-                    return dispatch(addToken(props.test.id, value, description, permissions, alerting))
+                    return addTestToken(props.test.id, value, description, permissions, alerting).then(noop)
                 }}
             />
         </Form>

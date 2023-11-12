@@ -1,11 +1,11 @@
 import {useCallback, useEffect, useState, useRef, useContext} from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { updateRunsAndDatasetsAction } from "./actions"
-import { get } from "./selectors"
 import { Bullseye, Button, Modal, Progress, Spinner } from "@patternfly/react-core"
-import {RecalculationStatus, testApi} from "../../api"
+import {fetchTest, RecalculationStatus, Test, testApi} from "../../api"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
+import {TestStorage} from "./reducers";
 
 
 type RecalculateDatasetsModalProps = {
@@ -16,7 +16,7 @@ type RecalculateDatasetsModalProps = {
 
 export default function RecalculateDatasetsModal(props: RecalculateDatasetsModalProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const test = useSelector(get(props.testId))
+    const [test, setTest] = useState<TestStorage | undefined>( undefined)
     const [progress, setProgress] = useState(-1)
     const [status, setStatus] = useState<RecalculationStatus>()
     const timerId = useRef<number>()
@@ -31,6 +31,11 @@ export default function RecalculateDatasetsModal(props: RecalculateDatasetsModal
         setStatus(undefined)
         props.onClose()
     }, [])
+
+    useEffect(() => {
+        fetchTest(props.testId, alerting).then(setTest)
+    }, [props.testId]);
+
     useEffect(() => {
         if (!props.isOpen) {
             return

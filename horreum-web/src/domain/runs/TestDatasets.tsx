@@ -44,10 +44,10 @@ import { NoSchemaInDataset } from "./NoSchema"
 import ButtonLink from "../../components/ButtonLink"
 import LabelsSelect, { SelectedLabels } from "../../components/LabelsSelect"
 import ViewSelect from "../../components/ViewSelect"
-import {viewsSelector} from "./selectors";
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
+import {State} from "../../store";
 
 type C = CellProps<DatasetSummary> &
     UseTableOptions<DatasetSummary> &
@@ -142,9 +142,18 @@ export default function TestDatasets() {
     const [loading, setLoading] = useState(false)
     const [datasets, setDatasets] = useState<DatasetList>()
     const [comparedDatasets, setComparedDatasets] = useState<DatasetSummary[]>()
-    const views = useSelector(viewsSelector(testId))
     const teams = useSelector(teamsSelector)
     const token = useSelector(tokenSelector)
+
+    const viewsSelector = (testID : number) => (state: State) => {
+        if (!state.tests.byId) {
+            return undefined
+        }
+        return state.tests.byId.get(testID)?.views
+    }
+
+    const views = useSelector(viewsSelector(testId))
+
     useEffect(() => {
         fetchTest(testId, alerting)
             .then(setTest)

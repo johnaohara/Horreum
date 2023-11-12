@@ -25,13 +25,12 @@ import {
     Middleware, RunSummary,
     Schema,
     Test,
-    TestListing, TestSummary, View,
+    TestListing, TestSummary, TestToken, View,
 } from "./generated"
 import store from "./store"
-import {ADD_ALERT, constraintValidationFormatter} from "./alerts"
+import {ADD_ALERT} from "./alerts"
 import {TryLoginAgain} from "./auth"
 import {AlertContextType} from "./context/@types/appContextTypes";
-import {noop} from "./utils";
 export * from "./generated/models"
 
 const authMiddleware: Middleware = {
@@ -198,6 +197,12 @@ export function getSchema(schemaId: number, alerting: AlertContextType): Promise
 }
 
 //Tests
+export function addTestToken(testId: number, value: string, description: string, permissions: number, alerting: AlertContextType) : Promise<TestToken[]> {
+    return apiCall(
+        testApi.addToken(testId, {id: -1, value, description, permissions}), alerting, "ADD_TOKEN", "Failed to add token for test " + testId)
+        .then( () => apiCall(testApi.tokens(testId), alerting, "FETCH_TOKENS", "Failed to fetch token list for test " + testId))
+}
+
 export function allSubscriptions(alerting: AlertContextType, folder?: string) : Promise<{ [key: string]: Set<string>; }>{
     return apiCall(subscriptionsApi.all(folder), alerting, "GET_ALL_SUBSCRIPTIONS", "Failed to fetch test subscriptions");
 }
@@ -221,7 +226,7 @@ export function fetchTest(id: number, alerting: AlertContextType): Promise<Test>
     return apiCall(testApi.get(id), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
 }
 
-export function revokeTestToken(testId: number, tokenId: number, alerting: AlertContextType) {
+export function revokeTestToken(testId: number, tokenId: number, alerting: AlertContextType) : Promise<void> {
     return apiCall(testApi.dropToken(testId, tokenId), alerting, "REVOKE_TOKEN", "Failed to revoke token");
 }
 

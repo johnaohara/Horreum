@@ -2,7 +2,7 @@ import {useContext, useEffect, useState} from "react"
 import { useParams } from "react-router"
 import { useSelector } from "react-redux"
 
-import { formatDateTime, noop } from "../../utils"
+import { formatDateTime } from "../../utils"
 import { teamsSelector, useTester } from "../../auth"
 
 import { Bullseye, Button, Card, CardHeader, CardBody, PageSection, Spinner } from "@patternfly/react-core"
@@ -15,7 +15,7 @@ import DatasetData from "./DatasetData"
 import MetaData from "./MetaData"
 import RunData from "./RunData"
 import TransformationLogModal from "../tests/TransformationLogModal"
-import {Access, fetchRunSummary, recalculateDatasets, runApi, RunExtended, updateAccess} from "../../api"
+import {Access, fetchRunSummary, recalculateDatasets, RunExtended, updateAccess} from "../../api"
 import {AppContext} from "../../context/appContext";
 import { AppContextType} from "../../context/@types/appContextTypes";
 

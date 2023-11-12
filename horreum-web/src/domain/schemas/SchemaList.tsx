@@ -6,7 +6,7 @@ import { useTester, teamToName } from "../../auth"
 import { noop } from "../../utils"
 import Table from "../../components/Table"
  
-import ActionMenu, { useShareLink, useChangeAccess, useDelete } from "../../components/ActionMenu"
+import ActionMenu, { useChangeAccess, useDelete } from "../../components/ActionMenu"
 import ButtonLink from "../../components/ButtonLink"
 import { CellProps, Column } from "react-table"
 import {Access, SortDirection, Schema, schemaApi} from "../../api"
@@ -94,12 +94,6 @@ export default function SchemaList() {
                 Header: "Actions",
                 accessor: "id",
                 Cell: arg => {
-                    const shareLink = useShareLink({
-                        token: arg.row.original.token || undefined,
-                        tokenToLink: (id, token) => "/schema/" + id + "?token=" + token,
-                        onTokenReset: id => noop,
-                        onTokenDrop: id => noop,
-                    })
                     const changeAccess = useChangeAccess({
                         onAccessUpdate: (id, owner, access) => {
                             return schemaApi.updateAccess(id, access, owner).then(
@@ -122,7 +116,7 @@ export default function SchemaList() {
                             owner={arg.row.original.owner}
                             access={arg.row.original.access as Access}
                             description={"schema " + arg.row.original.name + " (" + arg.row.original.uri + ")"}
-                            items={[shareLink, changeAccess, del]}
+                            items={[changeAccess, del]}
                         />
                     )
                 },

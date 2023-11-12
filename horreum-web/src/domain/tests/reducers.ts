@@ -3,7 +3,6 @@ import { Map } from "immutable"
 import { ThunkDispatch } from "redux-thunk"
 import {
     Test,
-    TestToken,
     Transformer,
     View
 } from "../../api"
@@ -31,17 +30,6 @@ export interface UpdateTestWatchAction {
     byId: Map<number, string[] | undefined>
 }
 
-export interface UpdateTokensAction {
-    type: typeof actionTypes.UPDATE_TOKENS
-    testId: number
-    tokens: TestToken[]
-}
-
-export interface RevokeTokenAction {
-    type: typeof actionTypes.REVOKE_TOKEN
-    testId: number
-    tokenId: number
-}
 
 
 export interface UpdateTransformersAction {
@@ -68,8 +56,6 @@ export interface UpdateRunsAndDatasetsAction {
 
 export type TestAction =
     | UpdateTestWatchAction
-    | UpdateTokensAction
-    | RevokeTokenAction
     | UpdateTransformersAction
     | UpdateChangeDetectionAction
     | UpdateRunsAndDatasetsAction
@@ -81,25 +67,6 @@ export const reducer = (state = new TestsState(), action: TestAction) => {
         case actionTypes.UPDATE_TEST_WATCH:
             {
                 state.watches = state.watches.merge(action.byId)
-            }
-            break
-        case actionTypes.UPDATE_TOKENS:
-            {
-                const test = state.byId?.get(action.testId)
-                if (test) {
-                    state.byId = state.byId?.set(action.testId, { ...test, tokens: action.tokens })
-                }
-            }
-            break
-        case actionTypes.REVOKE_TOKEN:
-            {
-                const test = state.byId?.get(action.testId)
-                if (test) {
-                    state.byId = state.byId?.set(action.testId, {
-                        ...test,
-                        tokens: test.tokens?.filter(t => t.id !== action.tokenId),
-                    })
-                }
             }
             break
         case actionTypes.UPDATE_TRANSFORMERS: {

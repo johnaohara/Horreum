@@ -1,8 +1,6 @@
 import * as actionTypes from "./actionTypes"
 import {
     UpdateTestWatchAction,
-    UpdateTokensAction,
-    RevokeTokenAction,
     UpdateChangeDetectionAction,
     UpdateTransformersAction,
     UpdateRunsAndDatasetsAction,
@@ -41,36 +39,6 @@ export function updateActions(testId: number, actions: Action[], alerting: Alert
         return Promise.all(promises)
 }
 
-export function addToken(testId: number, value: string, description: string, permissions: number, alerting: AlertContextType) {
-    return (dispatch: Dispatch<UpdateTokensAction>) =>
-        testApi.addToken(testId, {id: -1, value, description, permissions}).then(
-            () =>
-                testApi.tokens(testId).then(
-                    tokens =>
-                        dispatch({
-                            type: actionTypes.UPDATE_TOKENS,
-                            testId,
-                            tokens,
-                        }),
-                    error =>
-                        alerting.dispatchError(error, "FETCH_TOKENS", "Failed to fetch token list for test " + testId)
-                ),
-            error => alerting.dispatchError(error, "ADD_TOKEN", "Failed to add token for test " + testId)
-        )
-}
-
-export function revokeToken(testId: number, tokenId: number, alerting: AlertContextType) {
-    return (dispatch: Dispatch<RevokeTokenAction>) =>
-        testApi.dropToken(testId, tokenId).then(
-            () =>
-                dispatch({
-                    type: actionTypes.REVOKE_TOKEN,
-                    testId,
-                    tokenId,
-                }),
-            error => alerting.dispatchError(error, "REVOKE_TOKEN", "Failed to revoke token")
-        )
-}
 
 function watchToList(watch: Watch) {
     return [...watch.users, ...watch.teams, ...watch.optout.map((u: string) => `!${u}`)]
