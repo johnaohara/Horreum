@@ -2,7 +2,7 @@ import {CSSProperties, useContext, useEffect, useMemo, useState} from "react"
 
 import { Select, SelectGroup, SelectOption, SelectOptionObject, Split, SplitItem } from "@patternfly/react-core"
 
-import {fetchTestsSummary, mapTestSummaryToTest, Test} from "../api"
+import {fetchTests, Test} from "../api"
 import {AppContext} from "../context/appContext";
 import {AppContextType} from "../context/@types/appContextTypes";
 import {useSelector} from "react-redux";
@@ -49,9 +49,9 @@ export default function TestSelect(props: TestSelectProps) {
     const teams = useSelector(teamsSelector)
     const [testList, setTestList] = useState<Test[]>()
     useMemo(() => {
-        fetchTestsSummary(alerting, undefined, "*")
-            .then(summary => setTestList(summary.tests?.map(t => mapTestSummaryToTest(t)) || []))
-    }, [teams]    )
+        fetchTests(alerting, undefined, "*")
+            .then(setTestList)
+    }, [teams]   )
     // a new instance of test list is created in every invocation => we need shallowEqual
     useEffect(() => {
         if (props.initialTestName && testList) {

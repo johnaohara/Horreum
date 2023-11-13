@@ -37,7 +37,16 @@ import {
     Column,
     UseSortByColumnOptions,
 } from "react-table"
-import {DatasetSummary, DatasetList, SortDirection, datasetApi, testApi, ExportedLabelValues, fetchTest, Test} from "../../api"
+import {
+    DatasetSummary,
+    DatasetList,
+    SortDirection,
+    datasetApi,
+    testApi,
+    fetchTest,
+    Test,
+    View,
+} from "../../api"
 import { Description, ExecutionTime, renderCell } from "./components"
 import SchemaList from "./SchemaList"
 import { NoSchemaInDataset } from "./NoSchema"
@@ -47,7 +56,6 @@ import ViewSelect from "../../components/ViewSelect"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
-import {State} from "../../store";
 
 type C = CellProps<DatasetSummary> &
     UseTableOptions<DatasetSummary> &
@@ -127,7 +135,7 @@ export default function TestDatasets() {
     const { alerting } = useContext(AppContext) as AppContextType;
     const { testId: stringTestId } = useParams<any>()
     const testId = parseInt(stringTestId)
-
+    // const [tests, setTests] = useState<Test[] | undefined>(undefined)
     const [test, setTest] = useState<Test | undefined>(undefined)
     console.log(test)
     const [filter, setFilter] = useState<SelectedLabels>()
@@ -145,14 +153,20 @@ export default function TestDatasets() {
     const teams = useSelector(teamsSelector)
     const token = useSelector(tokenSelector)
 
-    const viewsSelector = (testID : number) => (state: State) => {
-        if (!state.tests.byId) {
-            return undefined
-        }
-        return state.tests.byId.get(testID)?.views
-    }
+    const views: View[] = [] //useSelector(viewsSelector(testId))
 
-    const views = useSelector(viewsSelector(testId))
+    // useEffect(() => {
+    //     fetchTests(alerting)
+    //         .then(setTests)
+    // }, [teams])
+
+    useEffect(() => {
+        fetchTest(testId, alerting)
+            .then(setTest)
+        // .then(fetchViews(testId, alerting).then())
+        // ).catch(noop)
+        //         .then( () => dispatch(actions.fetchViews(testId, alerting)) )
+    }, [testId, teams, token])
 
     useEffect(() => {
         fetchTest(testId, alerting)
@@ -329,7 +343,7 @@ export default function TestDatasets() {
                 {comparedDatasets && (
                     <CardBody style={{ overflowX: "auto" }}>
                         <Title headingLevel="h3">Datasets for comparison</Title>
-                        <Table columns={columns} data={comparedDatasets} isLoading={false} showNumberOfRows={false} />
+                        <Table<DatasetSummary> columns={columns} data={comparedDatasets} isLoading={false} showNumberOfRows={false} />
                         <ButtonLink
                             to={
                                 `/dataset/comparison?testId=${testId}&` +

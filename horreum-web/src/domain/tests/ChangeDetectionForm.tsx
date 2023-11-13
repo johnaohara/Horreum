@@ -1,5 +1,4 @@
 import {useMemo, useState, useEffect, useContext} from "react"
-import { useDispatch, useSelector } from "react-redux"
 import { useHistory } from "react-router"
 
 import { useTester } from "../../auth"
@@ -38,7 +37,6 @@ import TestSelect, { SelectedTest } from "../../components/TestSelect"
 
 
 import DatasetLogModal from "./DatasetLogModal"
-import { subscriptions as subscriptionsSelector } from "./selectors"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import { Test } from "../../api"
 import VariableForm from "./VariableForm"
@@ -50,10 +48,9 @@ type TestSelectModalProps = {
     isOpen: boolean
     onClose(): void
     onConfirm(testId: number, group: string | undefined): Promise<any>
-    tests: Test[]
 }
 
-const CopyVarsModal = ({ isOpen, onClose, onConfirm, tests  }: TestSelectModalProps) => {
+const CopyVarsModal = ({ isOpen, onClose, onConfirm  }: TestSelectModalProps) => {
     const { alerting } = useContext(AppContext) as AppContextType;
     const [test, setTest] = useState<SelectedTest>()
     const [working, setWorking] = useState(false)
@@ -257,10 +254,8 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
     const [ignoreNoSubscriptions, setIgnoreNoSubscriptions] = useState(false)
     const [defaultChangeDetectionConfigs, setDefaultChangeDetectionConfigs] = useState<ChangeDetection[]>([])
     const [changeDetectionModels, setChangeDetectionModels] = useState<ConditionConfig[]>([])
-    const dispatch = useDispatch()
     // dummy variable to cause reloading of variables
     const [reload, setReload] = useState(0)
-    const [tests, setTests] = useState<Test[]>([])
 
 
     useEffect(() => {
@@ -308,15 +303,13 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
                 return Promise.reject("No test!")
             }
             return Promise.all([
-                dispatch(
-                    updateChangeDetection(
-                        alerting,
-                        test?.id || -1,
-                        timelineLabels,
-                        timelineFunction,
-                        fingerprintLabels,
-                        fingerprintFilter
-                    )
+                updateChangeDetection(
+                    alerting,
+                    test?.id || -1,
+                    timelineLabels,
+                    timelineFunction,
+                    fingerprintLabels,
+                    fingerprintFilter
                 ),
                 alertingApi.updateVariables(test.id, variables)
                     .catch(error =>
@@ -362,7 +355,7 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
 
     const [renameGroupOpen, setRenameGroupOpen] = useState(false)
     const [isLogOpen, setLogOpen] = useState(false)
-    const subscriptions = useSelector(subscriptionsSelector(test?.id || -1))?.filter(s => !s.startsWith("!"))
+    const subscriptions: string[] = [] //useSelector(subscriptionsSelector(test?.id || -1))?.filter(s => !s.startsWith("!"))
 
     const history = useHistory()
     useEffect(() => {
@@ -610,7 +603,6 @@ export default function ChangeDetectionForm({ test, onModified, funcsRef }: Chan
                 message="Really drop all datapoints, calculating new ones?"
             />
             <CopyVarsModal
-                tests={tests}
                 isOpen={copyOpen}
                 onClose={() => setCopyOpen(false)}
                 onConfirm={(otherTestId, group) => {

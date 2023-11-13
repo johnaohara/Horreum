@@ -1,6 +1,6 @@
 import {useState, useMemo, useEffect, useContext} from "react"
 
-import { useDispatch, useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 import { useHistory } from "react-router"
 
 import {
@@ -32,17 +32,21 @@ import TestImportButton from "./TestImportButton"
 
 import { isAuthenticatedSelector, useTester, teamToName, teamsSelector, userProfileSelector } from "../../auth"
 import { CellProps, Column, UseSortByColumnOptions } from "react-table"
-import { TestStorage, TestDispatch } from "./reducers"
 import { noop } from "../../utils"
 import {
     SortDirection,
     testApi,
     TestQueryResult,
     Access,
-    Test,
     mapTestSummaryToTest,
     updateFolder,
-    deleteTest, updateAccess, allSubscriptions, addUserOrTeam, fetchTestsSummariesByFolder, removeUserOrTeam
+    deleteTest,
+    updateAccess,
+    allSubscriptions,
+    addUserOrTeam,
+    fetchTestsSummariesByFolder,
+    removeUserOrTeam,
+    TestStorage
 } from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
@@ -59,7 +63,6 @@ const WatchDropdown = ({ id, watching }: WatchDropdownProps) => {
     const [open, setOpen] = useState(false)
     const teams = useSelector(teamsSelector)
     const profile = useSelector(userProfileSelector)
-    const dispatch = useDispatch<TestDispatch>()
     if (watching === undefined) {
         return <Spinner size="sm" />
     }
@@ -279,7 +282,6 @@ export default function AllTests() {
     const [folder, setFolder] = useState(params.get("folder"))
 
     document.title = "Tests | Horreum"
-    const dispatch = useDispatch<TestDispatch>()
     const watchingColumn: Col = {
         Header: "Watching",
         accessor: "watching",
@@ -306,7 +308,7 @@ export default function AllTests() {
             .then(setTets)
             .catch(error => alerting.dispatchError(error, "FETCH_Tests", "Failed to fetch Tests"))
             .finally(() => setLoading(false))
-    }, [pagination, dispatch])
+    }, [pagination])
 
     let columns: Col[] = useMemo(
         () => [
@@ -403,10 +405,10 @@ export default function AllTests() {
                 },
             },
         ],
-        [dispatch, folder]
+        [ folder]
     )
 
-    const [allTests, setTests] = useState<Test[]>([])
+    const [allTests, setTests] = useState<TestStorage[]>([])
     const teams = useSelector(teamsSelector)
     const isAuthenticated = useSelector(isAuthenticatedSelector)
     const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
@@ -465,7 +467,7 @@ export default function AllTests() {
                             history.replace(f ? `/test?folder=${f}` : "/test")
                         }}
                     />
-                    <Table columns={columns}
+                    <Table<TestStorage> columns={columns}
                         data={allTests || []}
                         isLoading={loading}
                         sortBy={[{ id: "name", desc: false }]}

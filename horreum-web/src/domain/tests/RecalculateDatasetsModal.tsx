@@ -1,11 +1,8 @@
 import {useCallback, useEffect, useState, useRef, useContext} from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { updateRunsAndDatasetsAction } from "./actions"
 import { Bullseye, Button, Modal, Progress, Spinner } from "@patternfly/react-core"
-import {fetchTest, RecalculationStatus, Test, testApi} from "../../api"
+import {fetchTest, RecalculationStatus, testApi, TestStorage, updateRunsAndDatasetsAction} from "../../api"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
-import {TestStorage} from "./reducers";
 
 
 type RecalculateDatasetsModalProps = {
@@ -20,7 +17,6 @@ export default function RecalculateDatasetsModal(props: RecalculateDatasetsModal
     const [progress, setProgress] = useState(-1)
     const [status, setStatus] = useState<RecalculationStatus>()
     const timerId = useRef<number>()
-    const dispatch = useDispatch()
     const totalRuns = status ? status.totalRuns : test?.runs
     const onClose = useCallback(() => {
         if (timerId.current) {
@@ -42,7 +38,7 @@ export default function RecalculateDatasetsModal(props: RecalculateDatasetsModal
         }
         if (test?.runs === undefined) {
             testApi.getRecalculationStatus(props.testId).then(status => {
-                dispatch(updateRunsAndDatasetsAction(props.testId, status.totalRuns, status.datasets))
+                updateRunsAndDatasetsAction(props.testId, status.totalRuns, status.datasets)
             })
         }
     }, [test, props.isOpen])
@@ -67,16 +63,15 @@ export default function RecalculateDatasetsModal(props: RecalculateDatasetsModal
                                                   .then(status => {
                                                       setStatus(status)
                                                       setProgress(status.finished)
-                                                      dispatch(
-                                                          updateRunsAndDatasetsAction(
-                                                              props.testId,
-                                                              status.totalRuns,
-                                                              status.datasets
-                                                          )
+                                                      updateRunsAndDatasetsAction(
+                                                          props.testId,
+                                                          status.totalRuns,
+                                                          status.datasets
                                                       )
                                                       if (status.finished === status.totalRuns) {
                                                           onClose()
                                                       }
+
                                                   })
                                                   .catch(error => {
                                                       alerting.dispatchError(

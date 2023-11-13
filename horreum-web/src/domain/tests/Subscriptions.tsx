@@ -1,6 +1,4 @@
 import {ReactElement, useState, useEffect, useContext} from "react"
-import { useDispatch } from "react-redux"
-import { TestDispatch } from "./reducers"
 import { noop } from "../../utils"
 import { Divider, DualListSelector } from "@patternfly/react-core"
 import {getSubscription, updateSubscription, userApi, UserData} from "../../api"
@@ -38,7 +36,6 @@ function teamElement(team: string): ReactElement {
 
 export default function Subscriptions(props: SubscriptionsProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const dispatch = useDispatch<TestDispatch>()
     const isTester = useTester(props.testOwner)
     const [availableUsers, setAvailableUsers] = useState<ReactElement[]>([])
     const [watchingUsers, setWatchingUsers] = useState<ReactElement[]>([])
@@ -78,7 +75,7 @@ export default function Subscriptions(props: SubscriptionsProps) {
             teamRoles => setAvailableTeams(teamRoles.map(teamElement)),
             error => alerting.dispatchError(error,"TEAM_LOOKUP", "Team lookup failed")
         )
-    }, [isTester, reloadCounter, props.testId, dispatch])
+    }, [isTester, reloadCounter, props.testId])
 
     props.funcsRef.current = {
         save: () =>

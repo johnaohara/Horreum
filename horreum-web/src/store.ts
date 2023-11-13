@@ -7,18 +7,15 @@ const { routerMiddleware, routerReducer } = createReduxHistoryContext({
     history: createBrowserHistory(),
 })
 
-import { TestsState, reducer as testReducer } from "./domain/tests/reducers"
 import { AuthState, reducer as authReducer } from "./auth"
 
 
 export interface State {
     auth: AuthState
-    tests: TestsState
 }
 
 const appReducers = combineReducers({
     router: routerReducer,
-    tests: testReducer,
     auth: authReducer,
 })
 const enhancer = compose(applyMiddleware(thunk), applyMiddleware(routerMiddleware), enableDevMode())
