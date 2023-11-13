@@ -1,10 +1,9 @@
 import {ReactElement, useState, useEffect, useContext} from "react"
 import { useDispatch } from "react-redux"
-import { getSubscription, updateSubscription } from "./actions"
 import { TestDispatch } from "./reducers"
 import { noop } from "../../utils"
 import { Divider, DualListSelector } from "@patternfly/react-core"
-import {userApi, UserData} from "../../api"
+import {getSubscription, updateSubscription, userApi, UserData} from "../../api"
 import { teamToName, useTester } from "../../auth"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import UserSearch from "../../components/UserSearch"
@@ -55,7 +54,7 @@ export default function Subscriptions(props: SubscriptionsProps) {
         if (!isTester) {
             return
         }
-        dispatch(getSubscription(props.testId, alerting)).then(watch => {
+        getSubscription(props.testId, alerting).then(watch => {
             if (watch.users.length > 0) {
                 userApi.info(watch.users).then(
                     users => setWatchingUsers(users.map(userElement)),
@@ -83,14 +82,12 @@ export default function Subscriptions(props: SubscriptionsProps) {
 
     props.funcsRef.current = {
         save: () =>
-            dispatch(
                 updateSubscription({
                     testId: props.testId,
                     users: watchingUsers.map(u => u.key as string),
                     optout: optoutUsers.map(u => u.key as string),
                     teams: watchingTeams.map(t => t.key as string),
-                }, alerting)
-            ),
+                }, alerting),
         reset: () => setReloadCounter(reloadCounter + 1),
     }
 

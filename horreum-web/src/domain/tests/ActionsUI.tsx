@@ -13,9 +13,8 @@ import {
 } from "@patternfly/react-core"
 
 import { useTester } from "../../auth"
-import {Action, getTestActions} from "../../api"
+import {Action, getTestActions, updateActions} from "../../api"
 import { TabFunctionsRef } from "../../components/SavedTabs"
-import { updateActions } from "./actions"
 import { testEventTypes } from "../actions/reducers"
 import ActionComponentForm from "../actions/ActionComponentForm"
 import ActionLogModal from "./ActionLogModal"

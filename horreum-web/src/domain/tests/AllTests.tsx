@@ -20,12 +20,6 @@ import {
 import { NavLink } from "react-router-dom"
 import { EyeIcon, EyeSlashIcon, FolderOpenIcon } from "@patternfly/react-icons"
 
-import {
-    fetchTestsSummariesByFolder,
-    addUserOrTeam,
-    removeUserOrTeam,
-} from "./actions"
-
 import Table from "../../components/Table"
 import ActionMenu, { MenuItem, ActionMenuProps, useChangeAccess } from "../../components/ActionMenu"
 import ButtonLink from "../../components/ButtonLink"
@@ -48,7 +42,7 @@ import {
     Test,
     mapTestSummaryToTest,
     updateFolder,
-    deleteTest, updateAccess, allSubscriptions
+    deleteTest, updateAccess, allSubscriptions, addUserOrTeam, fetchTestsSummariesByFolder, removeUserOrTeam
 } from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
@@ -74,26 +68,26 @@ const WatchDropdown = ({ id, watching }: WatchDropdownProps) => {
     const isOptOut = watching.some(u => u.startsWith("!"))
     if (watching.some(u => u === profile?.username)) {
         personalItems.push(
-            <DropdownItem key="__self" onClick={() => dispatch(removeUserOrTeam(id, self, alerting)).catch(noop)}>
+            <DropdownItem key="__self" onClick={() => removeUserOrTeam(id, self, alerting).catch(noop)}>
                 Stop watching personally
             </DropdownItem>
         )
     } else {
         personalItems.push(
-            <DropdownItem key="__self" onClick={() => dispatch(addUserOrTeam(id, self, alerting)).catch(noop)}>
+            <DropdownItem key="__self" onClick={() => addUserOrTeam(id, self, alerting).catch(noop)}>
                 Watch personally
             </DropdownItem>
         )
     }
     if (isOptOut) {
         personalItems.push(
-            <DropdownItem key="__optout" onClick={() => dispatch(removeUserOrTeam(id, "!" + self, alerting)).catch(noop)}>
+            <DropdownItem key="__optout" onClick={() => removeUserOrTeam(id, "!" + self, alerting).catch(noop)}>
                 Resume watching per team settings
             </DropdownItem>
         )
     } else if (watching.some(u => u.endsWith("-team"))) {
         personalItems.push(
-            <DropdownItem key="__optout" onClick={() => dispatch(addUserOrTeam(id, "!" + self, alerting)).catch(noop)}>
+            <DropdownItem key="__optout" onClick={() => addUserOrTeam(id, "!" + self, alerting).catch(noop)}>
                 Opt-out of all notifications
             </DropdownItem>
         )
@@ -119,11 +113,11 @@ const WatchDropdown = ({ id, watching }: WatchDropdownProps) => {
             {personalItems}
             {teams.map(team =>
                 watching.some(u => u === team) ? (
-                    <DropdownItem key={team} onClick={() => dispatch(removeUserOrTeam(id, team, alerting)).catch(noop)}>
+                    <DropdownItem key={team} onClick={() => removeUserOrTeam(id, team, alerting).catch(noop)}>
                         Stop watching as team {teamToName(team)}
                     </DropdownItem>
                 ) : (
-                    <DropdownItem key={team} onClick={() => dispatch(addUserOrTeam(id, team, alerting)).catch(noop)}>
+                    <DropdownItem key={team} onClick={() => addUserOrTeam(id, team, alerting).catch(noop)}>
                         Watch as team {teamToName(team)}
                     </DropdownItem>
                 )

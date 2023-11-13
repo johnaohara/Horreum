@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { useHistory } from "react-router"
 
 import { useTester } from "../../auth"
-import { ChangeDetection, ConditionConfig, Variable, alertingApi} from "../../api"
+import {ChangeDetection, ConditionConfig, Variable, alertingApi, updateChangeDetection} from "../../api"
 import { NavLink } from "react-router-dom"
 
 import {
@@ -39,7 +39,6 @@ import TestSelect, { SelectedTest } from "../../components/TestSelect"
 
 import DatasetLogModal from "./DatasetLogModal"
 import { subscriptions as subscriptionsSelector } from "./selectors"
-import { updateChangeDetection } from "./actions"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import { Test } from "../../api"
 import VariableForm from "./VariableForm"

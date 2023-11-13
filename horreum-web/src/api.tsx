@@ -25,12 +25,21 @@ import {
     Middleware, RunSummary,
     Schema,
     Test,
-    TestListing, TestSummary, TestToken, View,
+    TestListing, TestSummary, TestToken, Transformer, View, Watch,
 } from "./generated"
 import store from "./store"
 import {ADD_ALERT} from "./alerts"
 import {TryLoginAgain} from "./auth"
 import {AlertContextType} from "./context/@types/appContextTypes";
+import {Dispatch} from "redux";
+import {
+    UpdateChangeDetectionAction,
+    UpdateRunsAndDatasetsAction,
+    UpdateTestWatchAction,
+    UpdateTransformersAction
+} from "./domain/tests/reducers";
+import * as actionTypes from "./domain/tests/actionTypes";
+import {Map} from "immutable";
 export * from "./generated/models"
 
 const authMiddleware: Middleware = {
@@ -203,6 +212,10 @@ export function addTestToken(testId: number, value: string, description: string,
         .then( () => apiCall(testApi.tokens(testId), alerting, "FETCH_TOKENS", "Failed to fetch token list for test " + testId))
 }
 
+export function addUserOrTeam(id: number, userOrTeam: string, alerting: AlertContextType) : Promise<String[]> {
+    return apiCall(subscriptionsApi.addUserOrTeam(id, userOrTeam), alerting, "ADD_SUBSCRIPTION", "Failed to add test subscriptions");
+}
+
 export function allSubscriptions(alerting: AlertContextType, folder?: string) : Promise<{ [key: string]: Set<string>; }>{
     return apiCall(subscriptionsApi.all(folder), alerting, "GET_ALL_SUBSCRIPTIONS", "Failed to fetch test subscriptions");
 }
@@ -224,6 +237,9 @@ export function fetchTestsSummary(alertingContext: AlertContextType,roles?: stri
 
 export function fetchTest(id: number, alerting: AlertContextType): Promise<Test> {
     return apiCall(testApi.get(id), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
+}
+export function removeUserOrTeam(id: number, userOrTeam: string, alerting: AlertContextType) {
+    return apiCall(subscriptionsApi.removeUserOrTeam(id, userOrTeam), alerting, "REMOVE_SUBSCRIPTION", "Failed to remove test subscriptions");
 }
 
 export function revokeTestToken(testId: number, tokenId: number, alerting: AlertContextType) : Promise<void> {
@@ -264,6 +280,86 @@ export function deleteView(alerting: AlertContextType, testId: number, viewId: n
 
 export function updateFolder(testId: number, prevFolder: string, newFolder: string, alerting: AlertContextType): Promise<void> {
     return apiCall(testApi.updateFolder(testId, newFolder), alerting, "TEST_FOLDER_UPDATE", "Cannot update test folder");
+}
+
+export function updateActions(testId: number, actions: Action[], alerting: AlertContextType) {
+    const promises: any[] = []
+    actions.forEach(action => {
+        promises.push(
+            (action.testId = testId),
+            updateAction(action, alerting)
+        )
+    })
+    return Promise.all(promises)
+}
+
+
+function watchToList(watch: Watch) {
+    return [...watch.users, ...watch.teams, ...watch.optout.map((u: string) => `!${u}`)]
+}
+
+export function getSubscription(testId: number, alerting: AlertContextType) : Promise<Watch> {
+    return apiCall(subscriptionsApi.get(testId), alerting, "SUBSCRIPTION_LOOKUP", "Subscription lookup failed");
+}
+
+export function updateSubscription(watch: Watch, alerting: AlertContextType) : Promise<void> {
+    return apiCall(subscriptionsApi.update(watch.testId, watch), alerting, "SUBSCRIPTION_UPDATE", "Failed to update subscription");
+}
+
+
+
+
+export function updateTransformers(testId: number, transformers: Transformer[], alerting: AlertContextType) {
+    return (dispatch: Dispatch<UpdateTransformersAction>) => {
+        return testApi.updateTransformers(
+            testId,
+            transformers.map(t => t.id)
+        ).then(
+            () => dispatch({type: actionTypes.UPDATE_TRANSFORMERS, testId, transformers}),
+            error =>
+                alerting.dispatchError(
+                    error,
+                    "UPDATE_TRANSFORMERS",
+                    "Failed to update transformers for test " + testId
+                )
+        )
+    }
+}
+
+export function updateChangeDetection(
+    alerting: AlertContextType,
+    testId: number,
+    timelineLabels: string[] | undefined,
+    timelineFunction: string | undefined,
+    fingerprintLabels: string[],
+    fingerprintFilter: string | undefined
+) {
+    return (dispatch: Dispatch<UpdateChangeDetectionAction>) => {
+        const update = {
+            timelineLabels,
+            timelineFunction,
+            fingerprintLabels,
+            fingerprintFilter,
+        }
+        return alertingApi.updateChangeDetection(testId, update).then(
+            () =>
+                dispatch({
+                    type: actionTypes.UPDATE_CHANGE_DETECTION,
+                    testId,
+                    ...update,
+                }),
+            error =>
+                alerting.dispatchError(error, "UPDATE_FINGERPRINT", "Failed to update fingerprint for test " + testId)
+        )
+    }
+}
+
+export function updateRunsAndDatasetsAction(
+    testId: number,
+    runs: number,
+    datasets: number
+): UpdateRunsAndDatasetsAction {
+    return {type: actionTypes.UPDATE_RUNS_AND_DATASETS, testId, runs, datasets}
 }
 
 ///Runs
