@@ -134,8 +134,6 @@ public class ExperimentServiceImpl implements ExperimentService {
       return results;
    }
 
-   @WithRoles(extras = Roles.HORREUM_SYSTEM)
-   @Transactional
    public void onDatapointsCreated(DataPoint.DatasetProcessedEvent event) {
       // TODO: experiments can use any datasets, including private ones, possibly leaking the information
       runExperiments(event.dataset, result -> Util.registerTxSynchronization(tm, value -> messageBus.publish(MessageBusChannels.EXPERIMENT_RESULT_NEW, event.dataset.testId, result)),

@@ -69,4 +69,35 @@ public class DataPoint {
             return "DataPoint.Event{dataPoint=" + this.dataPoint + ", notify=" + this.notify + '}';
         }
     }
+
+    public static class EventNew {
+
+        public int datasetId;
+        public Instant timestamp;
+        public int variableId;
+        public double value;
+        public boolean notify;
+
+        public EventNew() {
+        }
+
+        public EventNew(int datasetId, Instant timestamp, int variableId, double value, boolean notify) {
+            this.datasetId = datasetId;
+            this.timestamp = timestamp;
+            this.variableId = variableId;
+            this.value = value;
+            this.notify = notify;
+        }
+
+        @Override
+        public String toString() {
+            return "EventNew{" +
+                    "datasetId=" + datasetId +
+                    ", timestamp=" + timestamp +
+                    ", variableId=" + variableId +
+                    ", value=" + value +
+                    ", notify=" + notify +
+                    '}';
+        }
+    }
 }

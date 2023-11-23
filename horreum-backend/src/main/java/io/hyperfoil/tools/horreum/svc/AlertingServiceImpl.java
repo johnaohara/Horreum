@@ -288,7 +288,8 @@ public class AlertingServiceImpl implements AlertingService {
               .createNativeQuery("SELECT fp.fingerprint FROM fingerprint fp WHERE dataset_id = ?1")
               .setParameter(1, dataset.id)
               .addScalar("fingerprint", JsonBinaryType.INSTANCE)
-              .getResultStream().findFirst();
+              .setMaxResults(1)
+              .uniqueResultOptional();
       JsonNode fingerprint;
       if (result.isPresent()) {
          fingerprint = result.get();
@@ -437,7 +438,7 @@ public class AlertingServiceImpl implements AlertingService {
                      error -> logCalculationMessage(dataset, PersistentLogDAO.ERROR, "Evaluation of variable %s failed: %s", data.fullName(), error),
                      info -> logCalculationMessage(dataset, PersistentLogDAO.INFO, "Evaluation of variable %s: %s", data.fullName(), info));
                if (value != null) {
-                  createDataPoint(dataset, finalTimestamp, data.variableId, value, notify);
+                  mediator.queueDatapointEvent(new DataPoint.EventNew(dataset.id, finalTimestamp, data.variableId, value, notify));
                } else {
                   if (recalculation != null) {
                      recalculation.datasetsWithoutValue.put(dataset.id, dataset.getInfo());
@@ -475,7 +476,7 @@ public class AlertingServiceImpl implements AlertingService {
                   }
                   missingValueVariables.add(data.fullName());
                } else {
-                  createDataPoint(dataset, finalTimestamp, data.variableId, value, notify);
+                  mediator.queueDatapointEvent(new DataPoint.EventNew(dataset.id, finalTimestamp, data.variableId, value, notify));
                }
             },
             (data, exception, code) -> logCalculationMessage(dataset, PersistentLogDAO.ERROR, "Evaluation of variable %s failed: '%s' Code:<pre>%s</pre>", data.fullName(), exception.getMessage(), code),
@@ -494,7 +495,9 @@ public class AlertingServiceImpl implements AlertingService {
    }
 
    @Transactional
-   void createDataPoint(DatasetDAO dataset, Instant timestamp, int variableId, double value, boolean notify) {
+   @WithRoles(extras = Roles.HORREUM_SYSTEM)
+   void createDataPoint(Integer datasetId, Instant timestamp, int variableId, double value, boolean notify) {
+      DatasetDAO dataset = DatasetDAO.findById(datasetId);
       DataPointDAO dataPoint = new DataPointDAO();
       dataPoint.variable = VariableDAO.findById(variableId);
       dataPoint.dataset = dataset;
@@ -536,8 +539,6 @@ public class AlertingServiceImpl implements AlertingService {
             level, "changes", msg).persist();
    }
 
-   @WithRoles(extras = Roles.HORREUM_SYSTEM)
-   @Transactional
    void onNewDataPoint(DataPoint.Event event) {
       DataPoint dataPoint = event.dataPoint;
       if (dataPoint.variable != null && dataPoint.variable.id != null) {
@@ -583,7 +584,8 @@ public class AlertingServiceImpl implements AlertingService {
             .setParameter(2, valid != null ? valid.timestamp : LONG_TIME_AGO, StandardBasicTypes.INSTANT)
             .setParameter(3, valid == null || !valid.inclusive)
             .setParameter(4, fingerprint, JsonBinaryType.INSTANCE)
-            .getResultStream().filter(Objects::nonNull).findFirst().orElse(null);
+              .setMaxResults(1)
+              .uniqueResult();
       if (nextTimestamp == null) {
          log.debugf("No further datapoints for change detection");
          return;
@@ -603,16 +605,15 @@ public class AlertingServiceImpl implements AlertingService {
          log.debugf("Deleted %d changes %s %s for variable %d, fingerprint %s", numDeleted, valid.inclusive ? ">" : ">=", valid.timestamp, variable.id, fingerprint);
       }
 
-      var changeQuery = session.createQuery("SELECT c FROM Change c LEFT JOIN Fingerprint fp ON c.dataset.id = fp.dataset.id " +
+      ChangeDAO lastChange = session.createQuery("SELECT c FROM Change c LEFT JOIN Fingerprint fp ON c.dataset.id = fp.dataset.id " +
             "WHERE c.variable = ?1 AND (c.timestamp < ?2 OR (c.timestamp = ?2 AND ?3 = TRUE)) AND " +
             "TRUE = function('json_equals', fp.fingerprint, ?4) " +
-            "ORDER by c.timestamp DESC", ChangeDAO.class);
-      changeQuery
+            "ORDER by c.timestamp DESC", ChangeDAO.class)
             .setParameter(1, variable)
             .setParameter(2, valid != null ? valid.timestamp : VERY_DISTANT_FUTURE)
             .setParameter(3, valid == null || valid.inclusive)
-            .setParameter(4, fingerprint, JsonBinaryType.INSTANCE);
-      ChangeDAO lastChange = changeQuery.setMaxResults(1).getResultStream().findFirst().orElse(null);
+            .setParameter(4, fingerprint, JsonBinaryType.INSTANCE)
+              .setMaxResults(1).uniqueResult();
 
       Instant changeTimestamp = LONG_TIME_AGO;
       if (lastChange != null) {

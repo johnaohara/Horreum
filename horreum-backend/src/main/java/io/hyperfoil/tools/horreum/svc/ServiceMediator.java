@@ -71,11 +71,15 @@ public class ServiceMediator {
 
     @OnOverflow(value = OnOverflow.Strategy.BUFFER, bufferSize = 10000)
     @Channel("dataset-event-out")
-    Emitter<Dataset.EventNew> dataSetEmitter;
+    private Emitter<Dataset.EventNew> dataSetEmitter;
 
     @OnOverflow(value = OnOverflow.Strategy.BUFFER, bufferSize = 10000)
     @Channel("run-recalc-out")
-    Emitter<Integer> runEmitter;
+    private Emitter<Integer> runEmitter;
+
+    @OnOverflow(value = OnOverflow.Strategy.BUFFER, bufferSize = 10000)
+    @Channel("datapoint-event-out")
+    private Emitter<DataPoint.EventNew> dataPointEmitter;
 
     public ServiceMediator() {
     }
@@ -147,6 +151,19 @@ public class ServiceMediator {
     void queueDatasetEvents(Dataset.EventNew event) {
         dataSetEmitter.send(event);
     }
+
+    @Incoming("datapoint-event-in")
+    @Blocking(ordered = false, value = "horreum.datapoint.pool")
+    @ActivateRequestContext
+    public void processDatapointEvents(DataPoint.EventNew newEvent) {
+        alertingService.createDataPoint(newEvent.datasetId, newEvent.timestamp, newEvent.variableId, newEvent.value, newEvent.notify);
+    }
+
+    @Transactional(Transactional.TxType.NOT_SUPPORTED)
+    void queueDatapointEvent(DataPoint.EventNew event) {
+        dataPointEmitter.send(event);
+    }
+
     @Incoming("run-recalc-in")
     @Blocking(ordered = false, value = "horreum.run.pool")
     @ActivateRequestContext

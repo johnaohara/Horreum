@@ -183,7 +183,6 @@ or by placing a `horreum-backend/.env` file with content like
 
 ```
 horreum.dev-services.postgres.database-backup=<path/to/db>
-horreum.dev-services.keycloak.image=quay.io/keycloak/keycloak:20.0.1
 horreum.dev-services.keycloak.db-username=<keycloak-user-name>
 horreum.dev-services.keycloak.db-password=<keycloak-user-password>
 
