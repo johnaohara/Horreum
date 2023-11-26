@@ -45,7 +45,7 @@ import {
     testApi,
     fetchTest,
     Test,
-    View,
+    View, ExportedLabelValues, fetchViews,
 } from "../../api"
 import { Description, ExecutionTime, renderCell } from "./components"
 import SchemaList from "./SchemaList"
@@ -153,28 +153,14 @@ export default function TestDatasets() {
     const teams = useSelector(teamsSelector)
     const token = useSelector(tokenSelector)
 
-    const views: View[] = [] //useSelector(viewsSelector(testId))
-
-    // useEffect(() => {
-    //     fetchTests(alerting)
-    //         .then(setTests)
-    // }, [teams])
+    const [views, setViews] = useState<View[]>([]);
 
     useEffect(() => {
         fetchTest(testId, alerting)
             .then(setTest)
-        // .then(fetchViews(testId, alerting).then())
-        // ).catch(noop)
-        //         .then( () => dispatch(actions.fetchViews(testId, alerting)) )
+            .then(() => fetchViews(testId, alerting).then(setViews))
     }, [testId, teams, token])
 
-    useEffect(() => {
-        fetchTest(testId, alerting)
-            .then(setTest)
-            // .then(fetchViews(testId, alerting).then())
-    // ).catch(noop)
-    //         .then( () => dispatch(actions.fetchViews(testId, alerting)) )
-    }, [testId, teams, token])
     useEffect(() => {
         setLoading(true)
         datasetApi.listByTest(

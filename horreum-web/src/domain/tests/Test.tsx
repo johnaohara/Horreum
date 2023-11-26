@@ -31,7 +31,7 @@ import Access from "./Access"
 import Subscriptions from "./Subscriptions"
 import Transformers from "./Transformers"
 import MissingDataNotifications from "./MissingDataNotifications"
-import {fetchTest, fetchViews, Test} from "../../api";
+import {fetchTest, fetchViews, Test, View} from "../../api";
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
 
@@ -45,6 +45,7 @@ export default function TestView() {
     const params = useParams<Params>()
     const [testId, setTestId] = useState(params.testId === "_new" ? 0 : parseInt(params.testId))
     const [test, setTest] = useState<Test | undefined>()
+    const [views, setViews] = useState<View[]>( [])
     const [modified, setModified] = useState(false)
     const generalFuncsRef = useRef<TabFunctions>()
     const accessFuncsRef = useRef<TabFunctions>()
@@ -66,7 +67,7 @@ export default function TestView() {
             setLoaded(false)
             fetchTest(testId, alerting)
                 .then(setTest)
-                .then( () => fetchViews(testId, alerting) )
+                .then( () => fetchViews(testId, alerting).then(setViews) )
                 .finally(() => setLoaded(true))
         }
     }, [testId, teams])
@@ -151,7 +152,7 @@ export default function TestView() {
                             >
                                 <Views
                                     testId={testId}
-                                    views={ [] }
+                                    views={ views }
                                     testOwner={test ? test.owner : undefined}
                                     onModified={setModified}
                                     funcsRef={viewFuncsRef}
