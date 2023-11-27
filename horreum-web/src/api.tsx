@@ -214,10 +214,6 @@ export function addUserOrTeam(id: number, userOrTeam: string, alerting: AlertCon
     return apiCall(subscriptionsApi.addUserOrTeam(id, userOrTeam), alerting, "ADD_SUBSCRIPTION", "Failed to add test subscriptions");
 }
 
-export function allSubscriptions(alerting: AlertContextType, folder?: string) : Promise<{ [key: string]: Set<string>; }> {
-    return apiCall(subscriptionsApi.all(folder), alerting, "GET_ALL_SUBSCRIPTIONS", "Failed to fetch test subscriptions");
-}
-
 export function deleteTest(id: number, alerting: AlertContextType) : Promise<void>{
     return apiCall(testApi._delete(id), alerting, "DELETE_TEST", "Failed to delete test " + id);
 }

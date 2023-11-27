@@ -43,7 +43,6 @@ import {
     updateFolder,
     deleteTest,
     updateAccess,
-    allSubscriptions,
     addUserOrTeam,
     fetchTestsSummariesByFolder,
     removeUserOrTeam,
