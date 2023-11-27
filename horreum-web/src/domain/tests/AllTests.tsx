@@ -33,6 +33,7 @@ import TestImportButton from "./TestImportButton"
 import { isAuthenticatedSelector, useTester, teamToName, teamsSelector, userProfileSelector } from "../../auth"
 import { CellProps, Column, UseSortByColumnOptions } from "react-table"
 import { noop } from "../../utils"
+import { Map } from "immutable"
 import {
     SortDirection,
     testApi,
@@ -46,12 +47,11 @@ import {
     addUserOrTeam,
     fetchTestsSummariesByFolder,
     removeUserOrTeam,
-    TestStorage
+    TestStorage, subscriptionsApi
 } from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
-import {Map} from "immutable";
 
 type WatchDropdownProps = {
     id: number
@@ -420,14 +420,7 @@ export default function AllTests() {
 
     useEffect(() => {
         loadTests()
-    }, [teams, rolesFilter, folder])
-    useEffect(() => {
-        if (isAuthenticated) {
-            //TOOD : figure out what to do with these subscriptions
-            allSubscriptions(alerting, folder || undefined)
-                .then((response) => {Map(Object.entries(response).map(([key, value]) => [parseInt(key), [...value]]))})
-        }
-    }, [isAuthenticated, rolesFilter, folder])
+    }, [isAuthenticated, teams, rolesFilter, folder])
     if (isAuthenticated) {
         columns = [watchingColumn, ...columns]
     }

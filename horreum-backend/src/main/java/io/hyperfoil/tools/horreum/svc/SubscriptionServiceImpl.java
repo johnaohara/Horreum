@@ -159,7 +159,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
       } else if (userOrTeam.startsWith("\"") && userOrTeam.endsWith("\"") && userOrTeam.length() > 2) {
          userOrTeam = userOrTeam.substring(1, userOrTeam.length() - 1);
       }
-      WatchDAO watch = WatchDAO.find("testid", testId).firstResult();
+      WatchDAO watch = WatchDAO.find("test", testId).firstResult();
       if (watch == null) {
          return Collections.emptyList();
       }
