@@ -1,5 +1,4 @@
 import {useContext, useEffect, useRef, useState} from "react"
-import { useSelector } from "react-redux"
 import { Button, FormGroup, Modal, TextInput } from "@patternfly/react-core"
 import { TabFunctionsRef } from "../../components/SavedTabs"
 import SplitForm from "../../components/SplitForm"
@@ -33,7 +32,7 @@ export default function Teams(props: TeamsProps) {
     const [membersModified, setMembersModified] = useState(false)
     const [nextTeam, setNextTeam] = useState<Team>()
     const [newUserModalOpen, setNewUserModalOpen] = useState(false)
-    const isAdmin = useSelector(isAdminSelector)
+    const isAdmin = isAdminSelector()
     const teamFuncsRef = useRef<TeamMembersFunctions>()
     useEffect(() => {
         if (!isAdmin) {

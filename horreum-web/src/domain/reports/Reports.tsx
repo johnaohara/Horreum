@@ -1,5 +1,4 @@
 import {useContext, useEffect, useMemo, useState} from "react"
-import { useSelector } from "react-redux"
 
 import { NavLink } from "react-router-dom"
 import { CellProps, Column } from "react-table"
@@ -55,7 +54,7 @@ export default function Reports() {
     const [loading, setLoading] = useState(false)
 
     const [tableReportGroup, setTableReportGroup] = useState<ReportGroup>()
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
 
     useEffect(() => {
         setLoading(true)

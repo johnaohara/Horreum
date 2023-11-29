@@ -1,6 +1,5 @@
 import {useState, useMemo, useEffect, useContext} from "react"
 
-import { useSelector } from "react-redux"
 import { useHistory } from "react-router"
 
 import {
@@ -33,7 +32,6 @@ import TestImportButton from "./TestImportButton"
 import { isAuthenticatedSelector, useTester, teamToName, teamsSelector, userProfileSelector } from "../../auth"
 import { CellProps, Column, UseSortByColumnOptions } from "react-table"
 import { noop } from "../../utils"
-import { Map } from "immutable"
 import {
     SortDirection,
     testApi,
@@ -46,7 +44,7 @@ import {
     addUserOrTeam,
     fetchTestsSummariesByFolder,
     removeUserOrTeam,
-    TestStorage, subscriptionsApi
+    TestStorage, listTests
 } from "../../api"
 import AccessIconOnly from "../../components/AccessIconOnly"
 import {AppContext} from "../../context/appContext";
@@ -60,8 +58,8 @@ type WatchDropdownProps = {
 const WatchDropdown = ({ id, watching }: WatchDropdownProps) => {
     const { alerting } = useContext(AppContext) as AppContextType;
     const [open, setOpen] = useState(false)
-    const teams = useSelector(teamsSelector)
-    const profile = useSelector(userProfileSelector)
+    const teams = teamsSelector()
+    const profile = userProfileSelector()
     if (watching === undefined) {
         return <Spinner size="sm" />
     }
@@ -275,7 +273,7 @@ export function useMoveToFolder(config: MoveToFolderConfig): MenuItem<MoveToFold
 }
 
 export default function AllTests() {
-    const { alerting } = useContext(AppContext) as AppContextType;
+    const { alerting, auth } = useContext(AppContext) as AppContextType;
     const history = useHistory()
     const params = new URLSearchParams(history.location.search)
     const [folder, setFolder] = useState(params.get("folder"))
@@ -298,11 +296,12 @@ export default function AllTests() {
 
     useEffect(() => {
         setLoading(true)
-        testApi.list(
+        listTests(
+            alerting,
+            auth,
             SortDirection.Ascending,
             pagination.perPage,
             pagination.page - 1
-
         )
             .then(setTets)
             .catch(error => alerting.dispatchError(error, "FETCH_Tests", "Failed to fetch Tests"))
@@ -408,12 +407,12 @@ export default function AllTests() {
     )
 
     const [allTests, setTests] = useState<TestStorage[]>([])
-    const teams = useSelector(teamsSelector)
-    const isAuthenticated = useSelector(isAuthenticatedSelector)
+    const teams = teamsSelector()
+    const isAuthenticated = isAuthenticatedSelector()
     const [rolesFilter, setRolesFilter] = useState<Team>(ONLY_MY_OWN)
 
     const loadTests = () => {
-        fetchTestsSummariesByFolder(alerting, rolesFilter.key, folder || undefined)
+        fetchTestsSummariesByFolder(alerting, auth, rolesFilter.key, folder || undefined)
             .then(summary => setTests(summary.tests?.map(t => mapTestSummaryToTest(t)) || []))
     }
 

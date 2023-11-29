@@ -1,5 +1,4 @@
 import {useContext, useEffect, useMemo, useState} from "react"
-import { useSelector } from "react-redux"
 
 import { useTester, teamsSelector } from "../../auth"
 
@@ -44,7 +43,7 @@ export default function RunData(props: RunDataProps) {
     const [editorData, setEditorData] = useState<string>()
 
     const [changeSchemaModalOpen, setChangeSchemaModalOpen] = useState(false)
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search)
         const token = urlParams.get("token")

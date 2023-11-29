@@ -1,5 +1,4 @@
 import {useState, useEffect, useContext} from "react"
-import { useSelector } from "react-redux"
 
 import { Form, FormGroup, Switch, TextArea, TextInput } from "@patternfly/react-core"
 
@@ -21,7 +20,7 @@ type GeneralProps = {
 
 export default function General({ test, onTestIdChange, onModified, funcsRef }: GeneralProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const defaultRole = useSelector(defaultTeamSelector)
+    const defaultRole = defaultTeamSelector()
     const [name, setName] = useState("")
     const [folder, setFolder] = useState("")
     const [description, setDescription] = useState("")

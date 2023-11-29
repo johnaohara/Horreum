@@ -1,24 +1,15 @@
 import Keycloak, {KeycloakConfig, KeycloakInitOptions} from "keycloak-js"
-import fetchival from "fetchival"
 
-import store, { State } from "./store"
-import { userApi } from "./api"
-import { CLEAR_ALERT } from "./alerts"
+import { configApi, userApi} from "./api"
 import { noop } from "./utils"
-import { keycloakSelector, INIT, STORE_PROFILE, UPDATE_DEFAULT_TEAM, UPDATE_ROLES } from "./auth"
+import {AlertContextType} from "./context/@types/appContextTypes";
+import {AuthState} from "./auth";
 
-export function initKeycloak(state: State) {
-    const keycloak = keycloakSelector(state)
-    let keycloakPromise
-    if (!keycloak) {
-        keycloakPromise = fetchival("/api/config/keycloak", { responseAs: "json" })
-            .get()
-            .then((response: any) => new Keycloak(response as KeycloakConfig))
-    } else {
-        keycloakPromise = Promise.resolve(keycloak)
-    }
-    keycloakPromise
-        .then((keycloak: Keycloak) => {
+export const initKeycloak = (alerting: AlertContextType , authState: AuthState, updateAuthState: (authState: AuthState) => AuthState) : Promise<boolean> => {
+    let updatedState = authState;
+    return configApi.keycloak()
+        .then((response: any) : Keycloak => new Keycloak(response as KeycloakConfig))
+        .then((keycloak: Keycloak) : boolean => {
             let initPromise: Promise<boolean> | undefined = undefined
             if (!keycloak.authenticated) {
                 // Typecast required due to https://github.com/keycloak/keycloak/pull/5858
@@ -28,40 +19,27 @@ export function initKeycloak(state: State) {
                     promiseType: "native",
                 } as KeycloakInitOptions)
                 initPromise?.then(authenticated => {
-                    store.dispatch({ type: CLEAR_ALERT })
-                    store.dispatch({
-                        type: UPDATE_ROLES,
-                        authenticated,
-                        roles: keycloak?.realmAccess?.roles || [],
-                    })
+                    updatedState = updateAuthState({...updatedState, authenticated: authenticated,  roles: keycloak?.realmAccess?.roles || [] })
                     if (authenticated) {
                         keycloak
                             .loadUserProfile()
-                            .then(profile => store.dispatch({ type: STORE_PROFILE, profile }))
+                            .then(profile => updateAuthState({...authState,  userProfile: profile }))
                             .catch(error =>
-                                console.log(error)
-                                //TODO: hook into alerting state
-                                // store.dispatch(
-                                //     alertAction("PROFILE_FETCH_FAILURE", "Failed to fetch user profile", error)
-                                // )
+                                alerting.dispatchError(error, "PROFILE_FETCH_FAILURE", "Failed to fetch user profile")
                             )
                         userApi.defaultTeam().then(
-                            response => store.dispatch({ type: UPDATE_DEFAULT_TEAM, team: response || undefined }),
+                            response =>  updatedState = updateAuthState({...updatedState,  defaultTeam: response || undefined  }),
                             error =>
-                                console.log(error)
-                                //TODO: hook into alerting state
-                                // store.dispatch(
-                                //     alertAction("DEFAULT_ROLE_FETCH_FAILURE", "Cannot retrieve default role", error)
-                                // )
+                                alerting.dispatchError(error, "DEFAULT_ROLE_FETCH_FAILURE", "Cannot retrieve default role")
                         )
                         keycloak.onTokenExpired = () =>
                             keycloak.updateToken(30).catch(e => console.log("Expired token update failed: " + e))
                     } else {
-                        store.dispatch({ type: STORE_PROFILE, profile: {} })
+                        updatedState = updateAuthState({...updatedState,  userProfile: {}  })
                     }
                 })
             }
-            store.dispatch({ type: INIT, keycloak: keycloak, initPromise: initPromise })
+            updatedState = updateAuthState({...updatedState,  keycloak: keycloak  }) //TODO:: validate keyclaok client state
+            return true;
         })
-        .catch(noop)
 }

@@ -1,4 +1,5 @@
 import {Alert} from "../../alerts";
+import {AuthState} from "../../auth";
 
 export type AlertContextType = {
 
@@ -19,10 +20,12 @@ export type AlertContextType = {
 }
 
 export type AuthContextType = {
+    state: AuthState;
     updateDefaultTeam: (team: string,
                         onSuccess: () => void,
                         onFailure: (error: any) => void) => Promise<any>;
 }
+
 
 
 export type AppContextType = {

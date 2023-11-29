@@ -1,5 +1,4 @@
 import {useContext, useEffect, useMemo, useState} from "react"
-import { useSelector } from "react-redux"
 
 import { Button, Hint, HintBody, Switch, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core"
 
@@ -19,7 +18,7 @@ export default function ActionList() {
     const [logOpen, setLogOpen] = useState(false)
     const [isOpen, setOpen] = useState(false)
     const [actions, setActions] = useState<Action[]>([])
-    const isAdmin = useSelector(isAdminSelector)
+    const isAdmin = isAdminSelector()
 
     useEffect(() => {
         if (isAdmin) {

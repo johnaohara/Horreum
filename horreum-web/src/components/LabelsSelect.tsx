@@ -1,5 +1,4 @@
 import { CSSProperties, ReactElement, useEffect, useMemo, useState } from "react"
-import { useSelector } from "react-redux"
 import { teamsSelector } from "../auth"
 
 import { Button, HelperText, Select, SelectOption, SelectOptionObject, Split, SplitItem } from "@patternfly/react-core"
@@ -67,7 +66,7 @@ export default function LabelsSelect({disabled, selection, onSelect, source, emp
         : {}
     const [partialSelect, setPartialSelect] = useState<any>(initialSelect)
 
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     useEffect(() => {
         source().then((response: any[]) => {
             setAvailableLabels(response)

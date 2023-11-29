@@ -12,7 +12,7 @@ type RecalculateDatasetsModalProps = {
 }
 
 export default function RecalculateDatasetsModal(props: RecalculateDatasetsModalProps) {
-    const { alerting } = useContext(AppContext) as AppContextType;
+    const { alerting, auth } = useContext(AppContext) as AppContextType;
     const [test, setTest] = useState<TestStorage | undefined>( undefined)
     const [progress, setProgress] = useState(-1)
     const [status, setStatus] = useState<RecalculationStatus>()
@@ -29,7 +29,7 @@ export default function RecalculateDatasetsModal(props: RecalculateDatasetsModal
     }, [])
 
     useEffect(() => {
-        fetchTest(props.testId, alerting).then(setTest)
+        fetchTest(props.testId, alerting, auth).then(setTest)
     }, [props.testId]);
 
     useEffect(() => {

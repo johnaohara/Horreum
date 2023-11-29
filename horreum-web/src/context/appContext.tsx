@@ -1,16 +1,24 @@
 import * as React from 'react';
 import {Alert, contextAlertAction} from "../alerts";
 import {createBrowserHistory} from "history";
-import {useState} from "react";
+import { useMemo, useState} from "react";
 import {AlertVariant} from "@patternfly/react-core";
 import {userApi} from "../api";
 import {AlertContextType, AppContextType, AuthContextType} from "./@types/appContextTypes";
+import {initKeycloak} from "../keycloak";
+import {AuthState} from "../auth";
 
 export const AppContext = React.createContext<AppContextType | null>(null);
 export const history = createBrowserHistory()
 
 const ContextProvider: React.FC<React.ReactNode> = ({ children }) => {
     const [alerts, setAlerts] = useState<Alert[]>([]);
+    const [authState, setAuthState] = useState<AuthState >(new AuthState());
+
+    const updateAuthState = (updatedState: AuthState) : AuthState => {
+        setAuthState(updatedState);
+        return updatedState;
+    }
     const newAlert = (newAlert: Alert) => {
         setAlerts([...alerts, newAlert]);
     };
@@ -30,10 +38,11 @@ const ContextProvider: React.FC<React.ReactNode> = ({ children }) => {
         return Promise.reject(error)
     }
 
-    const contextDispatchInfo = (type: string,
-                                 title: string,
-                                 message: string,
-                                 timeout: number
+    const contextDispatchInfo = (
+        type: string,
+        title: string,
+        message: string,
+        timeout: number
     ): Promise<any> => {
         const infoAlert: Alert =  {
             type,
@@ -62,8 +71,14 @@ const ContextProvider: React.FC<React.ReactNode> = ({ children }) => {
 
 
     const auth : AuthContextType = {
+        state: authState,
         updateDefaultTeam: updateDefaultTeam
     };
+
+    const keycloakMemo = useMemo(() => {
+        initKeycloak(alerting, authState, updateAuthState)
+    }, []);
+
 
     const context : AppContextType = {
         alerting: alerting,

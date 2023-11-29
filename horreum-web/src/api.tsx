@@ -19,20 +19,20 @@ import {
 
 } from "./generated/apis"
 import {
-    Access,
-    Action, AllowedSite,
-    Configuration,
-    Middleware, RunSummary,
-    Schema,
-    Test,
-    TestListing, TestSummary, TestToken, Transformer, View, Watch,
+  Access,
+  Action, AllowedSite,
+  Configuration, HTTPRequestInit, InitOverrideFunction,
+  Middleware, RequestOpts, RunSummary,
+  Schema, SortDirection,
+  Test,
+  TestListing, TestQueryResult, TestSummary, TestToken, Transformer, View, Watch,
 } from "./generated"
-import store from "./store"
 import {ADD_ALERT} from "./alerts"
 import {TryLoginAgain} from "./auth"
-import {AlertContextType} from "./context/@types/appContextTypes";
+import {AlertContextType, AuthContextType} from "./context/@types/appContextTypes";
 export * from "./generated/models"
 
+/*
 const authMiddleware: Middleware = {
     pre: ctx => {
         const keycloak = store.getState().auth.keycloak
@@ -90,6 +90,7 @@ const authMiddleware: Middleware = {
         }
     },
 }
+*/
 
 const serialize = (input: any): any => {
     if (input === null || input === undefined) {
@@ -138,7 +139,8 @@ const noResponseMiddleware: Middleware = {
 
 const configuration = new Configuration({
     basePath: window.location.origin,
-    middleware: [authMiddleware, serializationMiddleware, noResponseMiddleware],
+    // middleware: [authMiddleware, serializationMiddleware, noResponseMiddleware],
+    middleware: [ serializationMiddleware, noResponseMiddleware],
 });
 
 const actionApi = new ActionApi(configuration)
@@ -217,8 +219,8 @@ export function addUserOrTeam(id: number, userOrTeam: string, alerting: AlertCon
 export function deleteTest(id: number, alerting: AlertContextType) : Promise<void>{
     return apiCall(testApi._delete(id), alerting, "DELETE_TEST", "Failed to delete test " + id);
 }
-export function fetchTestsSummariesByFolder(alertingContext: AlertContextType, roles?: string, folder?: string): Promise<TestListing> {
-    return apiCall(testApi.summary(folder, roles), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
+export function fetchTestsSummariesByFolder(alertingContext: AlertContextType, auth: AuthContextType, roles?: string, folder?: string): Promise<TestListing> {
+    return apiCall(testApi.summary(folder, roles, getAuthToken(auth)), alertingContext, "FETCH_TEST_SUMMARY", "Failed to fetch test summary.");
 }
 export function fetchFolders(alerting: AlertContextType): Promise<string[]> {
     return apiCall(testApi.folders(), alerting, "FETCH_FOLDERS", "Failed to fetch folders.");
@@ -233,11 +235,14 @@ export function fetchTests(alertingContext: AlertContextType,roles?: string, fol
         .then(summary => summary.tests?.map(t => mapTestSummaryToTest(t)) || [])
 }
 
-
-
-export function fetchTest(id: number, alerting: AlertContextType): Promise<Test> {
-    return apiCall(testApi.get(id), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
+export function fetchTest(id: number, alerting: AlertContextType, auth: AuthContextType): Promise<Test> {
+  return apiCall(testApi.get(id, undefined, getAuthToken(auth)), alerting, "FETCH_TEST", "Failed to fetch test; the test may not exist or you don't have sufficient permissions to access it.");
 }
+
+export function listTests(alerting: AlertContextType, auth: AuthContextType, direction?: SortDirection, limit?: number, page?: number, roles?: string, sort?: string) : Promise<TestQueryResult> {
+  return apiCall(testApi.list(direction, limit, page, roles, sort, getAuthToken(auth)), alerting, "LIST_TESTS", "Failed to list tests");
+}
+
 export function removeUserOrTeam(id: number, userOrTeam: string, alerting: AlertContextType) {
     return apiCall(subscriptionsApi.removeUserOrTeam(id, userOrTeam), alerting, "REMOVE_SUBSCRIPTION", "Failed to remove test subscriptions");
 }
@@ -252,8 +257,8 @@ export function sendTest(test: Test, alerting: AlertContextType): Promise<Test> 
 }
 
 
-export function fetchViews(testId: number, alerting: AlertContextType): Promise<View[]> {
-    return apiCall(uiApi.getViews(testId), alerting, "FETCH_VIEWS", "Failed to fetch test views; the views may not exist or you don't have sufficient permissions to access them.");
+export function fetchViews(testId: number, alerting: AlertContextType, auth: AuthContextType): Promise<View[]> {
+    return apiCall(uiApi.getViews(testId, getAuthToken(auth)), alerting, "FETCH_VIEWS", "Failed to fetch test views; the views may not exist or you don't have sufficient permissions to access them.");
 }
 
 export function updateAccess(id: number, owner: string, access: Access, alerting: AlertContextType) : Promise<void> {
@@ -371,6 +376,17 @@ function apiCall<T>(apiCall: Promise<T>, alerting: AlertContextType, errorKey: s
     )
 }
 
+function getAuthToken(auth: AuthContextType): RequestInit {
+  let authRequest: RequestInit = {};
+  if (auth.state.keycloak) {
+    authRequest = {
+      headers: [
+        ["Authorization", "Bearer " + auth.state.keycloak?.token]
+      ]
+    };
+  }
+  return authRequest;
+}
 
 
 export function mapTestSummaryToTest(testSummary: TestSummary): Test {

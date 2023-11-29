@@ -1,8 +1,6 @@
 import {useState, useEffect, useRef, useContext} from "react"
 import { useParams } from "react-router"
 
-import { useSelector } from "react-redux"
-
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -58,16 +56,15 @@ export default function TestView() {
     const transformersFuncsRef = useRef<TabFunctions>()
     const [loaded, setLoaded] = useState(false)
 
-    //replace redux
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
 
-    const { alerting } = useContext(AppContext) as AppContextType;
+    const { alerting, auth } = useContext(AppContext) as AppContextType;
     useEffect(() => {
         if (testId !== 0) {
             setLoaded(false)
-            fetchTest(testId, alerting)
+            fetchTest(testId, alerting,  auth)
                 .then(setTest)
-                .then( () => fetchViews(testId, alerting).then(setViews) )
+                .then( () => fetchViews(testId, alerting, auth).then(setViews) )
                 .finally(() => setLoaded(true))
         }
     }, [testId, teams])
@@ -76,7 +73,6 @@ export default function TestView() {
         document.title = (testId === 0 ? "New test" : test && test.name ? test.name : "Loading test...") + " | Horreum"
     }, [test, testId])
 
-    //TODO:: replace redux
     const isTester = useTester(test ? test.owner : undefined)
 
     return (

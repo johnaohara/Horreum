@@ -9,13 +9,12 @@ import BannerConfig from "./BannerConfig"
 import Notifications from "./Notifications"
 import Teams from "./Teams"
 import Administrators from "./Administrators"
-import {useSelector} from "react-redux";
 import {isAdminSelector} from "../../auth";
 
 export default function Admin() {
     const adminFuncsRef = useRef<TabFunctions>()
     const teamsFuncsRef = useRef<TabFunctions>()
-    const isAdmin = useSelector(isAdminSelector)
+    const isAdmin = isAdminSelector()
     if (isAdmin) {
         return (
             <PageSection>

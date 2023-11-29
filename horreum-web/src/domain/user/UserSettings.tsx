@@ -1,5 +1,4 @@
 import {useState, useEffect, useRef, useContext} from "react"
-import {  useSelector } from "react-redux"
 import { NavLink } from "react-router-dom"
 
 import {
@@ -36,7 +35,7 @@ import {AppContextType} from "../../context/@types/appContextTypes";
 
 
 export const UserProfileLink = () => {
-    const profile = useSelector(userProfileSelector)
+    const profile = userProfileSelector()
     if (profile?.username) {
         return (
             <div style={{ margin: "10px" }}>
@@ -57,8 +56,8 @@ export const UserProfileLink = () => {
 export function UserSettings() {
     document.title = "User settings | Horreum"
     const { alerting, auth } = useContext(AppContext) as AppContextType;
-    const profile = useSelector(userProfileSelector)
-    const prevDefaultTeam = useSelector(defaultTeamSelector)
+    const profile = userProfileSelector()
+    const prevDefaultTeam = defaultTeamSelector()
     const [defaultTeam, setDefaultTeam] = useState<Team>(createTeam(prevDefaultTeam))
     useEffect(() => {
         setDefaultTeam(createTeam(prevDefaultTeam))

@@ -1,5 +1,3 @@
-import { useSelector } from "react-redux"
-
 import { keycloakSelector } from "../../auth"
 
 import { Button, Form, FormGroup } from "@patternfly/react-core"
@@ -12,7 +10,9 @@ type ProfileProps = {
 }
 
 export default function Profile(props: ProfileProps) {
-    const keycloak = useSelector(keycloakSelector)
+    // const keycloak =
+    const keycloak = keycloakSelector()
+
     return (
         <Form isHorizontal={true} style={{ marginTop: "20px", width: "100%" }}>
             {keycloak && (

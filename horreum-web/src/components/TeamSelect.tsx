@@ -1,8 +1,5 @@
-import { useState } from "react"
-import { State } from "../store"
+import { useState} from "react"
 import { Select, SelectGroup, SelectOption, SelectVariant, SelectOptionObject } from "@patternfly/react-core"
-
-import { useSelector } from "react-redux"
 
 import { isAuthenticatedSelector, teamsSelector as allTeamsSelector, teamToName } from "../auth"
 
@@ -23,13 +20,13 @@ export const SHOW_ALL: Team = { key: "__all", toString: () => "Show all" }
 type TeamSelectProps = {
     includeGeneral: boolean
     selection: string | Team
-    teamsSelector?(state: State): string[]
+    teamsSelector?(): string[]
     onSelect(selection: Team): void
 }
 
 export default function TeamSelect({ includeGeneral, selection, teamsSelector, onSelect }: TeamSelectProps) {
-    const teams = useSelector(teamsSelector || allTeamsSelector)
-    const isAuthenticated = useSelector(isAuthenticatedSelector)
+    const teams: string[] = teamsSelector && teamsSelector() || allTeamsSelector()
+    const isAuthenticated = isAuthenticatedSelector()
     const generalOptions = [<SelectOption key="__all" value={SHOW_ALL} />]
     if (isAuthenticated) {
         generalOptions.push(<SelectOption key="__my" value={ONLY_MY_OWN} />)

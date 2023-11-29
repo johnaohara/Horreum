@@ -1,6 +1,5 @@
 import {useState, useMemo, useEffect, useContext} from "react"
 import { useParams } from "react-router"
-import { useSelector } from "react-redux"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -51,7 +50,7 @@ type RunColumn = Column<RunSummary> & UseSortByColumnOptions<RunSummary>
 
 
 export default function RunList() {
-    const { alerting } = useContext(AppContext) as AppContextType;
+    const { alerting, auth } = useContext(AppContext) as AppContextType;
     const { testId: stringTestId } = useParams<any>()
     const testId = parseInt(stringTestId)
 
@@ -66,7 +65,7 @@ export default function RunList() {
     const [showTrashed, setShowTrashed] = useState(false)
     const [runs, setRuns] = useState<RunSummary[] >([])
     const [runCount, setRunCount] =useState(0)
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     const [isLoading, setIsLoading] = useState(false)
 
     const loadTestRuns = () => {
@@ -89,7 +88,7 @@ export default function RunList() {
 
     useEffect(() => {
         setIsLoading(true)
-        fetchTest(testId, alerting)
+        fetchTest(testId, alerting, auth)
             .then(test => setTest(test))
             .catch(noop)
         setIsLoading(false)
