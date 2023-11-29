@@ -1,6 +1,5 @@
 import {useContext, useEffect, useState} from "react"
 import { useParams } from "react-router"
-import { useSelector } from "react-redux"
 
 import { formatDateTime } from "../../utils"
 import { teamsSelector, useTester } from "../../auth"
@@ -31,7 +30,7 @@ export default function Run() {
     const [transformationLogOpen, setTransformationLogOpen] = useState(false)
     const [updateCounter, setUpdateCounter] = useState(0)
 
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     const isTester = useTester(run?.owner)
 
     const retransformClick = () => {

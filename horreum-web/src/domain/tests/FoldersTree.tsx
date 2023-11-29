@@ -1,5 +1,4 @@
 import {useContext, useEffect, useState} from "react"
-import { useSelector } from "react-redux"
 
 import { TreeView, TreeViewDataItem } from "@patternfly/react-core"
 import { FolderIcon, FolderOpenIcon } from "@patternfly/react-icons"
@@ -17,7 +16,7 @@ type FoldersTreeProps = {
 export default function FoldersTree(props: FoldersTreeProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
     const [folders, setFolders] = useState<string[]>([])
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     useEffect(() => {
         fetchFolders(alerting).then(setFolders)
     }, [teams])

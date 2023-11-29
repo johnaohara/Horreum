@@ -1,5 +1,4 @@
 import {ReactElement, useState, useEffect, useContext} from "react"
-import { useSelector } from "react-redux"
 import { Button, DualListSelector, Form, FormGroup, Modal, Spinner, TextInput } from "@patternfly/react-core"
 
 import { TabFunctionsRef } from "../../components/SavedTabs"
@@ -30,7 +29,7 @@ export default function Administrators(props: AdministratorsProps) {
     const [createNewUser, setCreateNewUser] = useState(false)
     const [availableUsers, setAvailableUsers] = useState<ReactElement[]>([])
     const [admins, setAdmins] = useState<ReactElement[]>([])
-    const isAdmin = useSelector(isAdminSelector)
+    const isAdmin = isAdminSelector()
     useEffect(() => {
         if (isAdmin) {
             userApi.administrators().then(

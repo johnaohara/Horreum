@@ -1,5 +1,4 @@
 import {useContext, useEffect, useState} from "react"
-import { useSelector } from "react-redux"
 
 import {
     ActionGroup,
@@ -28,7 +27,7 @@ export default function BannerConfig() {
     const [title, setTitle] = useState("")
     const [message, setMessage] = useState("")
     const [saving, setSaving] = useState(false)
-    const isAdmin = useSelector(isAdminSelector)
+    const isAdmin = isAdminSelector()
     useEffect(() => {
         bannerApi.get().then(
             banner => {

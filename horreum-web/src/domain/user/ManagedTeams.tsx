@@ -1,5 +1,4 @@
-import { useState, useRef } from "react"
-import { useSelector } from "react-redux"
+import {useState, useRef, useContext} from "react"
 import { Button, Form, FormGroup, Modal } from "@patternfly/react-core"
 
 import { TabFunctionsRef } from "../../components/SavedTabs"
@@ -8,6 +7,8 @@ import { defaultTeamSelector, managedTeamsSelector } from "../../auth"
 import TeamMembers, { TeamMembersFunctions } from "./TeamMembers"
 import NewUserModal from "./NewUserModal"
 import { noop } from "../../utils"
+import {AppContext} from "../../context/appContext";
+import {AppContextType} from "../../context/@types/appContextTypes";
 
 type ManagedTeamsProps = {
     funcs: TabFunctionsRef
@@ -15,8 +16,8 @@ type ManagedTeamsProps = {
 }
 
 export default function ManagedTeams(props: ManagedTeamsProps) {
-    let defaultTeam = useSelector(defaultTeamSelector)
-    const managedTeams = useSelector(managedTeamsSelector)
+    let defaultTeam = defaultTeamSelector()
+    const managedTeams = managedTeamsSelector()
     if (!defaultTeam || !managedTeams.includes(defaultTeam)) {
         defaultTeam = managedTeams.length > 0 ? managedTeams[0] : undefined
     }

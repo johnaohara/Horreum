@@ -1,5 +1,4 @@
 import {useContext, useEffect, useMemo, useRef, useState} from "react"
-import { useSelector } from "react-redux"
 import {
     ActionGroup,
     Bullseye,
@@ -33,7 +32,7 @@ type Ds = {
 }
 
 export default function DatasetComparison() {
-    const { alerting } = useContext(AppContext) as AppContextType;
+    const { alerting, auth } = useContext(AppContext) as AppContextType;
     window.document.title = "Dataset comparison: Horreum"
     const history = useHistory()
     const params = new URLSearchParams(history.location.search)
@@ -41,9 +40,9 @@ export default function DatasetComparison() {
     const [views, setViews] = useState<View[]>([])
     const [test, setTest] = useState<Test>()
     useEffect(() => {
-        fetchTest(testId, alerting)
+        fetchTest(testId, alerting, auth)
             .then(setTest)
-            .then(() => fetchViews(testId, alerting).then(setViews)
+            .then(() => fetchViews(testId, alerting, auth).then(setViews)
         )
     }, [testId])
     const datasets = useMemo(
@@ -213,7 +212,7 @@ type ViewComparisonProps = {
 function ViewComparison({headers, view, datasets, alerting}: ViewComparisonProps) {
     const [loading, setLoading] = useState(false)
     const [rows, setRows] = useState<IRow[]>()
-    const token = useSelector(tokenSelector)
+    const token = tokenSelector()
     useEffect(() => {
         setLoading(true)
         Promise.all(datasets.map(ds => datasetApi.getSummary(ds.id, view.id)))

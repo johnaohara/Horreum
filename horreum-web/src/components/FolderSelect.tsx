@@ -1,5 +1,4 @@
 import {useContext, useEffect, useState} from "react"
-import { useSelector } from "react-redux"
 
 import { Select, SelectOption } from "@patternfly/react-core"
 
@@ -19,7 +18,7 @@ export default function FolderSelect({folder, onChange, canCreate, readOnly}: Fo
     const { alerting } = useContext(AppContext) as AppContextType;
     const [open, setOpen] = useState(false)
     const [folders, setFolders] = useState<string[]>([])
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     useEffect(() => {
         fetchFolders(alerting).then(setFolders)
     }, [teams])

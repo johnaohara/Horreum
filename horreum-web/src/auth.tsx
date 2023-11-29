@@ -1,17 +1,10 @@
-import { useDispatch, useSelector } from "react-redux"
-
 import { Button } from "@patternfly/react-core"
 
-import { State } from "./store"
 import { UserData } from "./api"
-import { ThunkDispatch } from "redux-thunk"
 import Keycloak, {KeycloakProfile} from "keycloak-js";
-
-export const INIT = "auth/INIT"
-export const UPDATE_DEFAULT_TEAM = "auth/UPDATE_DEFAULT_TEAM"
-export const UPDATE_ROLES = "auth/UPDATE_ROLES"
-export const STORE_PROFILE = "auth/STORE_PROFILE"
-const AFTER_LOGOUT = "auth/AFTER_LOGOUT"
+import {AppContextType, AuthContextType} from "./context/@types/appContextTypes";
+import {useContext} from "react";
+import {AppContext} from "./context/appContext";
 
 export class AuthState {
     keycloak?: Keycloak
@@ -23,100 +16,48 @@ export class AuthState {
     initPromise?: Promise<boolean> = undefined
 }
 
-interface InitAction {
-    type: typeof INIT
-    keycloak: Keycloak
-    initPromise?: Promise<boolean>
+export function resetUserSession() {
+    const {auth} = useContext(AppContext) as AppContextType;
+    auth.state.userProfile = undefined
+    auth.state.initPromise = undefined
+    auth.state.authenticated = false
+    auth.state.roles = []
+    auth.state.teams = []
+    auth.state.defaultTeam = undefined
+    //todo: reset user session
 }
 
-export interface UpdateDefaultTeamAction {
-    type: typeof UPDATE_DEFAULT_TEAM
-    team: string
+export const keycloakSelector = ()  => {
+    return useContext(AppContext)?.auth.state.keycloak
 }
 
-interface UpdateRolesAction {
-    type: typeof UPDATE_ROLES
-    authenticated: boolean
-    roles: string[]
-}
-
-interface StoreProfileAction {
-    type: typeof STORE_PROFILE
-    profile: KeycloakProfile
-}
-
-interface AfterLogoutAction {
-    type: typeof AFTER_LOGOUT
-}
-
-type AuthAction = InitAction | UpdateDefaultTeamAction | UpdateRolesAction | StoreProfileAction | AfterLogoutAction
-
-export type AuthDispatch = ThunkDispatch<any, unknown, AuthAction >
-
-export function reducer(state = new AuthState(), action: AuthAction) {
-    // TODO: is this necessary? It seems that without that the state is not updated at times.
-    state = { ...state }
-    switch (action.type) {
-        case INIT:
-            state.keycloak = action.keycloak
-            if (action.initPromise) {
-                state.initPromise = action.initPromise
-            }
-            break
-        case UPDATE_DEFAULT_TEAM:
-            state.defaultTeam = action.team
-            break
-        case UPDATE_ROLES:
-            state.authenticated = action.authenticated
-            state.roles = [...action.roles]
-            state.teams = action.roles.filter(role => role.endsWith("-team")).sort()
-            break
-        case STORE_PROFILE:
-            state.userProfile = action.profile
-            break
-        case AFTER_LOGOUT:
-            state.userProfile = undefined
-            state.initPromise = undefined
-            state.authenticated = false
-            state.roles = []
-            state.teams = []
-            state.defaultTeam = undefined
-            break
-        default:
-    }
-    return state
-}
-
-export const keycloakSelector = (state: State) => {
-    return state.auth.keycloak
-}
-
-export const tokenSelector = (state: State) => {
-    return state.auth.keycloak && state.auth.keycloak.token
+export const tokenSelector = () => {
+    const {auth} = useContext(AppContext) as AppContextType;
+    return auth.state.keycloak && auth.state.keycloak.token
 }
 
 export const teamToName = (team?: string) => {
     return team ? team.charAt(0).toUpperCase() + team.slice(1, -5) : undefined
 }
 
-export const userProfileSelector = (state: State) => {
-    return state.auth.userProfile
+export const userProfileSelector = () => {
+    return useContext(AppContext)?.auth.state.userProfile
 }
 
-export const isAuthenticatedSelector = (state: State) => {
-    return state.auth.authenticated
+export const isAuthenticatedSelector = () => {
+    return useContext(AppContext)?.auth.state.authenticated
 }
 
-export const isAdminSelector = (state: State) => {
-    return state.auth.roles.includes("admin")
+export const isAdminSelector = () => {
+    return useContext(AppContext)?.auth.state.roles.includes("admin")
 }
 
-export const teamsSelector = (state: State): string[] => {
-    return state.auth.teams
+export const teamsSelector = (): string[] => {
+    return useContext(AppContext)?.auth.state.teams || []
 }
 
-function rolesSelector(state: State) {
-    return state.auth.roles
+function rolesSelector(auth: AuthContextType) {
+    return auth.state.roles
 }
 
 function isTester(owner: string, roles: string[]) {
@@ -124,28 +65,31 @@ function isTester(owner: string, roles: string[]) {
 }
 
 export function useTester(owner?: string) {
-    const roles = useSelector(rolesSelector)
+    const {auth} = useContext(AppContext) as AppContextType;
+    const roles = rolesSelector(auth)
     return roles.includes("tester") && (!owner || isTester(owner, roles))
 }
 
-export function managedTeamsSelector(state: State) {
-    return state.auth.roles.filter(role => role.endsWith("-manager")).map(role => role.slice(0, -7) + "team")
+export function managedTeamsSelector() {
+    const {auth} = useContext(AppContext) as AppContextType;
+    return auth.state.roles.filter(role => role.endsWith("-manager")).map(role => role.slice(0, -7) + "team")
 }
 
 export function useManagedTeams(): string[] {
-    return useSelector(managedTeamsSelector)
+    return managedTeamsSelector()
 }
 
-export const defaultTeamSelector = (state: State) => {
-    if (state.auth.defaultTeam !== undefined) {
-        return state.auth.defaultTeam
+export const defaultTeamSelector = () => {
+    const {auth} = useContext(AppContext) as AppContextType;
+    if (auth.state.defaultTeam !== undefined) {
+        return auth.state.defaultTeam
     }
-    const teamRoles = teamsSelector(state)
+    const teamRoles = teamsSelector()
     return teamRoles.length > 0 ? teamRoles[0] : undefined
 }
 
 export const TryLoginAgain = () => {
-    const keycloak = useSelector(keycloakSelector)
+    const keycloak = keycloakSelector()
     return keycloak ? (
         <>
             Try{" "}
@@ -157,10 +101,8 @@ export const TryLoginAgain = () => {
 }
 
 export const LoginLogout = () => {
-    const keycloak = useSelector(keycloakSelector)
-    // for some reason isAuthenticatedSelector would not return correct value at times (Redux bug?)
-    const authenticated = useSelector(isAuthenticatedSelector)
-    const dispatch = useDispatch()
+    const keycloak = keycloakSelector()
+    const authenticated = isAuthenticatedSelector()
     if (!keycloak) {
         return <Button isDisabled>Cannot log in</Button>
     }
@@ -169,7 +111,7 @@ export const LoginLogout = () => {
             <Button
                 onClick={() => {
                     keycloak?.logout({ redirectUri: window.location.origin })
-                    dispatch({ type: AFTER_LOGOUT })
+                    resetUserSession()
                 }}
             >
                 Log out

@@ -1,5 +1,4 @@
 import {useState, useEffect, useMemo, useCallback, useContext} from "react"
-import { useSelector } from "react-redux"
 import { ChangesTabs } from "./ChangeTable"
 import TestSelect, { SelectedTest } from "../../components/TestSelect"
 import LabelsSelect, { convertLabels } from "../../components/LabelsSelect"
@@ -211,7 +210,7 @@ export default function Changes() {
     // eslint-disable-next-line
     const paramTest = useMemo(() => params.get("test") || undefined, [])
     const paramFingerprint = params.get("fingerprint")
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     const [selectedTest, setSelectedTest] = useState<SelectedTest>()
     const [selectedFingerprint, setSelectedFingerprint] = useState<FingerprintValue | undefined>(() => {
         if (!paramFingerprint) {

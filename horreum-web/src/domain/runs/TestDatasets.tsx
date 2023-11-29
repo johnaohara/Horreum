@@ -1,6 +1,5 @@
 import {useCallback, useContext, useEffect, useMemo, useState} from "react"
 import { useParams } from "react-router"
-import { useSelector } from "react-redux"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -132,7 +131,7 @@ const staticColumns: DatasetColumn[] = [
 ]
 
 export default function TestDatasets() {
-    const { alerting } = useContext(AppContext) as AppContextType;
+    const { alerting, auth } = useContext(AppContext) as AppContextType;
     const { testId: stringTestId } = useParams<any>()
     const testId = parseInt(stringTestId)
     // const [tests, setTests] = useState<Test[] | undefined>(undefined)
@@ -150,15 +149,15 @@ export default function TestDatasets() {
     const [loading, setLoading] = useState(false)
     const [datasets, setDatasets] = useState<DatasetList>()
     const [comparedDatasets, setComparedDatasets] = useState<DatasetSummary[]>()
-    const teams = useSelector(teamsSelector)
-    const token = useSelector(tokenSelector)
+    const teams = teamsSelector()
+    const token = tokenSelector()
 
     const [views, setViews] = useState<View[]>([]);
 
     useEffect(() => {
-        fetchTest(testId, alerting)
+        fetchTest(testId, alerting, auth)
             .then(setTest)
-            .then(() => fetchViews(testId, alerting).then(setViews))
+            .then(() => fetchViews(testId, alerting, auth).then(setViews))
     }, [testId, teams, token])
 
     useEffect(() => {

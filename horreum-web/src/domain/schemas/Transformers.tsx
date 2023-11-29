@@ -1,5 +1,4 @@
 import {useContext, useEffect, useState} from "react"
-import { useSelector } from "react-redux"
 import { useHistory } from "react-router-dom"
 
 import { Button, FormGroup, FormSection, Popover, TextArea, TextInput } from "@patternfly/react-core"
@@ -67,7 +66,7 @@ export default function Transformers(props: TransformersProps) {
     const [transformers, setTransformers] = useState<TransformerEx[]>([])
     const [selected, setSelected] = useState<TransformerEx>()
     const [deleted, setDeleted] = useState<Transformer[]>([])
-    const defaultTeam = useSelector(defaultTeamSelector)
+    const defaultTeam = defaultTeamSelector()
     const isTester = useTester()
     const isTesterForTransformer = useTester(selected?.owner)
     const update = (update: Partial<Transformer>) => {

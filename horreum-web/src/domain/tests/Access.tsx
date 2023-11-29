@@ -1,5 +1,4 @@
 import {useContext, useEffect, useState} from "react"
-import { useSelector } from "react-redux"
 
 import {
     Button,
@@ -138,7 +137,7 @@ type AccessProps = {
 
 function Access(props: AccessProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const defaultRole = useSelector(defaultTeamSelector)
+    const defaultRole = defaultTeamSelector()
     const [access, setAccess] = useState<authAccess>(props.test?.access || authAccess.Public)
     const [owner, setOwner] = useState(props.test?.owner || defaultRole || "")
     const [modalOpen, setModalOpen] = useState(false)

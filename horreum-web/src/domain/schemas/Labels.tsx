@@ -1,5 +1,4 @@
 import {useState, useEffect, useContext} from "react"
-import { useSelector } from "react-redux"
 import { useHistory } from "react-router-dom"
 
 import { Button, Checkbox, Flex, FlexItem, FormGroup, FormSection, TextInput } from "@patternfly/react-core"
@@ -53,7 +52,7 @@ export default function Labels({ schemaId, schemaUri, funcsRef }: LabelsProps) {
     const [testLabelModalOpen, setTestLabelModalOpen] = useState(false)
     const isTester = useTester()
     const isTesterForLabel = useTester(selected?.owner || "__no_owner__")
-    const defaultTeam = useSelector(defaultTeamSelector)
+    const defaultTeam = defaultTeamSelector()
     funcsRef.current = {
         save: () =>
             Promise.all([

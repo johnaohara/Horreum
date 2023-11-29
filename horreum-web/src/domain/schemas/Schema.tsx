@@ -1,6 +1,5 @@
 import {useEffect, useState, useRef, useContext} from "react"
 import { useParams } from "react-router"
-import { useSelector } from "react-redux"
 
 import {
     Alert,
@@ -52,7 +51,7 @@ type GeneralProps = {
 const SUPPORTED_SCHEMES = ["uri:", "urn:", "http:", "https:", "ftp:", "file:", "jar:"]
 
 function General(props: GeneralProps) {
-    const defaultTeam = useSelector(defaultTeamSelector)
+    const defaultTeam = defaultTeamSelector()
     const isTester = useTester(props.schema?.owner)
     const [importFailed, setImportFailed] = useState(false)
 

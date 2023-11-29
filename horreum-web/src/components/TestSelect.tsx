@@ -5,7 +5,6 @@ import { Select, SelectGroup, SelectOption, SelectOptionObject, Split, SplitItem
 import {fetchTests, Test} from "../api"
 import {AppContext} from "../context/appContext";
 import {AppContextType} from "../context/@types/appContextTypes";
-import {useSelector} from "react-redux";
 import {teamsSelector} from "../auth";
 
 export interface SelectedTest extends SelectOptionObject {
@@ -46,7 +45,7 @@ function groupByFolder(tests: Test[] | undefined | false) {
 
 export default function TestSelect(props: TestSelectProps) {
     const { alerting } = useContext(AppContext) as AppContextType;
-    const teams = useSelector(teamsSelector)
+    const teams = teamsSelector()
     const [testList, setTestList] = useState<Test[]>()
     useMemo(() => {
         fetchTests(alerting, undefined, "*")
