@@ -7,10 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 
+import io.hyperfoil.tools.horreum.action.GitHubIssueCommentAction;
+import io.hyperfoil.tools.horreum.action.GitHubIssueCreateAction;
+import io.hyperfoil.tools.horreum.action.HttpAction;
+import io.hyperfoil.tools.horreum.action.LoggingAction;
 import io.hyperfoil.tools.horreum.api.data.Action;
 import io.hyperfoil.tools.horreum.api.data.Test;
+import io.hyperfoil.tools.horreum.api.internal.services.ActionService;
 import io.hyperfoil.tools.horreum.bus.MessageBusChannels;
 import io.hyperfoil.tools.horreum.test.HorreumTestProfile;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.core.HttpHeaders;
 import org.junit.jupiter.api.TestInfo;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -28,6 +34,9 @@ import io.quarkus.test.oidc.server.OidcWiremockTestResource;
 @QuarkusTestResource(OidcWiremockTestResource.class)
 @TestProfile(HorreumTestProfile.class)
 public class ActionServiceTest extends BaseServiceTest {
+
+   @Inject
+   ActionServiceImpl actionService;
 
    @org.junit.jupiter.api.Test
    public void testFailingHttp(TestInfo testInfo) {
@@ -59,5 +68,26 @@ public class ActionServiceTest extends BaseServiceTest {
       assertNotNull(action.id);
       assertTrue(action.active);
       given().auth().oauth2(getAdminToken()).delete("/api/action/" + action.id);
+   }
+
+
+   @org.junit.jupiter.api.Test
+   public void testMessageBusAction(TestInfo testInfo) {
+
+      Test test = createTest(createExampleTest(getTestName(testInfo)));
+
+      //create action
+      Action action = new Action();
+      action.event = MessageBusChannels.TEST_NEW.name();
+      action.type = LoggingAction.TYPE;
+      action.active = true;
+      action.testId = test.id;
+      action.config = null;
+
+      //register action
+      jsonRequest().auth().oauth2(getAdminToken()).body(action).post("/api/action");
+
+      //send new test to action service
+      actionService.onNewTest(test);
    }
 }
