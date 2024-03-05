@@ -325,6 +325,7 @@ export default function Schema() {
                                 {editorSchema !== undefined && (
                                     <div style={{ height: "600px" }}>
                                         <Editor
+                                            height="600px"
                                             value={editorSchema}
                                             onChange={value => {
                                                 setEditorSchema(value)

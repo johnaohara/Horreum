@@ -1,8 +1,9 @@
-import { ReactNode } from "react"
-import { Button, FormGroup, Popover } from "@patternfly/react-core"
-import { HelpIcon } from "@patternfly/react-icons"
+import {ReactNode} from "react"
+import {Button, FormGroup, Popover} from "@patternfly/react-core"
+import {HelpIcon} from "@patternfly/react-icons"
 
 import Editor from "./Editor/monaco/Editor"
+import {Language} from "@patternfly/react-code-editor";
 
 type JsFunctionProps = {
     label: string
@@ -29,12 +30,13 @@ export default function FunctionFormItem({label, helpText, value, onChange, read
             <div
                 style={{
                     minHeight: "100px",
-                    height: "100px",
+                    height: "300px",
                     resize: "vertical",
                     overflow: "auto",
                 }}
             >
                 <Editor
+                    height="300px"
                     value={
                         !value
                             ? ""
@@ -43,7 +45,7 @@ export default function FunctionFormItem({label, helpText, value, onChange, read
                             : (value as any).toString()
                     }
                     onChange={onChange}
-                    language="typescript"
+                    language={Language.javascript}
                     options={{
                         wordWrap: "on",
                         wrappingIndent: "DeepIndent",

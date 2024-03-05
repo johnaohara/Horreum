@@ -1,6 +1,7 @@
 import { Button } from "@patternfly/react-core"
 import { AddCircleOIcon } from "@patternfly/react-icons"
 import Editor from "./Editor/monaco/Editor"
+import {Language} from "@patternfly/react-code-editor";
 
 type OptionalFunctionProps = {
     func: string | undefined | null
@@ -40,7 +41,7 @@ export default function OptionalFunction({func, onChange, readOnly, undefinedTex
                     onChange={value => {
                     onChange(value?.trim() || "")
                     }}
-                    language="typescript"
+                    language={Language.typescript}
                     options={{
                         wordWrap: "on",
                         wrappingIndent: "DeepIndent",

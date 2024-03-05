@@ -20,6 +20,7 @@ import { isAdminSelector } from "../../auth"
 import {bannerApi} from "../../api"
 import {AppContext} from "../../context/appContext";
 import {AppContextType} from "../../context/@types/appContextTypes";
+import {Language} from "@patternfly/react-code-editor";
 
 function setBanner(severity: string, title: string, message: string) {
     return bannerApi.set({ severity, title, message, active: true })
@@ -65,7 +66,7 @@ export default function BannerConfig() {
                     <Editor
                         value={message}
                         onChange={value => setMessage(value || "")}
-                        language="html"
+                        language={Language.html}
                         options={{
                             mode: "text/html",
                         }}

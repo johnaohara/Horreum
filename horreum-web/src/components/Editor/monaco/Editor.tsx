@@ -1,53 +1,36 @@
-import { useRef } from "react"
-
-import MonacoEditor, { useMonaco, OnMount } from "@monaco-editor/react"
-import { editor } from "monaco-editor/esm/vs/editor/editor.api"
+import {CodeEditor, Language} from "@patternfly/react-code-editor";
+import * as monacoEditor from "monaco-editor";
 
 type EditorProps = {
     value?: string
-    language?: string
+    language?: Language
     options: any
     onChange?(value: string | undefined): void
-    height?: number | string
+    height?: string
 }
 
+const onEditorDidMount = (editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) => {
+    editor.layout();
+    editor.focus();
+    monaco.editor.getModels()[0].updateOptions({ tabSize: 5 });
+};
+
 export default function Editor(props: EditorProps) {
-    const monaco = useMonaco()
-    const valueGetter = useRef<() => string>()
-
-    const onMount: OnMount = (editor: editor.IStandaloneCodeEditor) => {
-        valueGetter.current = () => editor.getValue()
-        if (!monaco) {
-            return
-        }
-        editor.addAction({
-            id: "my-unique-id",
-            label: "my label",
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
-            precondition: undefined,
-            keybindingContext: undefined,
-            contextMenuGroupId: "navigation",
-            contextMenuOrder: 1.5,
-            run: ed => {
-                console.log("Ctrl+S => " + ed.getPosition())
-            },
-        })
-    }
-
     return (
-        <MonacoEditor
-            value={props.value}
-            language={props.language || "json"}
-            theme="vs-dark"
-            options={{
-                //renderLineHighlight : 'none',
-                ...props.options,
-                language: props.language || "json",
-                automaticLayout: true,
-                scrollBeyondLastLine: false,
-            }}
+        <CodeEditor
+            code={props.value}
+            language={props.language || Language.json}
+            isDarkTheme={false}
+            isLanguageLabelVisible
+            // options={{
+            //     //renderLineHighlight : 'none',
+            //     ...props.options,
+            //     automaticLayout: true,
+            //     scrollBeyondLastLine: false,
+            // }}
             height={props.height}
-            onMount={onMount}
+            onEditorDidMount={onEditorDidMount}
+            // onMount={onMount}
             onChange={props.onChange}
         />
     )
