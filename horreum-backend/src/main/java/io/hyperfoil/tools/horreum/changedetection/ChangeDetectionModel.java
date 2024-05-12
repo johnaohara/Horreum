@@ -11,9 +11,9 @@ import java.util.function.Consumer;
 
 public interface ChangeDetectionModel {
     ConditionConfig config();
-
     ChangeDetectionModelType type();
     void analyze(List<DataPointDAO> dataPoints, JsonNode configuration, Consumer<ChangeDAO> changeConsumer) throws ChangeDetectionException;
+    void analyze(List<DataPointDAO> dataPoints, Consumer<ChangeDAO> changeConsumer) throws ChangeDetectionException;
     ModelType getType();
 
 }

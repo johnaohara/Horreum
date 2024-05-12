@@ -72,6 +72,11 @@ public class FixedThresholdModel implements ChangeDetectionModel {
    }
 
    @Override
+   public void analyze(List<DataPointDAO> dataPoints, Consumer<ChangeDAO> changeConsumer) throws ChangeDetectionException {
+      throw new RuntimeException("Not implemented");
+   }
+
+   @Override
    public ModelType getType() {
       return ModelType.CONTINOUS;
    }

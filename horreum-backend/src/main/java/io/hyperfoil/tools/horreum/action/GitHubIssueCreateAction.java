@@ -32,6 +32,12 @@ public class GitHubIssueCreateAction extends GitHubPluginBase implements ActionP
    }
 
    @Override
+   public void validate() {
+      throw new RuntimeException("Not yet Implemented!");
+
+   }
+
+   @Override
    public Uni<String> execute(JsonNode config, JsonNode secrets, Object payload) {
       JsonNode json = Util.OBJECT_MAPPER.valueToTree(payload);
       String formatter = replaceExpressions(config.path("formatter").asText(), json);

@@ -15,9 +15,11 @@ import java.util.Optional;
 * and the datastore will return a DatastoreResponse with the resolved response
 * from the backend datastore.
 */
-public interface Datastore{
+public interface Datastore {
 
     DatastoreResponse handleRun(JsonNode payload, JsonNode metadata, DatastoreConfigDAO config, Optional<String> schemaUriOptional, ObjectMapper mapper) throws BadRequestException;
+
+    DatastoreResponse handleRun(JsonNode payload, JsonNode metadata) throws BadRequestException;
 
     DatastoreType type();
 

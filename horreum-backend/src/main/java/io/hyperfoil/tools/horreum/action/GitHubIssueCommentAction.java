@@ -32,6 +32,11 @@ public class GitHubIssueCommentAction extends GitHubPluginBase implements Action
    }
 
    @Override
+   public void validate() {
+      throw new RuntimeException("Not yet Implemented!");
+   }
+
+   @Override
    public Uni<String> execute(JsonNode config, JsonNode secrets, Object payload) {
       JsonNode json = Util.OBJECT_MAPPER.valueToTree(payload);
       // Token should NOT be in the dataset!

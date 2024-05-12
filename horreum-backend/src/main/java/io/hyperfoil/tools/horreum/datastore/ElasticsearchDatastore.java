@@ -217,6 +217,11 @@ public class ElasticsearchDatastore implements Datastore {
         }
     }
 
+    @Override
+    public DatastoreResponse handleRun(JsonNode payload, JsonNode metadata) throws BadRequestException {
+        throw new RuntimeException("Not Supported");
+    }
+
     private static String extracted(RestClient restClient, Request request) throws IOException {
         Response response = restClient.performRequest(request);
 

@@ -71,6 +71,11 @@ public class HttpAction implements ActionPlugin {
    }
 
    @Override
+   public void validate() {
+      throw new RuntimeException("Not yet Implemented!");
+   }
+
+   @Override
    public Uni<String> execute(JsonNode config, JsonNode secrets, Object payload) {
       String urlPattern = config.path("url").asText();
       if (urlPattern == null) {

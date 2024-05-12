@@ -107,6 +107,11 @@ public class HunterEDivisiveModel implements ChangeDetectionModel {
         }
     }
 
+    @Override
+    public void analyze(List<DataPointDAO> dataPoints, Consumer<ChangeDAO> changeConsumer) throws ChangeDetectionException {
+        throw new RuntimeException("Not implemented");
+    }
+
 
     protected void processChangePoints(Function<Integer, Optional<DataPointDAO>> changePointSupplier, Consumer<ChangeDAO> changeConsumer, TmpFiles tmpFiles, Instant sinceInstance) {
         String command = "hunter analyze horreum --since '" + sinceInstance.toString() + "'";
