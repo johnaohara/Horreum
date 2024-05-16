@@ -571,8 +571,10 @@ public class RunServiceImpl implements RunService {
 
       List<Integer> runIds = new ArrayList<>();
       if (datastore.uploadType() == Datastore.UploadType.MUILTI && response.payload instanceof  ArrayNode){
+         //need to offload to an async process - this might take a LOOONG time
          response.payload.forEach(jsonNode -> {
-            runIds.add(getPersistRun(start, stop, test, owner, access, token, schemaUri, description, null, jsonNode, testEntity));
+            mediator.queueRunUpload(start, stop, test, owner, access, token, schemaUri, description, null, jsonNode, testEntity);
+//            runIds.add(getPersistRun(start, stop, test, owner, access, token, schemaUri, description, null, jsonNode, testEntity));
          });
       } else {
          runIds.add(getPersistRun(start, stop, test, owner, access, token, schemaUri, description, metadata, response.payload, testEntity));
@@ -581,6 +583,26 @@ public class RunServiceImpl implements RunService {
       String reponseString = String.valueOf(runIds.stream().map(val -> Integer.toString(val)).collect(Collectors.joining(", ")));
       return Response.status(Response.Status.OK).entity(reponseString).build();
    }
+   public void persistRun(ServiceMediator.RunUpload runUpload) {
+      TestDAO testEntity = TestDAO.findById(runUpload.testId);
+      if ( testEntity != null ){
+         log.errorf("Could not find Test (%d) for Run Upload", runUpload.testId);
+         return;
+      }
+      try {
+         Integer runID = getPersistRun(runUpload.start, runUpload.stop, runUpload.test,
+                 runUpload.owner, runUpload.access, runUpload.token, runUpload.schemaUri,
+                 runUpload.description, runUpload.metaData, runUpload.payload, testEntity);
+
+         if (runID == null) {
+            log.errorf("Could not persist Run for Test:  %d", testEntity.name);
+         }
+      } catch (ServiceException serviceException){
+         log.errorf("Could not persist Run for Test:  %d", testEntity.name, serviceException);
+
+      }
+   }
+
 
    private Integer getPersistRun(String start, String stop, String test, String owner, Access access, String token, String schemaUri, String description, JsonNode metadata, JsonNode data, TestDAO testEntity) {
       Object foundStart = findIfNotSet(start, data);
@@ -685,7 +707,7 @@ public class RunServiceImpl implements RunService {
       log.debugf("Upload flushed, run ID %d", run.id);
 
       mediator.newRun(RunMapper.from(run));
-      transform(run.id, false);
+//      transform(run.id, false);
       if(mediator.testMode())
          Util.registerTxSynchronization(tm, txStatus -> mediator.publishEvent(AsyncEventChannels.RUN_NEW, test.id, RunMapper.from(run)));
 
