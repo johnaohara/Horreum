@@ -17,7 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.RH_PERF_BOT_TOKEN }}
           ref: ${{ env.RELEASE_BRANCH }}
       -
         name: Import GPG key
