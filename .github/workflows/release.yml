@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.RELEASE_BRANCH }}
+          ref: 0.14
       -
         name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
