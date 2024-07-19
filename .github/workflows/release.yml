@@ -40,23 +40,23 @@ jobs:
         run: |
           docker build -f ./horreum-backend/src/main/docker/Dockerfile.jvm.base -t quay.io/hyperfoil/horreum-base:latest ./horreum-backend/
           docker push quay.io/hyperfoil/horreum-base:latest
-      - name: Release to Maven
-        run: |
-          PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -q -DforceStdout)
-          CUR_VER=$(echo ${PROJECT_VERSION} |  awk -F '-' '{ print $1}' | awk -F'.' '{print $1+0"."$2+0"."$3+0}' |  sed s/[.]$//)
-          NEXT_VER=$(echo ${PROJECT_VERSION} |  awk -F '-' '{ print $1}' | awk -F'.' '{print $1+0"."$2+0"."$3+1"-SNAPSHOT"}' |  sed s/[.]$//)
-          CI=true mvn -DskipTests clean javadoc:javadoc install
-          CI=true mvn --batch-mode -Darguments=-DskipTests -Dtag=$CUR_VER release:prepare -DreleaseVersion=$CUR_VER -DdevelopmentVersion=$NEXT_VER -Dresume=false
-          CI=true mvn --batch-mode -Darguments=-DskipTests release:perform
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-      - name: Publish image to quay.io
-        run: |
-          PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -q -DforceStdout)
-          CUR_VER=$(echo ${PROJECT_VERSION} |  awk -F '-' '{ print $1}' | awk -F'.' '{print $1+0"."$2+0"."$3+0}' |  sed s/[.]$//)
-          IMAGE_TAG=$(docker images | awk '{print $2}' | awk 'NR==2')
-          docker tag quay.io/hyperfoil/horreum:$IMAGE_TAG quay.io/hyperfoil/horreum:$CUR_VER
-          docker tag quay.io/hyperfoil/horreum:$CUR_VER quay.io/hyperfoil/horreum:latest
-          docker push quay.io/hyperfoil/horreum:$CUR_VER
-          docker push quay.io/hyperfoil/horreum:latest
+#      - name: Release to Maven
+#        run: |
+#          PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -q -DforceStdout)
+#          CUR_VER=$(echo ${PROJECT_VERSION} |  awk -F '-' '{ print $1}' | awk -F'.' '{print $1+0"."$2+0"."$3+0}' |  sed s/[.]$//)
+#          NEXT_VER=$(echo ${PROJECT_VERSION} |  awk -F '-' '{ print $1}' | awk -F'.' '{print $1+0"."$2+0"."$3+1"-SNAPSHOT"}' |  sed s/[.]$//)
+#          CI=true mvn -DskipTests clean javadoc:javadoc install
+#          CI=true mvn --batch-mode -Darguments=-DskipTests -Dtag=$CUR_VER release:prepare -DreleaseVersion=$CUR_VER -DdevelopmentVersion=$NEXT_VER -Dresume=false
+#          CI=true mvn --batch-mode -Darguments=-DskipTests release:perform
+#        env:
+#          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+#          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+#      - name: Publish image to quay.io
+#        run: |
+#          PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate -Dexpression=project.version -q -DforceStdout)
+#          CUR_VER=$(echo ${PROJECT_VERSION} |  awk -F '-' '{ print $1}' | awk -F'.' '{print $1+0"."$2+0"."$3+0}' |  sed s/[.]$//)
+#          IMAGE_TAG=$(docker images | awk '{print $2}' | awk 'NR==2')
+#          docker tag quay.io/hyperfoil/horreum:$IMAGE_TAG quay.io/hyperfoil/horreum:$CUR_VER
+#          docker tag quay.io/hyperfoil/horreum:$CUR_VER quay.io/hyperfoil/horreum:latest
+#          docker push quay.io/hyperfoil/horreum:$CUR_VER
+#          docker push quay.io/hyperfoil/horreum:latest
